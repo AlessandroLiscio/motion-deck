@@ -148,7 +148,6 @@ table.data th { font-family: var(--f-mono); font-size: var(--t-label); letter-sp
 /* ---------- motion: entrance cascade, steps ---------- */
 
 @keyframes aIn { from { opacity: 0; transform: translate(var(--ax, 0), var(--ay, 16px)) scale(var(--as, 1)); filter: blur(var(--ab, 4px)); } }
-@keyframes aIn2 { from { opacity: 0; transform: translate(var(--ax, 0), var(--ay, 16px)) scale(var(--as, 1)); filter: blur(var(--ab, 4px)); } }
 .a-fade { --ay: 0px; --ab: 0px; }
 .a-left { --ax: -48px; --ay: 0px; }
 .a-right { --ax: 48px; --ay: 0px; }
@@ -157,7 +156,7 @@ table.data th { font-family: var(--f-mono); font-size: var(--t-label); letter-sp
 .slide.play .a { animation: var(--a-name, aIn) var(--a-dur) var(--ease) both; animation-delay: calc(var(--i, 0) * var(--a-stagger) + var(--a-base) + var(--d, 0ms)); }
 
 [data-step]:not(.on) { visibility: hidden; opacity: 0; }
-[data-step].on.anim { animation: aIn2 var(--a-dur) var(--ease) both; animation-delay: var(--d, 0ms); }
+[data-step].on.anim { animation: aIn var(--a-dur) var(--ease) both; animation-delay: var(--d, 0ms); }
 [data-step-out].off { opacity: 0; visibility: hidden; transition: opacity .3s var(--ease), visibility 0s linear .3s; }
 
 /* ---------- motion: transitions (contract 5.5) ---------- */

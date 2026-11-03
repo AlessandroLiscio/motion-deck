@@ -22,6 +22,7 @@
   const S = {
     config: null, theme: null, vocab: {}, token: '', slides: [], sections: [], secById: {}, normalCount: 0,
     index: -1, step: 0, captureOn: false, mapOpen: false, trTimer: 0, stage: null, amb: null, ambRun: false, presenter: null,
+    morphing: false, queue: [],
   };
   let resolveReady;
   let rejectReady;
@@ -188,17 +189,19 @@
     const kw = new Set((KW[lang] || '').split(' '));
     const com = lang === 'py' || lang === 'sh' || lang === 'yaml' ? '#[^\\n]*' : lang === 'sql' ? '--[^\\n]*' : lang === 'html' ? '<!--[\\s\\S]*?-->' : '\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/';
     const re = new RegExp(`(${com})|("(?:\\\\.|[^"\\\\\\n])*"|'(?:\\\\.|[^'\\\\\\n])*'|\`(?:\\\\.|[^\`\\\\])*\`)|(\\b\\d+(?:\\.\\d+)?\\b)|([A-Za-z_$][\\w$]*)(?=\\s*\\()|([A-Za-z_$][\\w$]*)`, 'g');
+    // One span per line of a token, so splitting the result on newlines never cuts a span in two.
+    const tok = (cls, s) => s.split('\n').map((p) => (p ? `<span class="${cls}">${p}</span>` : p)).join('\n');
     let out = '';
     let last = 0;
     for (const m of code.matchAll(re)) {
       out += esc(code.slice(last, m.index));
       last = m.index + m[0].length;
       const t = esc(m[0]);
-      if (m[1]) out += `<span class="tk-c">${t}</span>`;
-      else if (m[2]) out += `<span class="${lang === 'json' && /^\s*:/.test(code.slice(last)) ? 'tk-f' : 'tk-s'}">${t}</span>`;
-      else if (m[3]) out += `<span class="tk-n">${t}</span>`;
-      else if (m[4]) out += kw.has(m[4]) ? `<span class="tk-k">${t}</span>` : `<span class="tk-f">${t}</span>`;
-      else out += kw.has(m[5]) ? `<span class="tk-k">${t}</span>` : t;
+      if (m[1]) out += tok('tk-c', t);
+      else if (m[2]) out += tok(lang === 'json' && /^\s*:/.test(code.slice(last)) ? 'tk-f' : 'tk-s', t);
+      else if (m[3]) out += tok('tk-n', t);
+      else if (m[4]) out += tok(kw.has(m[4]) ? 'tk-k' : 'tk-f', t);
+      else out += kw.has(m[5]) ? tok('tk-k', t) : t;
     }
     return out + esc(code.slice(last));
   }
@@ -277,7 +280,7 @@
     const fresh = [];
     $$('[data-step]', el).forEach((e) => {
       const on = n >= (parseInt(e.dataset.step, 10) || 0);
-      if (on && !e.classList.contains('on')) { e.classList.add('on'); if (animate) { e.classList.add('anim'); fresh.push(e); } }
+      if (on && !e.classList.contains('on')) { e.classList.add('on'); if (animate) e.classList.add('anim'); fresh.push(e); }
       else if (!on) e.classList.remove('on', 'anim');
     });
     $$('[data-step-out]', el).forEach((e) => e.classList.toggle('off', n >= (parseInt(e.dataset.stepOut, 10) || 0)));
@@ -380,7 +383,7 @@
       if (prev) prev.classList.add('leaving');
       S.trTimer = setTimeout(finishTransition, trDuration() + 60);
     }
-    if (prev) prev.classList.remove('active', 'play', 'complete');
+    $$('.slide.active', S.stage).forEach((e) => { if (e !== next) e.classList.remove('active', 'play', 'complete'); });
     void next.offsetWidth;
     next.classList.add(complete ? 'complete' : 'play');
     prepCounters(next, complete);
@@ -394,8 +397,13 @@
     syncPresenter();
   }
 
+  // A morph updates the DOM in a later frame, so navigation that arrives meanwhile waits its turn instead of reading a stale index.
+  const queueNav = (fn) => { if (S.queue.length < 8) S.queue.push(fn); };
+  const drainNav = () => { while (S.queue.length && !S.morphing) S.queue.shift()(); };
+
   function go(i, o = {}) {
     if (!S.slides.length) return;
+    if (S.morphing && !o.instant) { queueNav(() => go(i, o)); return; }
     i = clamp(i | 0, 0, S.slides.length - 1);
     const from = S.index;
     const back = from >= 0 && i < from;
@@ -411,11 +419,13 @@
   }
 
   const next = () => {
+    if (S.morphing) { queueNav(next); return; }
     const s = S.slides[S.index];
     if (S.step < s.steps) setStep(S.step + 1);
     else if (S.index < S.slides.length - 1) go(S.index + 1);
   };
   const prev = () => {
+    if (S.morphing) { queueNav(prev); return; }
     if (S.step > 0) setStep(S.step - 1);
     else if (S.index > 0) go(S.index - 1);
   };
@@ -434,12 +444,14 @@
     const style = h('style', { id: 'md-morph-style', text: keys.map((k) => `::view-transition-group(md-${k}){animation-duration:calc(var(--tr-dur) * 1.2);animation-timing-function:var(--ease)}`).join('') });
     doc.head.append(style);
     name(S.slides[S.index].el);
+    S.morphing = true;
     const t = doc.startViewTransition(() => {
       named.forEach((e) => { e.style.viewTransitionName = ''; });
       run(to);
       name(S.slides[to].el);
     });
-    const done = () => { named.forEach((e) => { e.style.viewTransitionName = ''; }); style.remove(); };
+    const done = () => { named.forEach((e) => { e.style.viewTransitionName = ''; }); style.remove(); S.morphing = false; drainNav(); };
+    t.ready.catch(() => {});
     t.finished.then(done, done);
   }
 
@@ -462,6 +474,13 @@
 
   /* ---------- chrome: HUD, track, map, hint ---------- */
 
+  function sectionGroups() {
+    const groups = S.sections.map((sec) => ({ sec, slides: S.slides.filter((s) => s.sec === sec.id && !s.backup) })).filter((g) => g.slides.length);
+    const backups = S.slides.filter((s) => s.backup);
+    if (backups.length) groups.push({ sec: { id: '_backup', label: 'Backup', accent: 0 }, slides: backups });
+    return groups;
+  }
+
   function buildChrome() {
     const chrome = h('div', { id: 'chrome' },
       h('div', { id: 'hud' }, h('span', { class: 'hud-sec' }), h('span', { class: 'hud-title' }), h('span', { class: 'hud-count' })),
@@ -472,12 +491,9 @@
       h('div', { id: 'sr', class: 'sr-only', 'aria-live': 'polite' }));
     doc.body.append(chrome);
     const nav = $('#track');
-    const groups = S.sections.map((sec) => ({ sec, slides: S.slides.filter((s) => s.sec === sec.id && !s.backup) })).filter((g) => g.slides.length);
-    const backups = S.slides.filter((s) => s.backup);
-    if (backups.length) groups.push({ sec: { id: '_backup', label: 'Backup', accent: 0 }, slides: backups });
-    groups.forEach((g) => {
+    sectionGroups().forEach((g) => {
       const seg = h('div', { class: 'seg', style: `flex:${g.slides.length};--acc:${g.sec.accent ? `var(--a${g.sec.accent})` : 'var(--muted)'}` });
-      g.slides.forEach((s) => seg.append(h('button', { class: 'dot', type: 'button', 'data-i': s.index, 'aria-label': `${s.num}: ${s.title}`, title: s.title, onclick: () => go(s.index) })));
+      g.slides.forEach((s) => seg.append(h('button', { class: 'dot', type: 'button', 'data-i': s.index, 'aria-label': `${s.num}: ${s.title}`, title: s.title, onclick: (e) => { go(s.index); if (e.detail) e.currentTarget.blur(); } })));
       nav.append(seg);
     });
     if (!S.captureOn && !/[?&]nohint\b/.test(location.search)) {
@@ -506,10 +522,7 @@
   function renderMap() {
     const m = $('#map');
     m.replaceChildren(h('div', { class: 'map-head' }, h('h2', { text: S.vocab.map }), h('p', { class: 'map-hint', text: S.vocab.mapHint })));
-    const groups = S.sections.map((sec) => ({ sec, slides: S.slides.filter((s) => s.sec === sec.id && !s.backup) })).filter((g) => g.slides.length);
-    const backups = S.slides.filter((s) => s.backup);
-    if (backups.length) groups.push({ sec: { id: '_backup', label: 'Backup', accent: 0 }, slides: backups });
-    groups.forEach((g) => m.append(h('section', { class: 'map-sec', style: `--acc:${g.sec.accent ? `var(--a${g.sec.accent})` : 'var(--muted)'}` },
+    sectionGroups().forEach((g) => m.append(h('section', { class: 'map-sec', style: `--acc:${g.sec.accent ? `var(--a${g.sec.accent})` : 'var(--muted)'}` },
       h('h3', { text: g.sec.label }),
       h('div', { class: 'map-grid' }, g.slides.map((s) => h('button', {
         class: `map-item${s.index === S.index ? ' cur' : ''}`, type: 'button', onclick: () => { openMap(false); go(s.index); },
@@ -547,6 +560,7 @@
         if (k === 'Escape' || k === 'm' || k === 'M') { e.preventDefault(); openMap(false); }
         return;
       }
+      if ((k === 'Enter' || k === ' ') && e.target.closest && e.target.closest('button,a')) return; // a focused control keeps its own activation
       if (['ArrowRight', 'ArrowDown', 'PageDown', 'Enter'].includes(k) || (k === ' ' && !e.shiftKey)) { e.preventDefault(); next(); }
       else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k) || (k === ' ' && e.shiftKey)) { e.preventDefault(); prev(); }
       else if (k === 'Home') go(0);
@@ -606,10 +620,11 @@
   }
 
   let ambLast = 0;
+  let ambRaf = 0;
   function ambLoop(t) {
     if (!S.ambRun) return;
-    requestAnimationFrame(ambLoop);
-    const dt = Math.min(64, t - ambLast);
+    ambRaf = requestAnimationFrame(ambLoop);
+    const dt = clamp(t - ambLast, 0, 64);
     ambLast = t;
     safe('ambient.frame', () => S.theme.ambient.frame(S.amb, t, dt));
   }
@@ -617,8 +632,8 @@
   function syncAmbient() {
     if (!S.amb) return;
     const should = !doc.hidden && !reducedMQ.matches && !S.captureOn && !!S.theme.ambient.frame;
-    if (should && !S.ambRun) { S.ambRun = true; ambLast = performance.now(); requestAnimationFrame(ambLoop); }
-    else if (!should) { S.ambRun = false; paintAmbient(); }
+    if (should && !S.ambRun) { S.ambRun = true; ambLast = performance.now(); ambRaf = requestAnimationFrame(ambLoop); }
+    else if (!should) { S.ambRun = false; cancelAnimationFrame(ambRaf); paintAmbient(); }
   }
 
   /* ---------- capture, print ---------- */
