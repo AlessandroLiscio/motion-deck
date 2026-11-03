@@ -1,0 +1,70 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 1
+  },
+  "nodes": [
+    {
+      "id": "src",
+      "label": "Sources",
+      "sub": "files, APIs",
+      "icon": "doc",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "clean",
+      "label": "Clean",
+      "sub": "dedupe",
+      "icon": "gear",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 2
+    },
+    {
+      "id": "model",
+      "label": "Score",
+      "sub": "per row",
+      "icon": "bolt",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 3
+    },
+    {
+      "id": "out",
+      "label": "Report",
+      "sub": "weekly digest",
+      "icon": "mail",
+      "at": [
+        3,
+        0
+      ],
+      "tone": 4
+    }
+  ],
+  "edges": [
+    {
+      "from": "src",
+      "to": "clean",
+      "packets": 2
+    },
+    {
+      "from": "clean",
+      "to": "model",
+      "label": "valid",
+      "packets": 2
+    },
+    {
+      "from": "model",
+      "to": "out",
+      "packets": true
+    }
+  ]
+}

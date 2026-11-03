@@ -1,0 +1,105 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 3
+  },
+  "nodes": [
+    {
+      "id": "req",
+      "label": "Request",
+      "sub": "pull request",
+      "icon": "code",
+      "at": [
+        0,
+        1
+      ],
+      "tone": 1
+    },
+    {
+      "id": "check",
+      "kind": "diamond",
+      "label": "Tests green?",
+      "at": [
+        1,
+        1
+      ],
+      "highlight": 1
+    },
+    {
+      "id": "ship",
+      "label": "Merge",
+      "sub": "to main",
+      "icon": "check",
+      "at": [
+        2,
+        0
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "fix",
+      "label": "Rework",
+      "sub": "back to author",
+      "icon": "alert",
+      "at": [
+        2,
+        2
+      ],
+      "tone": "danger",
+      "step": 2
+    },
+    {
+      "id": "done",
+      "kind": "pill",
+      "label": "Released",
+      "at": [
+        3,
+        0
+      ],
+      "tone": "ok",
+      "step": 3
+    }
+  ],
+  "edges": [
+    {
+      "from": "req",
+      "to": "check"
+    },
+    {
+      "from": "check",
+      "to": "ship",
+      "label": "yes",
+      "anchors": [
+        "t",
+        "l"
+      ],
+      "tone": "ok"
+    },
+    {
+      "from": "check",
+      "to": "fix",
+      "label": "no",
+      "anchors": [
+        "b",
+        "l"
+      ],
+      "tone": "danger"
+    },
+    {
+      "from": "ship",
+      "to": "done",
+      "tone": "ok"
+    },
+    {
+      "from": "fix",
+      "to": "req",
+      "anchors": [
+        "l",
+        "b"
+      ],
+      "dashed": true,
+      "tone": "danger"
+    }
+  ]
+}

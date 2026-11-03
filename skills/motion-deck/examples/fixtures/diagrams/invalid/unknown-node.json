@@ -1,0 +1,29 @@
+{
+  "expect": "edges[0] \"app->cashe\": unknown node id \"cashe\" in \"to\", did you mean \"cache\"?",
+  "spec": {
+    "nodes": [
+      {
+        "id": "app",
+        "label": "App",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "cache",
+        "label": "Cache",
+        "at": [
+          1,
+          0
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "app",
+        "to": "cashe"
+      }
+    ]
+  }
+}

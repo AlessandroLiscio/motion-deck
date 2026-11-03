@@ -1,0 +1,85 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "kind": "ring",
+      "value": 64,
+      "label": "ring",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 3
+    },
+    {
+      "kind": "spinner",
+      "label": "spinner",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 4
+    },
+    {
+      "kind": "gauge",
+      "value": 55,
+      "unit": "%",
+      "label": "gauge",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 5
+    },
+    {
+      "kind": "kpi",
+      "value": 42,
+      "label": "kpi",
+      "at": [
+        3,
+        0
+      ],
+      "tone": 6
+    },
+    {
+      "kind": "text",
+      "label": "text kind, any size, any alignment",
+      "at": [
+        0,
+        1
+      ],
+      "span": [
+        2,
+        1
+      ],
+      "size": 34,
+      "align": "start"
+    },
+    {
+      "kind": "bars",
+      "at": [
+        2,
+        1
+      ],
+      "span": [
+        2,
+        1
+      ],
+      "values": [
+        3,
+        5,
+        8
+      ],
+      "labels": [
+        "a",
+        "b",
+        "c"
+      ],
+      "orient": "h",
+      "hi": 2
+    }
+  ]
+}

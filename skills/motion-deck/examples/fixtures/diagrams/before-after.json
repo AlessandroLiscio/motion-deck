@@ -1,0 +1,184 @@
+{
+  "grid": {
+    "cols": 5,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "id": "before",
+      "kind": "group",
+      "title": "Before",
+      "at": [
+        0,
+        0
+      ],
+      "span": [
+        2,
+        2
+      ],
+      "tone": "danger",
+      "dashed": true
+    },
+    {
+      "id": "b1",
+      "label": "Excel files",
+      "sub": "by hand",
+      "at": [
+        0,
+        0
+      ],
+      "tone": "muted"
+    },
+    {
+      "id": "b2",
+      "label": "Email",
+      "sub": "attachments",
+      "at": [
+        1,
+        0
+      ],
+      "tone": "muted"
+    },
+    {
+      "id": "b3",
+      "kind": "ghost",
+      "label": "Who owns it?",
+      "at": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "b4",
+      "label": "Copy and paste",
+      "at": [
+        1,
+        1
+      ],
+      "tone": "muted"
+    },
+    {
+      "id": "after",
+      "kind": "group",
+      "title": "After",
+      "at": [
+        3,
+        0
+      ],
+      "span": [
+        2,
+        2
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "a1",
+      "label": "Form",
+      "sub": "validated input",
+      "at": [
+        3,
+        0
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "a2",
+      "kind": "cylinder",
+      "label": "Database",
+      "at": [
+        4,
+        0
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "a3",
+      "label": "Dashboard",
+      "at": [
+        3,
+        1
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "a4",
+      "label": "Alerts",
+      "at": [
+        4,
+        1
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "mid",
+      "kind": "pill",
+      "label": "migrate",
+      "at": [
+        2,
+        0
+      ],
+      "span": [
+        1,
+        2
+      ],
+      "tone": 1,
+      "step": 1,
+      "h": 56
+    }
+  ],
+  "edges": [
+    {
+      "from": "b1",
+      "to": "b2",
+      "tone": "muted"
+    },
+    {
+      "from": "b3",
+      "to": "b4",
+      "tone": "muted",
+      "dashed": true
+    },
+    {
+      "from": "before",
+      "to": "mid",
+      "anchors": [
+        "r",
+        "l"
+      ],
+      "tone": 1
+    },
+    {
+      "from": "mid",
+      "to": "after",
+      "anchors": [
+        "r",
+        "l"
+      ],
+      "tone": 1
+    },
+    {
+      "from": "a1",
+      "to": "a2",
+      "tone": "ok"
+    },
+    {
+      "from": "a2",
+      "to": "a4",
+      "anchors": [
+        "b",
+        "t"
+      ],
+      "tone": "ok"
+    },
+    {
+      "from": "a3",
+      "to": "a4",
+      "tone": "ok"
+    }
+  ]
+}

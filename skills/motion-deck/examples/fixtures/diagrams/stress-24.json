@@ -1,0 +1,331 @@
+{
+  "grid": {
+    "cols": 6,
+    "rows": 4,
+    "gap": 36
+  },
+  "nodes": [
+    {
+      "id": "n0",
+      "label": "Auth",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n1",
+      "label": "Billing",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n2",
+      "label": "Search",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n3",
+      "label": "Mail",
+      "at": [
+        3,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n4",
+      "label": "Queue",
+      "at": [
+        4,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n5",
+      "label": "Cache",
+      "at": [
+        5,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "n6",
+      "label": "Logs",
+      "at": [
+        0,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n7",
+      "label": "Metrics",
+      "at": [
+        1,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n8",
+      "label": "Users",
+      "at": [
+        2,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n9",
+      "label": "Orders",
+      "at": [
+        3,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n10",
+      "label": "Stock",
+      "at": [
+        4,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n11",
+      "label": "Prices",
+      "at": [
+        5,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "id": "n12",
+      "label": "Cart",
+      "at": [
+        0,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n13",
+      "label": "Pay",
+      "at": [
+        1,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n14",
+      "label": "Ship",
+      "at": [
+        2,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n15",
+      "label": "Tax",
+      "at": [
+        3,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n16",
+      "label": "Audit",
+      "at": [
+        4,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n17",
+      "label": "Admin",
+      "at": [
+        5,
+        2
+      ],
+      "tone": 3
+    },
+    {
+      "id": "n18",
+      "label": "Docs",
+      "at": [
+        0,
+        3
+      ],
+      "tone": 4
+    },
+    {
+      "id": "n19",
+      "label": "Chat",
+      "at": [
+        1,
+        3
+      ],
+      "tone": 4
+    },
+    {
+      "id": "n20",
+      "label": "Files",
+      "at": [
+        2,
+        3
+      ],
+      "tone": 4
+    },
+    {
+      "id": "n21",
+      "label": "Maps",
+      "at": [
+        3,
+        3
+      ],
+      "tone": 4
+    },
+    {
+      "id": "n22",
+      "label": "Feed",
+      "at": [
+        4,
+        3
+      ],
+      "tone": 4
+    },
+    {
+      "id": "n23",
+      "label": "Jobs",
+      "at": [
+        5,
+        3
+      ],
+      "tone": 4
+    }
+  ],
+  "edges": [
+    {
+      "from": "n0",
+      "to": "n1"
+    },
+    {
+      "from": "n1",
+      "to": "n2"
+    },
+    {
+      "from": "n2",
+      "to": "n3"
+    },
+    {
+      "from": "n3",
+      "to": "n4"
+    },
+    {
+      "from": "n4",
+      "to": "n5"
+    },
+    {
+      "from": "n6",
+      "to": "n7"
+    },
+    {
+      "from": "n7",
+      "to": "n8"
+    },
+    {
+      "from": "n8",
+      "to": "n9"
+    },
+    {
+      "from": "n9",
+      "to": "n10"
+    },
+    {
+      "from": "n10",
+      "to": "n11"
+    },
+    {
+      "from": "n12",
+      "to": "n13"
+    },
+    {
+      "from": "n13",
+      "to": "n14"
+    },
+    {
+      "from": "n14",
+      "to": "n15"
+    },
+    {
+      "from": "n15",
+      "to": "n16"
+    },
+    {
+      "from": "n16",
+      "to": "n17"
+    },
+    {
+      "from": "n18",
+      "to": "n19"
+    },
+    {
+      "from": "n19",
+      "to": "n20"
+    },
+    {
+      "from": "n20",
+      "to": "n21"
+    },
+    {
+      "from": "n21",
+      "to": "n22"
+    },
+    {
+      "from": "n22",
+      "to": "n23"
+    },
+    {
+      "from": "n0",
+      "to": "n6",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    },
+    {
+      "from": "n2",
+      "to": "n8",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    },
+    {
+      "from": "n4",
+      "to": "n10",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    }
+  ]
+}

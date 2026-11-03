@@ -1,0 +1,125 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "id": "req",
+      "label": "Request",
+      "icon": "mail",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "ai",
+      "label": "AI draft",
+      "sub": "first answer",
+      "icon": "bolt",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 5
+    },
+    {
+      "id": "gate",
+      "kind": "diamond",
+      "label": "Confident?",
+      "at": [
+        2,
+        0
+      ],
+      "step": 1
+    },
+    {
+      "id": "done",
+      "kind": "pill",
+      "label": "Sent",
+      "at": [
+        3,
+        0
+      ],
+      "tone": "ok",
+      "step": 1
+    },
+    {
+      "id": "rev",
+      "kind": "person",
+      "label": "Reviewer",
+      "sub": "checks and edits",
+      "at": [
+        2,
+        1
+      ],
+      "tone": 2,
+      "step": 2
+    },
+    {
+      "id": "n1",
+      "kind": "badge",
+      "label": "1",
+      "attach": "req",
+      "corner": "tl"
+    },
+    {
+      "id": "n2",
+      "kind": "badge",
+      "label": "2",
+      "attach": "ai",
+      "corner": "tl",
+      "step": 1
+    },
+    {
+      "id": "n3",
+      "kind": "badge",
+      "label": "3",
+      "attach": "rev",
+      "corner": "tr",
+      "step": 2
+    }
+  ],
+  "edges": [
+    {
+      "from": "req",
+      "to": "ai",
+      "packets": true
+    },
+    {
+      "from": "ai",
+      "to": "gate",
+      "step": 1
+    },
+    {
+      "from": "gate",
+      "to": "done",
+      "label": "high",
+      "tone": "ok"
+    },
+    {
+      "from": "gate",
+      "to": "rev",
+      "label": "low",
+      "anchors": [
+        "b",
+        "t"
+      ],
+      "tone": 2
+    },
+    {
+      "from": "rev",
+      "to": "ai",
+      "anchors": [
+        "l",
+        "b"
+      ],
+      "label": "edit",
+      "tone": 2,
+      "dashed": true,
+      "highlight": 3
+    }
+  ]
+}

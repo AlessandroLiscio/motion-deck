@@ -1,0 +1,183 @@
+{
+  "grid": {
+    "cols": 3,
+    "rows": 3
+  },
+  "nodes": [
+    {
+      "id": "L1",
+      "kind": "group",
+      "title": "Experience",
+      "at": [
+        0,
+        0
+      ],
+      "span": [
+        3,
+        1
+      ],
+      "tone": 1
+    },
+    {
+      "id": "web",
+      "label": "Web app",
+      "icon": "globe",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "mob",
+      "label": "Mobile",
+      "icon": "user",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "cli",
+      "label": "CLI",
+      "icon": "code",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "L2",
+      "kind": "group",
+      "title": "Services",
+      "at": [
+        0,
+        1
+      ],
+      "span": [
+        3,
+        1
+      ],
+      "tone": 2,
+      "step": 1
+    },
+    {
+      "id": "auth",
+      "label": "Auth",
+      "icon": "lock",
+      "at": [
+        0,
+        1
+      ],
+      "tone": 2,
+      "step": 1
+    },
+    {
+      "id": "api",
+      "kind": "stack",
+      "label": "API pods",
+      "at": [
+        1,
+        1
+      ],
+      "tone": 2,
+      "step": 1
+    },
+    {
+      "id": "jobs",
+      "kind": "stack",
+      "label": "Workers",
+      "at": [
+        2,
+        1
+      ],
+      "tone": 2,
+      "step": 1
+    },
+    {
+      "id": "L3",
+      "kind": "group",
+      "title": "Data",
+      "at": [
+        0,
+        2
+      ],
+      "span": [
+        3,
+        1
+      ],
+      "tone": 3,
+      "step": 2
+    },
+    {
+      "id": "pg",
+      "kind": "cylinder",
+      "label": "Postgres",
+      "at": [
+        0,
+        2
+      ],
+      "tone": 3,
+      "step": 2
+    },
+    {
+      "id": "redis",
+      "kind": "cylinder",
+      "label": "Cache",
+      "at": [
+        1,
+        2
+      ],
+      "tone": 3,
+      "step": 2
+    },
+    {
+      "id": "s3",
+      "kind": "cloud",
+      "label": "Object store",
+      "at": [
+        2,
+        2
+      ],
+      "tone": 3,
+      "step": 2
+    }
+  ],
+  "edges": [
+    {
+      "from": "mob",
+      "to": "api",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    },
+    {
+      "from": "api",
+      "to": "redis",
+      "anchors": [
+        "b",
+        "t"
+      ],
+      "packets": true
+    },
+    {
+      "from": "auth",
+      "to": "pg",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    },
+    {
+      "from": "jobs",
+      "to": "s3",
+      "anchors": [
+        "b",
+        "t"
+      ]
+    }
+  ]
+}

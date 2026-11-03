@@ -1,0 +1,101 @@
+{
+  "grid": {
+    "cols": 3,
+    "rows": 3
+  },
+  "nodes": [
+    {
+      "id": "plan",
+      "label": "Plan",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 1,
+      "icon": "doc"
+    },
+    {
+      "id": "build",
+      "label": "Build",
+      "at": [
+        2,
+        1
+      ],
+      "tone": 2,
+      "icon": "code"
+    },
+    {
+      "id": "measure",
+      "label": "Measure",
+      "at": [
+        1,
+        2
+      ],
+      "tone": 3,
+      "icon": "search"
+    },
+    {
+      "id": "learn",
+      "label": "Learn",
+      "at": [
+        0,
+        1
+      ],
+      "tone": 5,
+      "icon": "bolt"
+    },
+    {
+      "id": "mid",
+      "kind": "text",
+      "label": "one lap per week",
+      "at": [
+        1,
+        1
+      ],
+      "size": 28
+    }
+  ],
+  "edges": [
+    {
+      "from": "plan",
+      "to": "build",
+      "style": "curve",
+      "anchors": [
+        "r",
+        "t"
+      ],
+      "tone": 1
+    },
+    {
+      "from": "build",
+      "to": "measure",
+      "style": "curve",
+      "anchors": [
+        "b",
+        "r"
+      ],
+      "tone": 2
+    },
+    {
+      "from": "measure",
+      "to": "learn",
+      "style": "curve",
+      "anchors": [
+        "l",
+        "b"
+      ],
+      "tone": 3
+    },
+    {
+      "from": "learn",
+      "to": "plan",
+      "style": "curve",
+      "anchors": [
+        "t",
+        "l"
+      ],
+      "tone": 5,
+      "packets": true
+    }
+  ]
+}

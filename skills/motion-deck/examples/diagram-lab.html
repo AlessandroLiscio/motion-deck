@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagram lab</title>
+<link rel="stylesheet" href="./fixtures/themes-stub/test/theme.css">
+<style>
+@font-face{font-family:"Manrope";src:url(../themes/_shared/fonts/manrope/manrope-normal-200-800.woff2) format("woff2");font-weight:200 800}
+@font-face{font-family:"JetBrains Mono";src:url(../themes/_shared/fonts/jetbrains-mono/jetbrains-mono-normal-100-800.woff2) format("woff2");font-weight:100 800}
+@font-face{font-family:"Source Serif 4";src:url(../themes/_shared/fonts/source-serif-4/source-serif-4-normal-200-900.woff2) format("woff2");font-weight:200 900}
+@font-face{font-family:"Fraunces";src:url(../themes/_shared/fonts/fraunces/fraunces-normal-100-900.woff2) format("woff2");font-weight:100 900}
+html.light{--bg:#f6f3ec;--bg-2:#ece7dc;--text:#1c2430;--muted:#566170;--line:#cdc6b6;--panel:#ffffff;--a1:#1b63d6;--a2:#b45f06;--a3:#2b8a3e;--a4:#c8334b;--a5:#7a49c9;--a6:#0e8a80;--on-acc:#ffffff;--glow:#1b63d6}
+html.serif{--f-body:"Source Serif 4",Georgia,serif;--f-display:"Fraunces","Source Serif 4",Georgia,serif;--w-display:600;--radius:6px}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-body)}
+body{width:1600px;height:900px;position:relative;overflow:hidden}
+#head{position:absolute;left:120px;top:48px;font-size:26px;color:var(--muted)}
+#head b{color:var(--text);font-weight:700}
+#frame{position:absolute;left:120px;top:140px;width:1360px;height:540px;--acc:var(--a1)}
+#frame.outline{outline:1px dashed var(--line)}
+#frame svg{display:block;width:1360px;height:540px}
+#foot{position:absolute;left:120px;top:710px;width:1360px;font-family:var(--f-mono);font-size:16px;color:var(--muted)}
+#result{margin:0;white-space:pre-wrap;color:var(--text)}
+#keys{margin:0 0 6px}
+</style>
+</head>
+<body>
+<div id="head"></div>
+<div id="frame"><svg id="dg" viewBox="0 0 1360 540" role="img" aria-label="diagram"></svg></div>
+<div id="foot"><pre id="keys"></pre><pre id="result">PENDING</pre></div>
+<script>
+/*SPECS-BEGIN*/const SPECS = {"bar-chart":{"nodes":[{"id":"rev","kind":"bars","at":[0,0],"title":"Revenue per quarter","values":[12,18,26,41,38],"labels":["Q1","Q2","Q3","Q4","Q5"],"hi":3,"unit":"k","prefix":"$","highlight":1}]},"before-after":{"grid":{"cols":5,"rows":2},"nodes":[{"id":"before","kind":"group","title":"Before","at":[0,0],"span":[2,2],"tone":"danger","dashed":true},{"id":"b1","label":"Excel files","sub":"by hand","at":[0,0],"tone":"muted"},{"id":"b2","label":"Email","sub":"attachments","at":[1,0],"tone":"muted"},{"id":"b3","kind":"ghost","label":"Who owns it?","at":[0,1]},{"id":"b4","label":"Copy and paste","at":[1,1],"tone":"muted"},{"id":"after","kind":"group","title":"After","at":[3,0],"span":[2,2],"tone":"ok","step":1},{"id":"a1","label":"Form","sub":"validated input","at":[3,0],"tone":"ok","step":1},{"id":"a2","kind":"cylinder","label":"Database","at":[4,0],"tone":"ok","step":1},{"id":"a3","label":"Dashboard","at":[3,1],"tone":"ok","step":1},{"id":"a4","label":"Alerts","at":[4,1],"tone":"ok","step":1},{"id":"mid","kind":"pill","label":"migrate","at":[2,0],"span":[1,2],"tone":1,"step":1,"h":56}],"edges":[{"from":"b1","to":"b2","tone":"muted"},{"from":"b3","to":"b4","tone":"muted","dashed":true},{"from":"before","to":"mid","anchors":["r","l"],"tone":1},{"from":"mid","to":"after","anchors":["r","l"],"tone":1},{"from":"a1","to":"a2","tone":"ok"},{"from":"a2","to":"a4","anchors":["b","t"],"tone":"ok"},{"from":"a3","to":"a4","tone":"ok"}]},"cycle":{"grid":{"cols":3,"rows":3},"nodes":[{"id":"plan","label":"Plan","at":[1,0],"tone":1,"icon":"doc"},{"id":"build","label":"Build","at":[2,1],"tone":2,"icon":"code"},{"id":"measure","label":"Measure","at":[1,2],"tone":3,"icon":"search"},{"id":"learn","label":"Learn","at":[0,1],"tone":5,"icon":"bolt"},{"id":"mid","kind":"text","label":"one lap per week","at":[1,1],"size":28}],"edges":[{"from":"plan","to":"build","style":"curve","anchors":["r","t"],"tone":1},{"from":"build","to":"measure","style":"curve","anchors":["b","r"],"tone":2},{"from":"measure","to":"learn","style":"curve","anchors":["l","b"],"tone":3},{"from":"learn","to":"plan","style":"curve","anchors":["t","l"],"tone":5,"packets":true}]},"data-flow":{"grid":{"cols":4,"rows":2},"nodes":[{"id":"app","label":"Mobile app","icon":"user","at":[0,0],"tone":1},{"id":"api","label":"Gateway","sub":"REST, auth","icon":"lock","at":[1,0],"tone":2},{"id":"db","kind":"cylinder","label":"Orders","sub":"Postgres","at":[2,0],"tone":3},{"id":"lake","kind":"cloud","label":"Data lake","at":[3,1],"tone":5},{"id":"bi","label":"Reports","icon":"search","at":[2,1],"tone":4}],"edges":[{"from":"app","to":"api","label":"HTTPS","packets":2},{"from":"api","to":"db","label":"SQL","packets":{"count":3,"dur":3}},{"from":"db","to":"lake","label":"nightly","dashed":true,"anchors":["r","t"],"packets":true},{"from":"lake","to":"bi","anchors":["l","r"]}]},"decision-flow":{"grid":{"cols":4,"rows":3},"nodes":[{"id":"req","label":"Request","sub":"pull request","icon":"code","at":[0,1],"tone":1},{"id":"check","kind":"diamond","label":"Tests green?","at":[1,1],"highlight":1},{"id":"ship","label":"Merge","sub":"to main","icon":"check","at":[2,0],"tone":"ok","step":1},{"id":"fix","label":"Rework","sub":"back to author","icon":"alert","at":[2,2],"tone":"danger","step":2},{"id":"done","kind":"pill","label":"Released","at":[3,0],"tone":"ok","step":3}],"edges":[{"from":"req","to":"check"},{"from":"check","to":"ship","label":"yes","anchors":["t","l"],"tone":"ok"},{"from":"check","to":"fix","label":"no","anchors":["b","l"],"tone":"danger"},{"from":"ship","to":"done","tone":"ok"},{"from":"fix","to":"req","anchors":["l","b"],"dashed":true,"tone":"danger"}]},"donut":{"nodes":[{"id":"mix","kind":"donut","at":[0,0],"title":"Traffic by channel","segments":[{"label":"Search","value":46},{"label":"Direct","value":24},{"label":"Email","value":17},{"label":"Social","value":13}],"centerSub":"visits"}]},"human-loop":{"grid":{"cols":4,"rows":2},"nodes":[{"id":"req","label":"Request","icon":"mail","at":[0,0],"tone":1},{"id":"ai","label":"AI draft","sub":"first answer","icon":"bolt","at":[1,0],"tone":5},{"id":"gate","kind":"diamond","label":"Confident?","at":[2,0],"step":1},{"id":"done","kind":"pill","label":"Sent","at":[3,0],"tone":"ok","step":1},{"id":"rev","kind":"person","label":"Reviewer","sub":"checks and edits","at":[2,1],"tone":2,"step":2},{"id":"n1","kind":"badge","label":"1","attach":"req","corner":"tl"},{"id":"n2","kind":"badge","label":"2","attach":"ai","corner":"tl","step":1},{"id":"n3","kind":"badge","label":"3","attach":"rev","corner":"tr","step":2}],"edges":[{"from":"req","to":"ai","packets":true},{"from":"ai","to":"gate","step":1},{"from":"gate","to":"done","label":"high","tone":"ok"},{"from":"gate","to":"rev","label":"low","anchors":["b","t"],"tone":2},{"from":"rev","to":"ai","anchors":["l","b"],"label":"edit","tone":2,"dashed":true,"highlight":3}]},"kinds-tour":{"grid":{"cols":6,"rows":2},"nodes":[{"kind":"box","label":"box","sub":"label and sub","at":[0,0],"tone":1},{"kind":"pill","label":"pill","at":[1,0],"tone":2},{"kind":"chip","label":"chip","at":[2,0],"tone":3},{"kind":"diamond","label":"diamond","at":[3,0]},{"kind":"stack","label":"stack","at":[4,0],"tone":5},{"kind":"person","label":"person","at":[5,0],"tone":6},{"kind":"cylinder","label":"cylinder","at":[0,1],"tone":1},{"kind":"cloud","label":"cloud","at":[1,1],"tone":2},{"kind":"ghost","label":"ghost","at":[2,1]},{"kind":"dot","label":"dot","at":[3,1],"tone":"ok"},{"id":"bx","kind":"box","label":"badge","at":[4,1],"tone":"muted"},{"kind":"badge","label":"7","attach":"bx","corner":"tr","tone":4},{"kind":"box","label":"with icon","icon":"gear","at":[5,1],"tone":4}]},"kpi-row":{"grid":{"cols":4,"rows":1},"nodes":[{"id":"k1","kind":"kpi","at":[0,0],"value":1280,"prefix":"$","suffix":"k","label":"Monthly revenue","delta":"+12%","tone":1},{"id":"k2","kind":"kpi","at":[1,0],"value":4.8,"label":"Support rating","delta":"+0.3","tone":3},{"id":"k3","kind":"kpi","at":[2,0],"value":7.2,"suffix":"%","label":"Churn","delta":"-1.4%","deltaTone":"ok","tone":4},{"id":"g1","kind":"gauge","at":[3,0],"value":78,"unit":"%","label":"Goal reached","tone":6}]},"layered":{"grid":{"cols":3,"rows":3},"nodes":[{"id":"L1","kind":"group","title":"Experience","at":[0,0],"span":[3,1],"tone":1},{"id":"web","label":"Web app","icon":"globe","at":[0,0],"tone":1},{"id":"mob","label":"Mobile","icon":"user","at":[1,0],"tone":1},{"id":"cli","label":"CLI","icon":"code","at":[2,0],"tone":1},{"id":"L2","kind":"group","title":"Services","at":[0,1],"span":[3,1],"tone":2,"step":1},{"id":"auth","label":"Auth","icon":"lock","at":[0,1],"tone":2,"step":1},{"id":"api","kind":"stack","label":"API pods","at":[1,1],"tone":2,"step":1},{"id":"jobs","kind":"stack","label":"Workers","at":[2,1],"tone":2,"step":1},{"id":"L3","kind":"group","title":"Data","at":[0,2],"span":[3,1],"tone":3,"step":2},{"id":"pg","kind":"cylinder","label":"Postgres","at":[0,2],"tone":3,"step":2},{"id":"redis","kind":"cylinder","label":"Cache","at":[1,2],"tone":3,"step":2},{"id":"s3","kind":"cloud","label":"Object store","at":[2,2],"tone":3,"step":2}],"edges":[{"from":"mob","to":"api","anchors":["b","t"]},{"from":"api","to":"redis","anchors":["b","t"],"packets":true},{"from":"auth","to":"pg","anchors":["b","t"]},{"from":"jobs","to":"s3","anchors":["b","t"]}]},"line-area":{"grid":{"cols":3,"rows":1},"nodes":[{"id":"users","kind":"line","at":[0,0],"span":[2,1],"title":"Weekly active users","values":[120,150,148,210,260,310,295,380,450,520],"labels":["W1","W2","W3","W4","W5","W6","W7","W8","W9","W10"],"area":true,"smooth":true,"tone":6},{"id":"note","kind":"text","at":[2,0],"label":"Growth doubled after the onboarding change in week 4.","size":30,"align":"start"}]},"pipeline":{"grid":{"cols":4,"rows":1},"nodes":[{"id":"src","label":"Sources","sub":"files, APIs","icon":"doc","at":[0,0],"tone":1},{"id":"clean","label":"Clean","sub":"dedupe","icon":"gear","at":[1,0],"tone":2},{"id":"model","label":"Score","sub":"per row","icon":"bolt","at":[2,0],"tone":3},{"id":"out","label":"Report","sub":"weekly digest","icon":"mail","at":[3,0],"tone":4}],"edges":[{"from":"src","to":"clean","packets":2},{"from":"clean","to":"model","label":"valid","packets":2},{"from":"model","to":"out","packets":true}]},"progress-kinds":{"grid":{"cols":4,"rows":2},"nodes":[{"kind":"ring","value":64,"label":"ring","at":[0,0],"tone":3},{"kind":"spinner","label":"spinner","at":[1,0],"tone":4},{"kind":"gauge","value":55,"unit":"%","label":"gauge","at":[2,0],"tone":5},{"kind":"kpi","value":42,"label":"kpi","at":[3,0],"tone":6},{"kind":"text","label":"text kind, any size, any alignment","at":[0,1],"span":[2,1],"size":34,"align":"start"},{"kind":"bars","at":[2,1],"span":[2,1],"values":[3,5,8],"labels":["a","b","c"],"orient":"h","hi":2}]},"steps-story":{"grid":{"cols":4,"rows":2},"nodes":[{"id":"user","kind":"person","label":"Customer","at":[0,0],"tone":1},{"id":"old","label":"Legacy form","sub":"retired in step 3","at":[1,0],"tone":"muted","out":3},{"id":"new","label":"New checkout","sub":"replaces it","icon":"check","at":[1,0],"tone":"ok","step":3},{"id":"pay","label":"Payments","icon":"lock","at":[2,0],"tone":2,"step":1},{"id":"ledger","kind":"cylinder","label":"Ledger","at":[3,0],"tone":5,"step":2},{"id":"mail","kind":"chip","label":"receipt sent","at":[3,1],"tone":3,"step":4}],"edges":[{"from":"user","to":"old","out":3},{"from":"user","to":"new","step":3},{"from":"old","to":"pay","step":1,"out":3},{"from":"new","to":"pay","step":3},{"from":"pay","to":"ledger","step":2,"packets":true},{"from":"ledger","to":"mail","step":4,"anchors":["b","t"]}]},"stress-24":{"grid":{"cols":6,"rows":4,"gap":36},"nodes":[{"id":"n0","label":"Auth","at":[0,0],"tone":1},{"id":"n1","label":"Billing","at":[1,0],"tone":1},{"id":"n2","label":"Search","at":[2,0],"tone":1},{"id":"n3","label":"Mail","at":[3,0],"tone":1},{"id":"n4","label":"Queue","at":[4,0],"tone":1},{"id":"n5","label":"Cache","at":[5,0],"tone":1},{"id":"n6","label":"Logs","at":[0,1],"tone":2},{"id":"n7","label":"Metrics","at":[1,1],"tone":2},{"id":"n8","label":"Users","at":[2,1],"tone":2},{"id":"n9","label":"Orders","at":[3,1],"tone":2},{"id":"n10","label":"Stock","at":[4,1],"tone":2},{"id":"n11","label":"Prices","at":[5,1],"tone":2},{"id":"n12","label":"Cart","at":[0,2],"tone":3},{"id":"n13","label":"Pay","at":[1,2],"tone":3},{"id":"n14","label":"Ship","at":[2,2],"tone":3},{"id":"n15","label":"Tax","at":[3,2],"tone":3},{"id":"n16","label":"Audit","at":[4,2],"tone":3},{"id":"n17","label":"Admin","at":[5,2],"tone":3},{"id":"n18","label":"Docs","at":[0,3],"tone":4},{"id":"n19","label":"Chat","at":[1,3],"tone":4},{"id":"n20","label":"Files","at":[2,3],"tone":4},{"id":"n21","label":"Maps","at":[3,3],"tone":4},{"id":"n22","label":"Feed","at":[4,3],"tone":4},{"id":"n23","label":"Jobs","at":[5,3],"tone":4}],"edges":[{"from":"n0","to":"n1"},{"from":"n1","to":"n2"},{"from":"n2","to":"n3"},{"from":"n3","to":"n4"},{"from":"n4","to":"n5"},{"from":"n6","to":"n7"},{"from":"n7","to":"n8"},{"from":"n8","to":"n9"},{"from":"n9","to":"n10"},{"from":"n10","to":"n11"},{"from":"n12","to":"n13"},{"from":"n13","to":"n14"},{"from":"n14","to":"n15"},{"from":"n15","to":"n16"},{"from":"n16","to":"n17"},{"from":"n18","to":"n19"},{"from":"n19","to":"n20"},{"from":"n20","to":"n21"},{"from":"n21","to":"n22"},{"from":"n22","to":"n23"},{"from":"n0","to":"n6","anchors":["b","t"]},{"from":"n2","to":"n8","anchors":["b","t"]},{"from":"n4","to":"n10","anchors":["b","t"]}]}};
+const INVALID = {"invalid-edge-label-fit":{"expect":"edges[0] \"a->b\": the label \"a rather long label\" needs ","spec":{"grid":{"cols":2,"rows":1,"gap":20},"nodes":[{"id":"a","label":"Left","at":[0,0],"w":560},{"id":"b","label":"Right","at":[1,0],"w":560}],"edges":[{"from":"a","to":"b","label":"a rather long label"}]}},"invalid-label-too-wide":{"expect":"nodes[0] \"a\": the text \"Internationalization\" is ","spec":{"grid":{"cols":6,"rows":1},"nodes":[{"id":"a","label":"Internationalization","at":[0,0]},{"id":"b","label":"Next","at":[1,0]}]}},"invalid-same-cell":{"expect":"nodes[1] \"b\" and nodes[0] \"a\": both occupy cell [0,0]","spec":{"nodes":[{"id":"a","label":"First","at":[0,0]},{"id":"b","label":"Second","at":[0,0]}]}},"invalid-unknown-kind":{"expect":"nodes[1] \"db\": unknown kind \"databse\", did you mean \"cylinder\"?","spec":{"nodes":[{"id":"app","label":"App","at":[0,0]},{"id":"db","kind":"databse","label":"Orders","at":[1,0]}]}},"invalid-unknown-node":{"expect":"edges[0] \"app->cashe\": unknown node id \"cashe\" in \"to\", did you mean \"cache\"?","spec":{"nodes":[{"id":"app","label":"App","at":[0,0]},{"id":"cache","label":"Cache","at":[1,0]}],"edges":[{"from":"app","to":"cashe"}]}}};/*SPECS-END*/
+</script>
+<script src="../engine/diagram.js"></script>
+<script>
+(async function () {
+  const q = new URLSearchParams(location.search), root = document.documentElement;
+  if (q.get('theme') === 'light') root.classList.add('light');
+  if (q.get('font') === 'serif') root.classList.add('serif');
+  if (q.get('capture') === '1') root.classList.add('capture');
+  if (q.get('frame') === '1') document.getElementById('frame').classList.add('outline');
+  if (q.get('acc')) document.getElementById('frame').style.setProperty('--acc', 'var(--a' + q.get('acc') + ')');
+  const names = Object.keys(SPECS), inv = Object.keys(INVALID);
+  const name = decodeURIComponent(location.hash.slice(1)) || names[0];
+  const svg = document.getElementById('dg'), out = document.getElementById('result');
+  document.getElementById('keys').textContent = 'Object.keys(MotionDiagram) = ' + JSON.stringify(Object.keys(window.MotionDiagram)) + '  kinds=' + MotionDiagram.kinds.length;
+  document.getElementById('head').innerHTML = '<b>' + name + '</b> &nbsp; step ' + (q.get('step') || 'final') + (q.get('capture') === '1' ? ' &nbsp; capture' : '');
+  await Promise.all(['700 26px "Manrope"', '400 20px "Manrope"', '700 72px "Manrope"', '400 18px "JetBrains Mono"', '400 26px "Source Serif 4"', '700 26px "Source Serif 4"', '600 52px "Fraunces"'].map((f) => document.fonts.load(f).catch(() => 0)));
+  await document.fonts.ready;
+  const fail = (m) => { out.textContent = 'FAIL ' + m; };
+  const BOXY = ['box', 'stack', 'ghost', 'pill', 'chip', 'kpi'];
+  function inspect(svgEl, spec) {
+    const vb = svgEl.viewBox.baseVal, rootG = svgEl.querySelector('.md-root'), bb = rootG.getBBox();
+    if (bb.x < vb.x - 1 || bb.y < vb.y - 1 || bb.x + bb.width > vb.x + vb.width + 1 || bb.y + bb.height > vb.y + vb.height + 1) return 'content box ' + [bb.x, bb.y, bb.width, bb.height].map(Math.round) + ' leaves the viewBox';
+    if (/NaN|undefined|Infinity/.test(rootG.outerHTML.replace(/<text[^>]*>[^<]*<\/text>/g, ''))) return 'NaN or undefined found in attributes';
+    for (const g of svgEl.querySelectorAll('g.md-n')) {
+      const k = g.dataset.kind, label = g.dataset.id || k, shapes = g.querySelectorAll('.md-shape'), sh = shapes[shapes.length - 1];
+      if (!sh) continue;
+      const sb = sh.getBBox(), texts = g.querySelectorAll('text.md-lab, text.md-sub, text.md-kpi-v, text.md-delta');
+      for (const t of texts) {
+        const tb = t.getBBox();
+        if (BOXY.includes(k)) {
+          const m = k === 'chip' ? 6 : 10;
+          if (tb.x < sb.x + m - 0.5 || tb.x + tb.width > sb.x + sb.width - m + 0.5 || tb.y < sb.y + 3 || tb.y + tb.height > sb.y + sb.height - 3) return 'text "' + t.textContent + '" in ' + label + ' touches the border of its shape';
+        } else if (k === 'diamond') {
+          const cx = sb.x + sb.width / 2, cy = sb.y + sb.height / 2;
+          for (const [px, py] of [[tb.x, tb.y], [tb.x + tb.width, tb.y], [tb.x, tb.y + tb.height], [tb.x + tb.width, tb.y + tb.height]]) if (Math.abs(px - cx) / (sb.width / 2) + Math.abs(py - cy) / (sb.height / 2) > 0.98) return 'text "' + t.textContent + '" in ' + label + ' pokes out of the diamond';
+        }
+      }
+    }
+    // arrow heads: the tip sits on the border of the target (or source) node
+    for (const e of svgEl.querySelectorAll('g.md-edge')) {
+      for (const h of e.querySelectorAll('polygon.md-head')) {
+        const tip = h.points.getItem(0), ids = [e.dataset.to, e.dataset.from];
+        let ok = false;
+        for (const id of ids) {
+          const ng = svgEl.querySelector('g.md-n[data-id="' + id + '"]'); if (!ng) continue;
+          const sh = ng.querySelectorAll('.md-shape'), s = sh[sh.length - 1]; if (!s || !['box', 'pill', 'chip', 'ghost', 'diamond', 'kpi', 'cylinder', 'group', 'stack'].includes(ng.dataset.kind)) { ok = true; continue; }
+          const b = s.getBBox(), d = Math.min(Math.abs(tip.x - b.x), Math.abs(tip.x - b.x - b.width), Math.abs(tip.y - b.y), Math.abs(tip.y - b.y - b.height));
+          const inside = tip.x >= b.x - 0.6 && tip.x <= b.x + b.width + 0.6 && tip.y >= b.y - 0.6 && tip.y <= b.y + b.height + 0.6;
+          if (d < 0.7 && inside) ok = true;
+        }
+        if (!ok) return 'arrow head of ' + e.dataset.from + '->' + e.dataset.to + ' is not on a node border';
+      }
+    }
+    return null;
+  }
+  function selftest() {
+    if (JSON.stringify(Object.keys(MotionDiagram)) !== JSON.stringify(['version', 'mount', 'update', 'steps', 'kinds'])) return 'MotionDiagram keys are ' + Object.keys(MotionDiagram);
+    if (inv.includes(name)) {
+      const c = INVALID[name];
+      try { MotionDiagram.mount(svg, c.spec); } catch (e) {
+        if (!e.message.includes(c.expect)) return 'wrong error: ' + e.message + ' | expected to contain: ' + c.expect;
+        return 'PASS threw ' + e.message;
+      }
+      return 'no error thrown, expected: ' + c.expect;
+    }
+    const spec = SPECS[name]; if (!spec) return 'unknown spec ' + name;
+    const n = MotionDiagram.steps(spec), r = MotionDiagram.mount(svg, spec);
+    if (r.steps !== n) return 'mount reported ' + r.steps + ' steps but steps() says ' + n;
+    MotionDiagram.update(svg, { step: 0, replay: true });
+    for (let s = 1; s <= n; s++) MotionDiagram.update(svg, { step: s, replay: s % 2 === 1 });
+    MotionDiagram.update(svg, { step: n, capture: true });
+    const a = svg.outerHTML; MotionDiagram.update(svg, { step: n, capture: true });
+    if (svg.outerHTML !== a) return 'update is not idempotent';
+    const bad = inspect(svg, spec); if (bad) return bad;
+    // count: every spec element is rendered, hidden ones only when their out step has passed
+    const els = svg.querySelectorAll('g.md-el').length, want = (spec.nodes || []).length + (spec.edges || []).length;
+    if (els !== want) return els + ' elements rendered for ' + want + ' spec items';
+    const shown = svg.querySelectorAll('g.md-el:not(.md-hid)').length, hidden = (spec.nodes || []).concat(spec.edges || []).filter((o) => o.out && o.out <= n).length;
+    if (shown < want - hidden - 3 * (spec.edges || []).filter((e) => e.out).length) return 'too many hidden elements at the final step';
+    MotionDiagram.update(svg, { step: 0, replay: true });
+    MotionDiagram.update(svg, { step: n, capture: true });
+    return 'PASS ' + name + ' steps=' + n + ' elements=' + els;
+  }
+  function show() {
+    if (inv.includes(name)) { try { MotionDiagram.mount(svg, INVALID[name].spec); out.textContent = 'NO ERROR'; } catch (e) { out.textContent = e.message; } return; }
+    const spec = SPECS[name]; if (!spec) { fail('unknown spec ' + name + '; known: ' + names.concat(inv).join(', ')); return; }
+    const n = MotionDiagram.steps(spec);
+    MotionDiagram.mount(svg, spec);
+    const cap = q.get('capture') === '1', step = q.has('step') ? +q.get('step') : n;
+    MotionDiagram.update(svg, { step, replay: true, capture: cap });
+    out.textContent = name + ' steps=' + n;
+  }
+  try {
+    if (q.get('selftest') === '1') out.textContent = selftest().replace(/^(?!PASS)/, 'FAIL ');
+    else show();
+  } catch (e) { out.textContent = (q.get('selftest') === '1' ? 'FAIL ' : '') + e.message; }
+  window.__labDone = true;
+})();
+</script>
+</body>
+</html>

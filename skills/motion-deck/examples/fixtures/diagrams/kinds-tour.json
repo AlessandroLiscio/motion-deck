@@ -1,0 +1,124 @@
+{
+  "grid": {
+    "cols": 6,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "kind": "box",
+      "label": "box",
+      "sub": "label and sub",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "kind": "pill",
+      "label": "pill",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 2
+    },
+    {
+      "kind": "chip",
+      "label": "chip",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 3
+    },
+    {
+      "kind": "diamond",
+      "label": "diamond",
+      "at": [
+        3,
+        0
+      ]
+    },
+    {
+      "kind": "stack",
+      "label": "stack",
+      "at": [
+        4,
+        0
+      ],
+      "tone": 5
+    },
+    {
+      "kind": "person",
+      "label": "person",
+      "at": [
+        5,
+        0
+      ],
+      "tone": 6
+    },
+    {
+      "kind": "cylinder",
+      "label": "cylinder",
+      "at": [
+        0,
+        1
+      ],
+      "tone": 1
+    },
+    {
+      "kind": "cloud",
+      "label": "cloud",
+      "at": [
+        1,
+        1
+      ],
+      "tone": 2
+    },
+    {
+      "kind": "ghost",
+      "label": "ghost",
+      "at": [
+        2,
+        1
+      ]
+    },
+    {
+      "kind": "dot",
+      "label": "dot",
+      "at": [
+        3,
+        1
+      ],
+      "tone": "ok"
+    },
+    {
+      "id": "bx",
+      "kind": "box",
+      "label": "badge",
+      "at": [
+        4,
+        1
+      ],
+      "tone": "muted"
+    },
+    {
+      "kind": "badge",
+      "label": "7",
+      "attach": "bx",
+      "corner": "tr",
+      "tone": 4
+    },
+    {
+      "kind": "box",
+      "label": "with icon",
+      "icon": "gear",
+      "at": [
+        5,
+        1
+      ],
+      "tone": 4
+    }
+  ]
+}
