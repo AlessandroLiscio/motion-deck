@@ -195,14 +195,14 @@ Input: arrows, PageUp and PageDown, Space, Enter, Backspace, Home, End; `M` togg
 
 ## 7. Build
 
-`node scripts/build.mjs <deck.src.html> [--out <file>] [--theme <name>] [--engine <dir>] [--themes <dir>]` and the same as a function:
+`node scripts/build.mjs <deck.src.html> [--out <file>] [--theme <name>] [--engine <dir>] [--themes <dir>] [--fonts <dir>]` and the same as a function:
 
 ```js
-export async function build({ src, out, themeOverride, engineDir, themesDir, log }) // -> { out, bytes, slides, theme, fonts: string[], warnings: { code, message }[] }
+export async function build({ src, out, themeOverride, engineDir, themesDir, fontsDir, log }) // -> { out, bytes, slides, theme, fonts: string[], warnings: { code, message }[] }
 export class BuildError extends Error { code }  // E_SOURCE E_CONFIG E_THEME E_REMOTE E_ASSET_SIZE E_ASSET_MISSING E_LICENSE
 ```
 
-Default `out` is `index.html` next to the source; default `engineDir` is `../engine` and `themesDir` is `../themes` relative to the script. Output is deterministic (no timestamps). The built file is, in this order:
+Default `out` is `index.html` next to the source; default `engineDir` is `../engine`, `themesDir` is `../themes` and `fontsDir` is `<themesDir>/_shared/fonts` relative to the script. The engine's MIT license text is the `LICENSE` file found by walking up from the skill root (at most three levels); none found is `E_LICENSE`. Output is deterministic (no timestamps). The built file is, in this order:
 
 1. `<!doctype html><html lang data-theme="<name>">`, `<meta charset>`, `<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">`, `<meta name="generator" content="motion-deck <version>">`, `<title>` and the description meta.
 2. One comment block (the license notice): the engine's copyright line and the full MIT text, then for every embedded font family its copyright line, source URL and the full OFL text (identical license text appears once). The text MUST NOT contain `-->`.
