@@ -1,0 +1,93 @@
+/* Neon: a black-violet night, glowing signs, a synthwave horizon on the ambient layer and a zoom-through tunnel between slides. */
+
+:root {
+  --bg: #0a0614; --bg-2: #160b2e; --text: #efe8ff; --muted: #a99cc9; --line: rgba(190, 150, 255, .3); --panel: rgba(26, 12, 54, .6);
+  --a1: #00e5ff; --a2: #ff2bd6; --a3: #b6ff2e; --a4: #ff8a1f; --a5: #8f5bff; --a6: #ff5fa2;
+  --on-acc: #0a0614; --c-key: #ff2bd6; --c-str: #b6ff2e; --c-com: #8b7fb0; --c-num: #ff8a1f; --c-fn: #00e5ff; --glow: #00e5ff;
+  --f-display: "Unbounded", "Arial Black", Impact, sans-serif;
+  --f-body: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --t-hero: 104px; --t-h1: 82px; --t-h2: 52px; --t-h3: 32px; --t-lead: 36px; --t-body: 32px; --t-small: 26px; --t-label: 18px;
+  --lh-head: 1.14; --lh-body: 1.42; --ls-label: .22em; --case-display: uppercase; --ls-display: .03em;
+  --w-display: 700; --w-body: 400; --w-bold: 600;
+  --pad-x: 120px; --pad-y: 84px; --pad-b: 96px; --gap: 32px; --radius: 10px; --stroke: 2px;
+  --ease: cubic-bezier(.2, .8, .2, 1); --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --a-dur: .7s; --a-stagger: 55ms; --a-base: 80ms; --tr-dur: 680ms;
+  --bullet-radius: 1px;
+  --neon: 0 0 4px color-mix(in srgb, var(--acc) 90%, transparent), 0 0 16px color-mix(in srgb, var(--acc) 65%, transparent), 0 0 42px color-mix(in srgb, var(--acc) 40%, transparent);
+  --scan: repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 4px);
+}
+
+/* the neon sign: tube-white core, stacked accent glow; running text stays crisp */
+.slide h1, .slide h2, .slide .big { color: color-mix(in srgb, var(--acc) 16%, var(--text)); text-shadow: var(--neon); }
+.slide[data-layout="title"] h1 { font-size: var(--t-hero); line-height: 1.08; }
+.slide[data-layout="chapter"] h2, .slide[data-layout="closing"] h1, .slide[data-layout="closing"] h2 { font-size: calc(var(--t-h1) * 1.06); line-height: 1.08; }
+.slide .big { font-size: calc(var(--t-h2) * .96); line-height: 1.22; }
+.slide h3 { letter-spacing: .02em; }
+.slide .lead { color: color-mix(in srgb, var(--text) 86%, var(--bg)); font-size: calc(var(--t-lead) * .94); font-weight: 400; }
+.slide em { font-style: normal; color: var(--acc); }
+.slide code { border-radius: 4px; background: color-mix(in srgb, var(--acc) 10%, transparent); border-color: color-mix(in srgb, var(--acc) 35%, transparent); }
+.slide a { text-underline-offset: .22em; }
+/* a dark halo (not a glow) keeps running text readable over the sun and the grid */
+.slide p, .slide li, .slide .label, .slide figcaption { text-shadow: 0 0 10px color-mix(in srgb, var(--bg) 92%, transparent), 0 0 3px color-mix(in srgb, var(--bg) 70%, transparent); }
+
+.slide .kicker { text-shadow: 0 0 10px color-mix(in srgb, var(--acc) 70%, transparent); }
+.slide .kicker::before { content: "//"; margin-right: 14px; letter-spacing: 0; opacity: .8; }
+
+.slide ul > li::before { width: .4em; height: .4em; top: .66em; transform: rotate(45deg); box-shadow: 0 0 10px var(--acc), 0 0 2px var(--acc); }
+.slide ol > li::before { text-shadow: 0 0 10px color-mix(in srgb, var(--acc) 70%, transparent); }
+
+/* dark glass with a glowing edge */
+.card { background: var(--panel); border: 1.5px solid color-mix(in srgb, var(--acc) 85%, transparent); border-radius: calc(var(--radius) + 2px); backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 14%, transparent), 0 0 24px color-mix(in srgb, var(--acc) 34%, transparent), inset 0 0 34px color-mix(in srgb, var(--acc) 10%, transparent); }
+.card h3 { text-shadow: 0 0 14px color-mix(in srgb, var(--acc) 55%, transparent); }
+.card p { color: color-mix(in srgb, var(--text) 88%, var(--bg)); }
+
+.stat { border-left: 3px solid var(--acc); box-shadow: -8px 0 20px -10px var(--acc); padding-left: 30px; }
+.stat .num { font-size: calc(var(--t-hero) * .88); text-shadow: 0 0 8px color-mix(in srgb, var(--acc) 80%, transparent), 0 0 30px color-mix(in srgb, var(--acc) 55%, transparent); }
+.stat .label { color: var(--muted); }
+
+.callout { border-left: 4px solid var(--acc); border-radius: 0 var(--radius) var(--radius) 0; padding: 22px 30px;
+  background: var(--scan), color-mix(in srgb, var(--acc) 9%, var(--bg)); box-shadow: -6px 0 22px -10px var(--acc); }
+
+.slide blockquote { font-size: calc(var(--t-h2) * .74); line-height: 1.3; padding-left: 110px; color: color-mix(in srgb, var(--acc) 12%, var(--text)); text-shadow: 0 0 14px color-mix(in srgb, var(--acc) 40%, transparent); }
+.slide blockquote::before { top: -.02em; font-size: 2.8em; text-shadow: var(--neon); }
+.slide cite { padding-left: 110px; text-shadow: none; }
+
+.slide pre.code { background: var(--scan), var(--panel); border: 1.5px solid color-mix(in srgb, var(--acc) 60%, transparent); border-radius: calc(var(--radius) + 2px); font-size: 28px;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--acc) 26%, transparent), inset 0 0 30px color-mix(in srgb, var(--acc) 8%, transparent); }
+.slide pre.code.has-hl .ln.hl { background: color-mix(in srgb, var(--acc) 20%, transparent); box-shadow: -38px 0 0 color-mix(in srgb, var(--acc) 20%, transparent), 38px 0 0 color-mix(in srgb, var(--acc) 20%, transparent); }
+.chip { border-width: 1.5px; box-shadow: 0 0 12px color-mix(in srgb, var(--acc) 40%, transparent), inset 0 0 10px color-mix(in srgb, var(--acc) 16%, transparent); }
+.links a { border-width: 2px; box-shadow: 0 0 18px color-mix(in srgb, var(--acc) 40%, transparent), inset 0 0 14px color-mix(in srgb, var(--acc) 14%, transparent); }
+table.data th { text-shadow: none; }
+
+.slide ol.timeline::before { background: color-mix(in srgb, var(--acc) 40%, transparent); box-shadow: 0 0 10px var(--acc); }
+.slide ol.timeline > li::before { box-shadow: 0 0 0 7px var(--bg), 0 0 16px 4px color-mix(in srgb, var(--acc) 70%, transparent); }
+
+/* chrome */
+.hud-count, .hud-sec { text-shadow: 0 0 12px color-mix(in srgb, var(--acc) 55%, transparent); }
+.dot.cur { box-shadow: 0 0 12px 2px var(--acc); }
+.map-head h2 { color: color-mix(in srgb, var(--a1) 16%, var(--text)); text-shadow: 0 0 6px color-mix(in srgb, var(--a1) 80%, transparent), 0 0 24px color-mix(in srgb, var(--a1) 50%, transparent); font-size: 38px; }
+.map-item { background: var(--panel); border-color: color-mix(in srgb, var(--acc) 40%, transparent); }
+.map-item:hover, .map-item:focus-visible, .map-item.cur { box-shadow: 0 0 16px color-mix(in srgb, var(--acc) 55%, transparent); }
+#hint { box-shadow: 0 0 16px color-mix(in srgb, var(--a1) 30%, transparent); }
+
+/* diagrams: a faint glow on the tone shapes */
+svg[data-diagram] .md-tone .md-shape { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--t) 55%, transparent)); }
+
+/* art: neon-sign line work, glow through drop-shadow, a flicker on some tubes */
+.art svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--acc) 90%, transparent)) drop-shadow(0 0 14px color-mix(in srgb, var(--acc) 65%, transparent)); }
+.art .flick { animation: flick 6s steps(1, end) infinite; }
+.art .flick2 { animation: flick 7.4s steps(1, end) -2s infinite; }
+.art .spin { transform-box: fill-box; transform-origin: center; animation: spin 60s linear infinite; }
+.art .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 3.2s ease-in-out infinite; }
+@keyframes flick { 0%, 100% { opacity: 1; } 91% { opacity: 1; } 92% { opacity: .35; } 93% { opacity: 1; } 95% { opacity: .5; } 96% { opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+
+/* transition: tunnel (contract 5.5). The leaving slide rushes past (scales up, brightens, blurs), the entering slide resolves from far away; reversed for back. */
+#stage[data-dir="back"] { --tin: 1.25; --tout: .82; }
+@keyframes tunnelIn { from { opacity: 0; transform: scale(var(--tin, .82)); filter: blur(16px) brightness(1.9); } }
+@keyframes tunnelOut { to { opacity: 0; transform: scale(var(--tout, 1.25)); filter: blur(12px) brightness(2); } }
+#stage[data-tr="tunnel"] .slide.entering { animation: tunnelIn var(--tr-dur) var(--ease) both; }
+#stage[data-tr="tunnel"] .slide.leaving { animation: tunnelOut calc(var(--tr-dur) * .75) cubic-bezier(.5, 0, .75, .4) both; }
