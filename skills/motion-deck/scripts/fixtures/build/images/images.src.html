@@ -1,0 +1,20 @@
+<script type="application/json" id="deck-config">
+{ "title": "Images", "theme": "test" }
+</script>
+
+<style>
+  .hero { background: url(assets/dot.png) center / cover; }
+  .grad { fill: url(#g); }
+  /* url(https://ignored.example/in-a-comment.png) */
+</style>
+
+<section class="slide" data-layout="image">
+  <figure>
+    <img src="assets/dot.png" alt="dot">
+    <img src="assets/dot.svg" alt="svg dot">
+    <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="already inline">
+  </figure>
+  <div class="hero" style="background-image: url('assets/dot.svg')"></div>
+  <svg viewBox="0 0 10 10"><image href="assets/dot.png" width="10" height="10"/><image xlink:href="assets/dot.svg" width="10" height="10"/></svg>
+  <p><a href="https://example.com/docs">A plain anchor stays remote.</a></p>
+</section>
