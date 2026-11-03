@@ -1,0 +1,59 @@
+{
+  "grid": {
+    "cols": 3,
+    "rows": 1
+  },
+  "nodes": [
+    {
+      "id": "users",
+      "kind": "line",
+      "at": [
+        0,
+        0
+      ],
+      "span": [
+        2,
+        1
+      ],
+      "title": "Weekly active users",
+      "values": [
+        120,
+        150,
+        148,
+        210,
+        260,
+        310,
+        295,
+        380,
+        450,
+        520
+      ],
+      "labels": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10"
+      ],
+      "area": true,
+      "smooth": true,
+      "tone": 6
+    },
+    {
+      "id": "note",
+      "kind": "text",
+      "at": [
+        2,
+        0
+      ],
+      "label": "Growth doubled after the onboarding change in week 4.",
+      "size": 30,
+      "align": "start"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "expect": "edges[0] \"a->b\": the label \"a rather long label\" needs ",
+  "spec": {
+    "grid": {
+      "cols": 2,
+      "rows": 1,
+      "gap": 20
+    },
+    "nodes": [
+      {
+        "id": "a",
+        "label": "Left",
+        "at": [
+          0,
+          0
+        ],
+        "w": 560
+      },
+      {
+        "id": "b",
+        "label": "Right",
+        "at": [
+          1,
+          0
+        ],
+        "w": 560
+      }
+    ],
+    "edges": [
+      {
+        "from": "a",
+        "to": "b",
+        "label": "a rather long label"
+      }
+    ]
+  }
+}

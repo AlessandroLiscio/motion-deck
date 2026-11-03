@@ -1,0 +1,23 @@
+{
+  "expect": "nodes[1] \"b\" and nodes[0] \"a\": both occupy cell [0,0]",
+  "spec": {
+    "nodes": [
+      {
+        "id": "a",
+        "label": "First",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "label": "Second",
+        "at": [
+          0,
+          0
+        ]
+      }
+    ]
+  }
+}
