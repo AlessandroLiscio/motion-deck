@@ -3,9 +3,19 @@ import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 
 export const PROFILE_PREFIX = 'md-check-profile-';
+// Tests set MD_CHECK_PROFILE_PREFIX to a unique prefix so they can tell their own leftovers from those of runs in parallel.
+const prefixOf = (env) => env.MD_CHECK_PROFILE_PREFIX || PROFILE_PREFIX;
+
+// Linux names (GitHub's ubuntu runners have google-chrome and microsoft-edge): looked up on PATH, then in /usr/bin. Untested on Linux and macOS here.
+const LINUX = { chrome: ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'], edge: ['microsoft-edge', 'microsoft-edge-stable'] };
+
+function onPath(names, env) {
+  const dirs = (env.PATH || env.Path || '').split(delimiter).filter(Boolean).concat('/usr/bin');
+  return dirs.flatMap((dir) => names.map((n) => join(dir, n)));
+}
 
 function candidates(env) {
   const win = [env.ProgramFiles, env['ProgramFiles(x86)'], env.LOCALAPPDATA].filter(Boolean);
@@ -14,13 +24,13 @@ function candidates(env) {
       env.CHROME_PATH,
       ...win.map((root) => join(root, 'Google', 'Chrome', 'Application', 'chrome.exe')),
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser',
+      ...onPath(LINUX.chrome, env),
     ],
     edge: [
       env.EDGE_PATH,
       ...win.map((root) => join(root, 'Microsoft', 'Edge', 'Application', 'msedge.exe')),
       '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-      '/usr/bin/microsoft-edge', '/usr/bin/microsoft-edge-stable',
+      ...onPath(LINUX.edge, env),
     ],
   };
 }
@@ -49,13 +59,15 @@ async function removeDir(dir) {
 }
 
 // Returns { name, path, wsUrl, profile, close }. close() kills the whole process tree and deletes the profile.
-export async function launchBrowser({ which = 'auto', startTimeout = 20000, env = process.env } = {}) {
+// extraArgs: more command-line flags (the selftest passes --disable-popup-blocking). With env CI set, --no-sandbox and --disable-dev-shm-usage are added.
+export async function launchBrowser({ which = 'auto', startTimeout = 20000, env = process.env, extraArgs = [] } = {}) {
   const found = findBrowser(which, env);
   if (!found) throw new Error(`no ${which === 'auto' ? 'Chrome or Edge' : which} found (set CHROME_PATH or EDGE_PATH)`);
-  const profile = mkdtempSync(join(tmpdir(), PROFILE_PREFIX));
+  const profile = mkdtempSync(join(tmpdir(), prefixOf(env)));
   const args = [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--hide-scrollbars', '--mute-audio', 'about:blank',
+    '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--hide-scrollbars', '--mute-audio',
+    ...(env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), ...extraArgs, 'about:blank',
   ];
   const win = process.platform === 'win32';
   const child = spawn(found.path, args, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true, detached: !win });
@@ -75,6 +87,7 @@ export async function launchBrowser({ which = 'auto', startTimeout = 20000, env 
     }
   };
 
+  process.on('exit', kill); // a crash of the caller must not leave a browser running
   let closing = null;
   // grace: ms to let the browser exit on its own (after Browser.close) before the kill starts.
   const close = ({ grace = 0 } = {}) => {
@@ -86,6 +99,7 @@ export async function launchBrowser({ which = 'auto', startTimeout = 20000, env 
         for (let i = 0; i < 10 && [...pids].some(alive); i++) await new Promise((r) => setTimeout(r, 200));
         if (![...pids].some(alive)) break;
       }
+      process.removeListener('exit', kill);
       await removeDir(profile);
     })();
     return closing;

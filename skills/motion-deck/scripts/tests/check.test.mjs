@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { PROFILE_PREFIX, findBrowser } from '../lib/browser.mjs';
+import { findBrowser } from '../lib/browser.mjs';
 import { contrast, normHex } from '../lib/measure.mjs';
 import { inspectPdf } from '../lib/pdf.mjs';
 
@@ -19,12 +19,13 @@ const themesStub = join(skill, 'examples', 'fixtures', 'themes-stub');
 const outRoot = mkdtempSync(join(tmpdir(), 'md-check-test-out-'));
 after(() => rmSync(outRoot, { recursive: true, force: true }));
 
-const profiles = () => new Set(readdirSync(tmpdir()).filter((n) => n.startsWith(PROFILE_PREFIX)));
+const PREFIX = `md-check-profile-t${process.pid}-`; // unique to this test run, so other runs in parallel do not count
+const profiles = () => new Set(readdirSync(tmpdir()).filter((n) => n.startsWith(PREFIX)));
 
 function run(fixture, browser, extra = []) {
   const before = profiles();
   const out = join(outRoot, `${browser}-${fixture}-${extra.length}`);
-  const res = spawnSync(process.execPath, [checkScript, join(fixtures, `${fixture}.html`), '--out', out, '--browser', browser, '--themes', themesStub, ...extra], { encoding: 'utf8', timeout: 120000 });
+  const res = spawnSync(process.execPath, [checkScript, join(fixtures, `${fixture}.html`), '--out', out, '--browser', browser, '--themes', themesStub, ...extra], { encoding: 'utf8', timeout: 120000, env: { ...process.env, MD_CHECK_PROFILE_PREFIX: PREFIX } });
   const lines = res.stdout.trim().split('\n');
   const leaked = [...profiles()].filter((n) => !before.has(n));
   return { code: res.status, text: res.stdout, last: lines[lines.length - 1], out, leaked };
