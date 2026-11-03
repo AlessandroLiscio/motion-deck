@@ -104,8 +104,8 @@ export async function runCheck(opts, out = console.log) {
   const onSignal = () => { (browser ? browser.close() : Promise.resolve()).finally(() => process.exit(2)); };
   process.once('SIGINT', onSignal);
   try {
-    // A cold browser start can take longer than a short --timeout, so launch and plain protocol calls get at least 15 s; the ready wait uses --timeout as given.
-    const limit = Math.max(opts.timeout, 15000);
+    // A cold browser start can take longer than a short --timeout, so launch and plain protocol calls get at least 30 s; the ready wait uses --timeout as given.
+    const limit = Math.max(opts.timeout, 30000);
     browser = await launchBrowser({ which: opts.browser, startTimeout: limit });
     report.browser = browser.name;
     stage('launch', browser.name);

@@ -60,7 +60,17 @@ async function removeDir(dir) {
 
 // Returns { name, path, wsUrl, profile, close }. close() kills the whole process tree and deletes the profile.
 // extraArgs: more command-line flags (the selftest passes --disable-popup-blocking). With env CI set, --no-sandbox and --disable-dev-shm-usage are added.
-export async function launchBrowser({ which = 'auto', startTimeout = 20000, env = process.env, extraArgs = [] } = {}) {
+// A cold start on a loaded machine can miss the timeout once without anything being wrong, so a missed endpoint is tried once more.
+export async function launchBrowser(options = {}) {
+  try {
+    return await launchOnce(options);
+  } catch (err) {
+    if (!/did not print its DevTools endpoint/.test(err.message)) throw err;
+    return launchOnce(options);
+  }
+}
+
+async function launchOnce({ which = 'auto', startTimeout = 30000, env = process.env, extraArgs = [] } = {}) {
   const found = findBrowser(which, env);
   if (!found) throw new Error(`no ${which === 'auto' ? 'Chrome or Edge' : which} found (set CHROME_PATH or EDGE_PATH)`);
   const profile = mkdtempSync(join(tmpdir(), prefixOf(env)));

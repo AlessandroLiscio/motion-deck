@@ -20,16 +20,19 @@ async function themeList(themesDir) {
 }
 
 const card = (t) => `<li class="card">
-  <a class="shot" href="${esc(t.name)}/" aria-label="Open the ${esc(t.label)} deck">
+  <a class="shot" href="${esc(t.name)}/index.html" aria-label="Open the ${esc(t.label)} deck">
     <iframe src="${esc(t.name)}/index.html?capture=1&amp;nohint#1" title="${esc(t.label)} theme, title slide" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
   </a>
   <div class="meta">
     <h2>${esc(t.label)}<span class="pill">${esc(t.mode)}</span></h2>
     <p>${esc(t.description)}</p>
     <p class="sw" aria-hidden="true">${(t.accents || []).map((c) => `<i style="background:${esc(c)}"></i>`).join('')}</p>
-    <p class="row"><a class="open" href="${esc(t.name)}/">Open the deck</a><span class="tr">${esc(t.defaultTransition || 'slide')} transition</span></p>
+    <p class="row"><a class="open" href="${esc(t.name)}/index.html">Open the deck</a><span class="tr">${esc(t.defaultTransition || 'slide')} transition</span></p>
   </div>
 </li>`;
+
+const NUMBER_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const countWord = (n) => NUMBER_WORDS[n] ?? String(n);
 
 const page = (themes, title) => `<!doctype html>
 <html lang="en">
@@ -37,7 +40,7 @@ const page = (themes, title) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>motion-deck</title>
-<meta name="description" content="Animated one-file HTML presentations in six themes. Open the showcase deck in each theme.">
+<meta name="description" content="Animated one-file HTML presentations in ${countWord(themes.length)} themes. Open the showcase deck in each theme.">
 <style>
 :root { --bg: #f4f3ef; --panel: #ffffff; --line: #dcd9d0; --text: #17191e; --muted: #5a6171; --acc: #1c5fd4; color-scheme: light; }
 @media (prefers-color-scheme: dark) { :root { --bg: #0c0d11; --panel: #14161c; --line: #262a34; --text: #eceef4; --muted: #99a1b3; --acc: #7ec3ff; color-scheme: dark; } }
@@ -57,6 +60,8 @@ h1 { margin: 0; font-size: clamp(40px, 7vw, 76px); line-height: 1; letter-spacin
 .shot { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #000; }
 .shot:hover, .shot:focus-visible { border-color: var(--acc); }
 .shot iframe { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; border: 0; transform-origin: 0 0; transform: scale(var(--k, .22)); pointer-events: none; }
+.meta { display: flex; flex: 1; flex-direction: column; }
+.meta .row { margin-top: auto; padding-top: 8px; }
 .meta h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 22px; line-height: 1.2; }
 .pill { padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px; font: 600 11px/1.6 ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .meta p { margin: 8px 0 0; color: var(--muted); text-wrap: pretty; }
@@ -77,7 +82,7 @@ footer a { color: inherit; }
 <header>
   <p class="eyebrow">motion-deck</p>
   <h1>${esc(title)}</h1>
-  <p class="lede">Animated presentations that are one HTML file. Entrances, step-by-step builds, diagrams that draw themselves, a living background, a map of the talk and a presenter window. Below, the same showcase deck in each of the six themes: changing the theme is one word in the deck's config.</p>
+  <p class="lede">Animated presentations that are one HTML file. Entrances, step-by-step builds, diagrams that draw themselves, a living background, a map of the talk and a presenter window. Below, the same showcase deck in each of the ${countWord(themes.length)} themes: changing the theme is one word in the deck's config.</p>
   <p class="ask">Ask Claude Code: “make a 10-slide deck about onboarding in the pirates theme”</p>
   <ul class="links">
     <li><a href="${REPO}">Source on GitHub</a></li>

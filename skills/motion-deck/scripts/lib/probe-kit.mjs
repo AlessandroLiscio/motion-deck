@@ -36,7 +36,7 @@ export async function untilNode(fn, { what, timeout = 6000, every = 50 } = {}) {
 
 // Opens a browser for the probes (popups allowed), runs fn({ client, info }), always shuts it down.
 export async function withBrowser({ which, timeout = 20000 }, fn) {
-  const info = await launchBrowser({ which, startTimeout: Math.max(timeout, 15000), extraArgs: ['--disable-popup-blocking'] });
+  const info = await launchBrowser({ which, startTimeout: Math.max(timeout, 30000), extraArgs: ['--disable-popup-blocking'] });
   let client = null;
   try {
     client = await openBrowser(info.wsUrl, { timeout: Math.max(timeout, 15000) });

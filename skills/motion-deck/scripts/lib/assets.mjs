@@ -29,6 +29,8 @@ export function createInliner({ baseDir, warn }) {
     const ext = path.extname(file).slice(1).toLowerCase();
     if (!MIME[ext]) throw new BuildError('E_SOURCE', `line ${line}: "${r}" has a type that cannot be inlined (allowed: ${Object.keys(MIME).join(', ')})`);
     if (!cache.has(file)) {
+      const fromBase = path.relative(baseDir, file);
+      if (fromBase.startsWith('..') || path.isAbsolute(fromBase)) warn('W_ASSET_OUTSIDE', `line ${line}: "${r}" is outside the deck folder, so its content is copied into the output`);
       let buf;
       try {
         buf = await fs.readFile(file);
@@ -86,10 +88,16 @@ export function createInliner({ baseDir, warn }) {
           const at = t.start + a.vStart;
           const line = lineOf(html, at, baseLine);
           if (a.name === 'style') await shift(a.value, at, line);
-          else if (a.name === 'srcset') {
-            for (const part of a.value.split(',')) if (REMOTE.test(part.trim())) await resolve(part.trim().split(/\s+/)[0], line);
+          else if (a.name === 'srcset' && !/data:/i.test(a.value)) {
+            const parts = a.value.split(',').map((p) => p.trim()).filter(Boolean);
+            const mapped = [];
+            for (const part of parts) {
+              const [ref, ...descriptor] = part.split(/\s+/);
+              mapped.push([(await resolve(ref, line)) ?? ref, ...descriptor].join(' '));
+            }
+            if (mapped.some((m, i) => m !== parts[i])) edits.push({ start: at, end: t.start + a.vEnd, text: mapped.join(', ') });
           } else if (a.name === 'src' || a.name === 'poster' || ((a.name === 'href' || a.name === 'xlink:href') && t.name !== 'a' && t.name !== 'area')) {
-            const inline = (a.name === 'src' && t.name === 'img') || (a.name !== 'src' && a.name !== 'poster' && t.name === 'image');
+            const inline = (a.name === 'src' && t.name === 'img') || a.name === 'poster' || (a.name !== 'src' && t.name === 'image');
             if (inline) {
               const uri = await resolve(a.value, line);
               if (uri) edits.push({ start: at, end: t.start + a.vEnd, text: uri });

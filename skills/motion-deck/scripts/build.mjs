@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BuildError } from './lib/errors.mjs';
-import { normalizeEol, parseSource, normalizeSlides } from './lib/source.mjs';
+import { normalizeEol, parseSource, normalizeSlides, readTag, attrsOf } from './lib/source.mjs';
 import { parseConfig } from './lib/config.mjs';
 import { createInliner } from './lib/assets.mjs';
 import { loadTheme } from './lib/fonts.mjs';
@@ -50,6 +50,12 @@ export async function build({ src, out, themeOverride, engineDir, themesDir, fon
   const theme = await loadTheme({ name: config.theme, themesDir, fontsDir });
   log(`ok theme ${config.theme}`);
   log(`ok fonts ${theme.faceCount} faces`);
+
+  // An unknown transition name falls back silently at run time, so say so here.
+  const known = new Set(['slide', 'fade', 'rise', 'zoom', 'none', ...(theme.theme.transitions ?? [])]);
+  const unknown = (name, where) => name && !known.has(name) && warn('W_TRANSITION', `${where}: transition "${name}" is not provided by the engine or the ${config.theme} theme (known: ${[...known].join(', ')})`);
+  unknown(config.transition, 'config');
+  for (const s of slides) unknown(attrsOf(readTag(s.html, 0)).find((a) => a.name === 'data-transition')?.value, `line ${s.line}`);
 
   const inliner = createInliner({ baseDir: path.dirname(srcPath), warn });
   const slideHtml = [];

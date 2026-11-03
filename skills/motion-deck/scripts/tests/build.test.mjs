@@ -238,6 +238,28 @@ test('assets: png and svg are inlined from img, image, style blocks and style at
   assert.deepEqual(r.warnings, []);
 });
 
+test('assets: srcset and poster are inlined, an asset outside the deck folder warns', async () => {
+  const pngUri = `data:image/png;base64,${PNG.toString('base64')}`;
+  const r = await buildText(`${CONFIG}<section class="slide"><img src="${pngUri}" srcset="a.png 1x, a.png 2x"><video poster="a.png"></video></section>`, { files: { 'a.png': PNG } });
+  assert.ok(r.html.includes(`srcset="${pngUri} 1x, ${pngUri} 2x"`));
+  assert.ok(r.html.includes(`poster="${pngUri}"`));
+  assert.deepEqual(r.warnings, []);
+  const dir = await tmp();
+  await fs.mkdir(path.join(dir, 'deck'));
+  await fs.writeFile(path.join(dir, 'a.png'), PNG);
+  await fs.writeFile(path.join(dir, 'deck', 'deck.src.html'), `${CONFIG}<section class="slide"><img src="../a.png"></section>`);
+  const out = await build({ src: path.join(dir, 'deck', 'deck.src.html'), out: path.join(dir, 'out.html'), ...STUBS });
+  assert.deepEqual(out.warnings.map((w) => w.code), ['W_ASSET_OUTSIDE']);
+});
+
+test('W_TRANSITION: unknown names in the config and on a slide', async () => {
+  const src = '<script type="application/json" id="deck-config">{ "title": "T", "theme": "test", "transition": "swoosh" }</script>\n<section class="slide" data-transition="none"></section>\n<section class="slide" data-transition="spin"></section>';
+  const r = await buildText(src);
+  assert.deepEqual(r.warnings.map((w) => w.code), ['W_TRANSITION', 'W_TRANSITION']);
+  assert.match(r.warnings[0].message, /config: transition "swoosh"/);
+  assert.match(r.warnings[1].message, /line 3: transition "spin"/);
+});
+
 test('E_LICENSE: no LICENSE up the tree, a text that cannot sit in a comment', async () => {
   const root = path.join(await tmp(), 'a', 'b', 'c', 'd', 'skill');
   await fs.mkdir(root, { recursive: true });

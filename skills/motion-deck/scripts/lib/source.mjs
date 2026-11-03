@@ -19,7 +19,7 @@ const fail = (text, offset, message) => {
 };
 
 // Reads one start tag at text[i] === '<' and returns it, or null when the closing `>` is missing. `>` inside quotes does not end it.
-function readTag(text, i) {
+export function readTag(text, i) {
   NAME.lastIndex = i;
   const m = NAME.exec(text);
   let j = NAME.lastIndex;
