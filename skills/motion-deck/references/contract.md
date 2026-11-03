@@ -253,7 +253,7 @@ Engine defaults exist for every token, so a theme may omit one only when the def
 
 ### 8.4 Vocabulary
 
-`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `notes`, `timer`, `next`, `presenter`.
+`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `now` (label of the current-slide preview in the presenter), `notes`, `timer`, `next`, `presenter`, `rotate` (message on a phone held in portrait) and `hint` (the key hint shown briefly after load, hidden by `?nohint` and in capture mode).
 
 ### 8.5 Registration
 
@@ -290,7 +290,7 @@ MotionDiagram.update(svg: SVGSVGElement, state: { step: number, replay?: boolean
 MotionDiagram.steps(spec: object): number
 ```
 
-A diagram in a slide is `<svg data-diagram viewBox="0 0 1360 520" role="img" aria-label="…"><script type="application/json">{ …spec… }</script></svg>`; the runtime reads the JSON text of the first `script[type="application/json"]` inside the svg (or the element named by `data-spec="#id"`), calls `mount` once after `Deck.ready`, and then `update` on every slide activation (`replay: true`), on every step change, and with `capture: true` in capture mode. A node with `step: k` appears when the slide step is at least k and plays its entrance then; nodes without `step` play when the slide becomes active. `update` MUST be idempotent. `capture: true` renders the final frame with no animation. The slide's step count includes `MotionDiagram.steps(spec)`. Colors and fonts only through the tokens; text measured after fonts are loaded; the language itself (node kinds, anchors, edges, packets, charts) is specified in `references/diagrams.md`.
+A diagram in a slide is `<svg data-diagram viewBox="0 0 1360 520" role="img" aria-label="…"><script type="application/json">{ …spec… }</script></svg>`; the runtime reads the JSON text of the first `script[type="application/json"]` inside the svg (or the element named by `data-spec="#id"`), calls `mount` once after `Deck.ready`, and then `update` on every slide activation (`replay: true`), on every step change, and with `capture: true` in capture mode. A node with `step: k` appears when the slide step is at least k and plays its entrance then; nodes without `step` play when the slide becomes active. `update` MUST be idempotent. `capture: true` draws the finished frame of the given `step` with no animation (nodes with a higher `step` stay hidden). A second `mount` on the same svg replaces the drawing. The slide's step count includes `MotionDiagram.steps(spec)`. Colors and fonts only through the tokens; text measured after fonts are loaded; the language itself (node kinds, anchors, edges, packets, charts) is specified in `references/diagrams.md`.
 
 ## 10. Check and selftest
 
@@ -320,9 +320,9 @@ Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. F
 | presenter to opener | `ready` | none (sent when the popup has loaded) |
 | presenter to opener | `request` | none (ask for a fresh `state`) |
 | presenter to opener | `cmd` | `cmd`: `next`, `prev`, `go` (with `index`, optional `step`), `setStep` (with `step`) |
-| opener to presenter | `state` | `index, step, steps, count, title, notes, nextTitle, nextHtml, nextIndex, theme, vocabulary, timer, css` |
+| opener to presenter | `state` | `index, step, steps, count, label, title, notes, currentHtml, nextTitle, nextHtml, nextIndex, theme, vocabulary, timer, css` |
 
-The opener sends `state` on `ready`, on `request`, and on every `deck:change` and `deck:step`. `nextHtml` is the outer HTML of the slide shown next (the same slide at the next step when a step remains, else the next slide in its final state); `css` is the deck's concatenated style text so the popup can draw both previews in a scaled 1600 by 900 stage. Observable hooks in the popup: `#p-current[data-index][data-step]`, `#p-next[data-index]`, `#p-notes`, `#p-timer[data-seconds]`, `#p-count`, and `document.title` starting with `Presenter`. Closing the popup stops sending; calling `openPresenter()` again recreates it and the state resumes.
+The opener sends `state` on `ready`, on `request`, and on every `deck:change` and `deck:step`. `label` is the text of the HUD counter (for example `Sol 3 / 19`, or `Backup A` on a backup slide) and `currentHtml` is the outer HTML of the current slide at the current step. `nextHtml` is the outer HTML of the slide shown next (the same slide at the next step when a step remains, else the next slide in its final state); `css` is the deck's concatenated style text so the popup can draw both previews in a scaled 1600 by 900 stage. Observable hooks in the popup: `#p-current[data-index][data-step]`, `#p-next[data-index]`, `#p-notes`, `#p-timer[data-seconds]`, `#p-count`, and `document.title` starting with `Presenter`. Closing the popup stops sending; calling `openPresenter()` again recreates it and the state resumes.
 
 ## 12. Class and variable index
 
