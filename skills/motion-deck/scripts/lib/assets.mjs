@@ -3,12 +3,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { BuildError } from './errors.mjs';
+import { KB } from './format.mjs';
 import { walk, attrsOf } from './source.mjs';
 
 const MIME = { svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif' };
 const WARN_BYTES = 300 * 1024;
 const MAX_BYTES = 2 * 1024 * 1024;
-const KB = (n) => `${Math.round(n / 1024)} KB`;
 const REMOTE = /^(?:https?:|\/\/)/i;
 const OTHER_SCHEME = /^[a-z][a-z0-9+.-]+:/i;
 
@@ -68,7 +68,17 @@ export function createInliner({ baseDir, warn }) {
     return edits;
   }
 
-  const apply = (text, edits) => edits.sort((a, b) => b.start - a.start).reduce((t, e) => t.slice(0, e.start) + e.text + t.slice(e.end), text);
+  // One pass over the text, so a slide with several inlined images is not copied once per image.
+  const apply = (text, edits) => {
+    const parts = [];
+    let pos = 0;
+    for (const e of edits.sort((a, b) => a.start - b.start)) {
+      parts.push(text.slice(pos, e.start), e.text);
+      pos = e.end;
+    }
+    parts.push(text.slice(pos));
+    return parts.join('');
+  };
 
   return {
     get count() { return count; },

@@ -2,8 +2,9 @@
 import { pathToFileURL } from 'node:url';
 import { launchBrowser } from './browser.mjs';
 import { openBrowser } from './cdp.mjs';
+import { sleep } from './format.mjs';
 
-export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+export { sleep };
 
 export class ProbeFailure extends Error {}
 export const fail = (message) => { throw new ProbeFailure(message); };

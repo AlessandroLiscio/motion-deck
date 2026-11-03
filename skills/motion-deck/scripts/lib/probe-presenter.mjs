@@ -1,5 +1,5 @@
 // Presenter probe (contract section 11): trusted P opens a popup, the two windows follow each other, and two decks never cross-talk.
-import { fail, loadDeck, reset, same, sleep, until, untilNode } from './probe-kit.mjs';
+import { fail, reset, same, sleep, until, untilNode } from './probe-kit.mjs';
 
 const POPUP_STATE = `JSON.stringify({ title: document.title, count: (document.querySelector('#p-count') || {}).textContent || '',
   notes: (document.querySelector('#p-notes') || {}).textContent || '', frames: document.querySelectorAll('iframe').length,

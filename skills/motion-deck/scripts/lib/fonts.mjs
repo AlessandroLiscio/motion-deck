@@ -25,10 +25,13 @@ const readJson = async (file, what) => {
 
 const exists = (file) => fs.stat(file).then((s) => s.isFile(), () => false);
 
-async function availableThemes(themesDir) {
+// Names of the theme folders (a folder with a theme.json, not starting with `_`), sorted.
+export async function listThemes(themesDir) {
   try {
     const entries = await fs.readdir(themesDir, { withFileTypes: true });
-    return entries.filter((e) => e.isDirectory() && !e.name.startsWith('_')).map((e) => e.name).sort();
+    const dirs = entries.filter((e) => e.isDirectory() && !e.name.startsWith('_')).map((e) => e.name);
+    const withJson = await Promise.all(dirs.map((d) => exists(path.join(themesDir, d, 'theme.json'))));
+    return dirs.filter((_, i) => withJson[i]).sort();
   } catch {
     return [];
   }
@@ -39,7 +42,7 @@ export async function loadTheme({ name, themesDir, fontsDir }) {
   const dir = path.join(themesDir, name);
   const { value: theme, missing } = await readJson(path.join(dir, 'theme.json'), `themes/${name}/theme.json`);
   if (missing) {
-    const list = await availableThemes(themesDir);
+    const list = await listThemes(themesDir);
     throw new BuildError('E_THEME', `unknown theme "${name}": no theme.json in ${dir}; available: ${list.join(', ') || 'none'}`);
   }
 

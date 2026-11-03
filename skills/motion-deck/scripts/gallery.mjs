@@ -5,18 +5,19 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build, BuildError } from './build.mjs';
+import { escapeHtml as esc } from './lib/compose.mjs';
+import { listThemes } from './lib/fonts.mjs';
+import { KB } from './lib/format.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ORDER = ['space', 'editorial', 'neon', 'corporate', 'fantasy', 'pirates'];
 const REPO = 'https://github.com/AlessandroLiscio/motion-deck';
-const KB = (n) => `${Math.round(n / 1024)} KB`;
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const readJson = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 
+// The shipped themes first in their showcase order, any other theme after them by name.
 async function themeList(themesDir) {
-  const names = (await fs.readdir(themesDir, { withFileTypes: true })).filter((d) => d.isDirectory() && !d.name.startsWith('_')).map((d) => d.name);
   const rank = (n) => (ORDER.includes(n) ? ORDER.indexOf(n) : ORDER.length);
-  return names.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  return (await listThemes(themesDir)).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 }
 
 const card = (t) => `<li class="card">
@@ -119,7 +120,6 @@ export async function gallery({ out, src, skillRoot = SKILL, log = () => {} }) {
   if (!names.length) throw new Error(`no theme found in ${themesDir}`);
   await fs.mkdir(outDir, { recursive: true });
   const themes = [];
-  let title = 'motion-deck';
   for (const name of names) {
     const json = await readJson(path.join(themesDir, name, 'theme.json'));
     const result = await build({ src: srcPath, out: path.join(outDir, name, 'index.html'), themeOverride: name, skillRoot });
@@ -127,8 +127,7 @@ export async function gallery({ out, src, skillRoot = SKILL, log = () => {} }) {
     themes.push({ name, label: json.label || name, mode: json.mode || 'dark', description: json.description || '', accents: json.accents || [], defaultTransition: json.defaultTransition });
   }
   const config = JSON.parse(/<script type="application\/json" id="deck-config">([\s\S]*?)<\/script>/.exec(await fs.readFile(srcPath, 'utf8'))?.[1] ?? '{}');
-  if (config.title) title = config.title;
-  await fs.writeFile(path.join(outDir, 'index.html'), page(themes, title));
+  await fs.writeFile(path.join(outDir, 'index.html'), page(themes, config.title || 'motion-deck'));
   await fs.writeFile(path.join(outDir, '.nojekyll'), '');
   log(`ok write ${path.join(path.basename(outDir), 'index.html')}`);
   return { out: outDir, themes: names };

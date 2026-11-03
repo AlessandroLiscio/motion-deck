@@ -9,11 +9,11 @@ export const safeInline = (s) => s.replace(/<\/(script|style)/gi, '<\\/$1');
 // JSON for a script element: every `<` is written as a unicode escape, which also rules out `</script` and `<!--`.
 export const safeJson = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
 
-export function compose({ config, themeName, license, fontCss, engineCss, themeCss, customCss, slides, diagramJs, engineJs, themeJs }) {
+export function compose({ config, license, fontCss, engineCss, themeCss, customCss, slides, diagramJs, engineJs, themeJs }) {
   const description = config.description ?? config.subtitle ?? config.title;
   return [
     '<!doctype html>',
-    `<html lang="${escapeHtml(config.lang)}" data-theme="${escapeHtml(themeName)}">`,
+    `<html lang="${escapeHtml(config.lang)}" data-theme="${escapeHtml(config.theme)}">`,
     '<head>',
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',

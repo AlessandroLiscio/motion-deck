@@ -1,8 +1,8 @@
 // Writes the check artefacts: report.json, console.log, deck.pdf, shots/ and the index.html contact sheet.
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { escapeHtml as esc } from './compose.mjs';
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const two = (n) => String(n).padStart(2, '0');
 
 export const shotName = (slide, step) => `s${two(slide)}-${step}.png`;
@@ -33,7 +33,6 @@ ${problems ? `<ul class="fail">${problems}</ul>` : ''}${sections.join('')}</body
 // data: { report, shots: Map<name, Buffer>, pdf: Buffer|null, consoleLines: string[] }. Returns the deck's report directory.
 export async function writeReport(outDir, data) {
   const dir = join(outDir, data.report.deck);
-  await mkdir(join(dir, 'shots'), { recursive: true });
   await rm(join(dir, 'shots'), { recursive: true, force: true }); // drop shots of an earlier run
   await mkdir(join(dir, 'shots'), { recursive: true });
   for (const [name, buf] of data.shots) await writeFile(join(dir, 'shots', name), buf);

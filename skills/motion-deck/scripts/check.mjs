@@ -5,6 +5,7 @@ import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { launchBrowser } from './lib/browser.mjs';
 import { openPage } from './lib/cdp.mjs';
+import { short } from './lib/format.mjs';
 import { MEASURE_FONTS, MEASURE_SLIDE, MEASURE_TOKENS, contrast, normHex } from './lib/measure.mjs';
 import { printPdf } from './lib/pdf.mjs';
 import { shotName, writeReport } from './lib/report.mjs';
@@ -46,7 +47,6 @@ const READY = `new Promise((resolve, reject) => {
 })`;
 const TWO_FRAMES = 'new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))';
 const allowed = (url) => /^(data|file|blob):/i.test(url);
-const short = (s, n = 90) => (String(s).length > n ? String(s).slice(0, n - 3) + '...' : String(s));
 
 function describe(v) {
   const n = v.numbers;
@@ -178,7 +178,7 @@ export async function runCheck(opts, out = console.log) {
           report.states.push(state);
         }
       }
-      const walkBad = problems.slice(mark).length;
+      const walkBad = problems.length - mark;
       stage('walk', `${info.count} slides, ${report.states.length} states, ${walkBad} problems`, walkBad > 0);
 
       // 7. tokens

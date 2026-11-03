@@ -156,11 +156,11 @@
     S.slides.forEach((s) => {
       let i = 0;
       $$(ANIM_SEL, s.el).forEach((el) => {
-        if (el.closest('[data-anim="none"]') || el.hasAttribute('data-step') || el.closest('[data-step]') || el.closest('[data-morph]')) return;
+        if (el.closest('[data-anim="none"]') || el.closest('[data-step]') || el.closest('[data-morph]')) return;
         if (el.parentElement.closest('.a') || (el.closest('svg') && el.tagName.toLowerCase() !== 'svg')) return;
         el.classList.add('a');
         el.style.setProperty('--i', String(Math.min(i++, 18)));
-        const kind = (el.closest('[data-anim]') || {}).dataset ? el.closest('[data-anim]').dataset.anim : 'rise';
+        const kind = el.closest('[data-anim]')?.dataset.anim ?? 'rise';
         if (kind && kind !== 'rise') el.classList.add('a-' + kind);
         if (el.dataset.delay) el.style.setProperty('--d', `${parseInt(el.dataset.delay, 10) || 0}ms`);
       });
@@ -305,10 +305,12 @@
 
   /* ---------- counters ---------- */
 
+  const numberFormats = new Map(); // a formatter per decimals count, since counters format on every frame
   const counterFmt = (el, v) => {
     const raw = String(el.dataset.count);
     const dec = el.dataset.decimals !== undefined ? +el.dataset.decimals : (raw.split('.')[1] || '').length;
-    return (el.dataset.prefix || '') + new Intl.NumberFormat(S.config.lang || 'en', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(v) + (el.dataset.suffix || '');
+    if (!numberFormats.has(dec)) numberFormats.set(dec, new Intl.NumberFormat(S.config.lang || 'en', { minimumFractionDigits: dec, maximumFractionDigits: dec }));
+    return (el.dataset.prefix || '') + numberFormats.get(dec).format(v) + (el.dataset.suffix || '');
   };
 
   function prepCounters(slideEl, complete) {
@@ -661,9 +663,7 @@
     if (S.captureOn) {
       finishTransition();
       finalizeAll();
-      const s = S.slides[S.index];
-      if (s) { applySteps(s.el, S.step, false); updateDiagrams(s); }
-      S.printing = false;
+      restoreAfterPrint();
     } else if (S.slides[S.index]) {
       updateDiagrams(S.slides[S.index], { replay: true });
     }

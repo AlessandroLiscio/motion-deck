@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
+import { sleep } from './format.mjs';
 
 export const PROFILE_PREFIX = 'md-check-profile-';
 // Tests set MD_CHECK_PROFILE_PREFIX to a unique prefix so they can tell their own leftovers from those of runs in parallel.
@@ -35,10 +36,12 @@ function candidates(env) {
   };
 }
 
+export const BROWSER_ORDER = ['chrome', 'edge'];
+
 // which: 'auto' (Chrome first, then Edge), 'chrome' or 'edge'. Returns { name, path } or null.
 export function findBrowser(which = 'auto', env = process.env) {
   const table = candidates(env);
-  const names = which === 'auto' ? ['chrome', 'edge'] : [which];
+  const names = which === 'auto' ? BROWSER_ORDER : [which];
   for (const name of names) {
     const path = (table[name] || []).find((p) => p && existsSync(p));
     if (path) return { name, path };
@@ -53,7 +56,7 @@ async function removeDir(dir) {
       return;
     } catch (err) {
       if (attempt === 39) throw err;
-      await new Promise((r) => setTimeout(r, 250)); // EBUSY while the browser releases its files
+      await sleep(250); // EBUSY while the browser releases its files
     }
   }
 }
@@ -102,11 +105,11 @@ async function launchOnce({ which = 'auto', startTimeout = 30000, env = process.
   // grace: ms to let the browser exit on its own (after Browser.close) before the kill starts.
   const close = ({ grace = 0 } = {}) => {
     closing ??= (async () => {
-      for (const end = Date.now() + grace; Date.now() < end && [...pids].some(alive);) await new Promise((r) => setTimeout(r, 100));
+      for (const end = Date.now() + grace; Date.now() < end && [...pids].some(alive);) await sleep(100);
       const deadline = Date.now() + 20000;
       while (Date.now() < deadline) {
         kill();
-        for (let i = 0; i < 10 && [...pids].some(alive); i++) await new Promise((r) => setTimeout(r, 200));
+        for (let i = 0; i < 10 && [...pids].some(alive); i++) await sleep(200);
         if (![...pids].some(alive)) break;
       }
       process.removeListener('exit', kill);

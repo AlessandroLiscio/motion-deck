@@ -11,13 +11,13 @@ import { createInliner } from './lib/assets.mjs';
 import { loadTheme } from './lib/fonts.mjs';
 import { buildLicense } from './lib/license.mjs';
 import { compose } from './lib/compose.mjs';
+import { KB } from './lib/format.mjs';
 
 export { BuildError };
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(SCRIPT_DIR, '..');
 const MAX_BYTES = 6 * 1024 * 1024;
-const KB = (n) => `${Math.round(n / 1024)} KB`;
 
 const readText = async (file, what) => {
   try {
@@ -73,7 +73,7 @@ export async function build({ src, out, themeOverride, engineDir, themesDir, fon
     await readText(path.join(engineDir, 'diagram.js'), 'engine diagram.js'),
   ];
   const html = compose({
-    config, themeName: config.theme, license, fontCss: theme.fontCss, engineCss, themeCss: theme.css, customCss,
+    config, license, fontCss: theme.fontCss, engineCss, themeCss: theme.css, customCss,
     slides: slideHtml, diagramJs, engineJs, themeJs: theme.js,
   });
   const bytes = Buffer.byteLength(html);

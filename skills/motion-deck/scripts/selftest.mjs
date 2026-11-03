@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // Selftest of the whole kit (contract section 10): builds the showcase once per theme, runs the check and the feature probes in every
 // installed browser, and runs the negative fixtures. Exit 0 PASS, 1 a check or probe failed, 2 the tool or the browser failed.
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BuildError, build } from './build.mjs';
 import { runCheck } from './check.mjs';
-import { findBrowser } from './lib/browser.mjs';
+import { BROWSER_ORDER, findBrowser } from './lib/browser.mjs';
+import { listThemes } from './lib/fonts.mjs';
+import { short } from './lib/format.mjs';
 import { withBrowser } from './lib/probe-kit.mjs';
 import { runProbes } from './lib/probes.mjs';
 
@@ -42,8 +44,6 @@ function parseArgs(argv) {
   return o;
 }
 
-const short = (s, n = 150) => (s.length > n ? s.slice(0, n - 3) + '...' : s);
-
 export async function runSelftest(opts, print = console.log) {
   const outDir = resolve(opts.out);
   rmSync(outDir, { recursive: true, force: true });
@@ -53,14 +53,12 @@ export async function runSelftest(opts, print = console.log) {
   const log = (line) => appendFileSync(logFile, line + '\n');
   const stage = (line) => { print(line); log(line); };
 
-  const names = opts.browser === 'auto' ? ['chrome', 'edge'] : [opts.browser];
+  const names = opts.browser === 'auto' ? BROWSER_ORDER : [opts.browser];
   let browsers = names.filter((n) => findBrowser(n));
   if (opts.browser !== 'auto' && !browsers.length) throw new Error(`${opts.browser} not found (set CHROME_PATH or EDGE_PATH)`);
   if (!browsers.length) throw new Error('no Chrome or Edge found (set CHROME_PATH or EDGE_PATH)');
   if (opts.quick) browsers = browsers.slice(0, 1);
-  let themes = readdirSync(join(SKILL, 'themes'), { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== '_shared' && existsSync(join(SKILL, 'themes', d.name, 'theme.json')))
-    .map((d) => d.name).sort();
+  let themes = await listThemes(join(SKILL, 'themes'));
   if (!themes.length) throw new Error('no theme found under themes/');
   if (opts.quick) themes = themes.slice(0, 1);
 
@@ -143,7 +141,7 @@ export async function runSelftest(opts, print = console.log) {
     return 0;
   }
   stage(`log ${logFile}`);
-  for (const line of problems.slice(0, 5)) stage(`  ${short(line)}`);
+  for (const line of problems.slice(0, 5)) stage(`  ${short(line, 150)}`);
   stage(`FAIL selftest: ${problems.length} problem(s)`);
   return 1;
 }

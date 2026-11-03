@@ -264,13 +264,16 @@ export async function runProbes({ client, file, themeJson, onResult = () => {} }
   for (const probe of PROBES) {
     const t0 = Date.now();
     const result = { name: probe.name, feature: probe.feature, ok: false, detail: '', ms: 0 };
+    let timer;
     try {
-      const limit = new Promise((_, no) => setTimeout(() => no(new ProbeFailure(`probe exceeded ${(probe.timeout || 30000) / 1000} s`)), probe.timeout || 30000));
+      const limit = new Promise((_, no) => { timer = setTimeout(() => no(new ProbeFailure(`probe exceeded ${(probe.timeout || 30000) / 1000} s`)), probe.timeout || 30000); });
       result.detail = (await Promise.race([probe.run({ client, file, themeJson, main, open }), limit])) || '';
       result.ok = true;
     } catch (err) {
       result.detail = err.message.split('\n')[0];
       if (!(err instanceof ProbeFailure)) shared = null; // a protocol failure may have broken the shared page
+    } finally {
+      clearTimeout(timer);
     }
     result.ms = Date.now() - t0;
     results.push(result);
