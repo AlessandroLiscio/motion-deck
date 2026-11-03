@@ -5,4 +5,4 @@ description: Use when the user asks for a presentation, slide deck, talk or pitc
 
 # motion-deck
 
-Work in progress. The engine contract is `references/contract.md`; this file is completed when the engine, the scripts and the themes have landed.
+Work in progress (probe edit). The engine contract is `references/contract.md`; this file is completed when the engine, the scripts and the themes have landed.
