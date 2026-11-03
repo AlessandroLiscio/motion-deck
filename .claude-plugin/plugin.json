@@ -1,0 +1,10 @@
+{
+  "name": "motion-deck",
+  "version": "0.1.0",
+  "description": "Build animated, one-file HTML presentations in six swappable themes (space, editorial, neon, corporate, fantasy, pirates) with step builds, animated diagrams, morph transitions and a presenter view.",
+  "author": { "name": "Alessandro Liscio", "url": "https://github.com/AlessandroLiscio" },
+  "homepage": "https://github.com/AlessandroLiscio/motion-deck",
+  "repository": "https://github.com/AlessandroLiscio/motion-deck",
+  "license": "MIT",
+  "keywords": ["presentation", "slides", "html", "animation", "deck"]
+}

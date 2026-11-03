@@ -1,0 +1,328 @@
+# motion-deck contract, version 1
+
+This file is the single source of truth between the engine, the build and check scripts, the diagram language and the themes. Anything not written here is not promised. If a piece needs a change here, the piece's author asks the owner of this file (the main session) and does not edit it. Words MUST, SHOULD and MAY are used in the usual sense.
+
+All sizes are in stage pixels: the stage is a fixed 1600 by 900 box that the runtime scales to the window. Paths are relative to the skill root `skills/motion-deck/` unless they start with `/`.
+
+## 1. Layout of the skill
+
+| Path | What | Owner |
+|---|---|---|
+| `SKILL.md`, `references/*.md` | workflow and guides (this file is `references/contract.md`) | main session |
+| `engine/deck.css`, `engine/deck.js` | runtime: stage, layouts, motion, navigation, chrome, ambient loop, presenter, morph | main session |
+| `engine/diagram.js`, `references/diagrams.md` | diagram and chart language | diagram helper |
+| `themes/<name>/theme.json`, `theme.css`, `theme.js` | one theme | see the wave plan |
+| `themes/_shared/fonts/` | `fonts.json` registry, `<id>/*.woff2`, `<id>/OFL.txt` (already fetched by `/tools/fetch-fonts.mjs`) | main session |
+| `scripts/new.mjs`, `build.mjs`, `lib/` build side | scaffold and build | build helper |
+| `scripts/check.mjs`, `selftest.mjs`, `lib/` check side | headless check and selftest | check helper |
+| `templates/deck.src.html` | starter source | main session |
+| `examples/showcase.src.html`, `examples/dev.html`, `examples/fixtures/` | showcase deck, dev page, test inputs | main session (fixtures: anyone adds files under their own subfolder) |
+
+Node 24 is the only runtime for scripts. Scripts MUST NOT need `npm install`: only Node built-ins, the Chrome or Edge already on the machine, and files in this repository. Scripts follow the quiet-scripts rule: one status line per stage, a final `PASS` or `FAIL` line, full output in logs under `tmp/reports/<script>/`, at most 5 excerpt lines on failure.
+
+## 2. The deck source (`deck.src.html`)
+
+A UTF-8 file that is a fragment (no `<html>`, `<head>` or `<body>`). Top level, in this order:
+
+1. Exactly one `<script type="application/json" id="deck-config">…</script>`.
+2. Zero or more `<style>…</style>` blocks (deck-specific CSS, inlined after the theme CSS).
+3. One or more `<section class="slide">…</section>` elements (never nested).
+
+Comments and whitespace may sit between them. Any other top-level element is a build error `E_SOURCE`.
+
+### 2.1 Config
+
+```json
+{
+  "title": "Required, shown in the tab and the title slide",
+  "subtitle": "", "author": "", "event": "", "date": "",
+  "lang": "en",
+  "theme": "space",
+  "accent": "#2a7fff",
+  "transition": "warp",
+  "sections": [{ "id": "open", "label": "Opening", "accent": 1 }],
+  "vocabulary": { "map": "Chapters" },
+  "description": "meta description",
+  "timer": 20
+}
+```
+
+| Key | Rule |
+|---|---|
+| `title` | required, non-empty string, else `E_CONFIG` |
+| `theme` | one of the directory names under `themes/` (not `_shared`), default `space`, else `E_THEME` |
+| `lang` | BCP 47 tag, written to `<html lang>`, used for number formatting, default `en` |
+| `accent` | optional `#rgb` or `#rrggbb`; replaces `--a1` and the values derived from it (themes MAY ignore it; the corporate theme uses it as its brand color) |
+| `transition` | optional transition name that overrides the theme default for the whole deck |
+| `sections` | optional list; order defines the map order; `accent` is 1 to 6 (index of `--a1` to `--a6`); a section used by a slide but missing here is created from its `data-sec` (label = id with the first letter capitalised) with the next free accent, cycling |
+| `vocabulary` | optional partial override of the theme vocabulary (section 8.4) |
+| `timer` | presenter timer target in minutes, default 20 |
+| unknown keys | warning `W_CONFIG_KEY`, ignored |
+
+### 2.2 Slide element
+
+`<section class="slide" data-layout="…" data-sec="…" data-title="…">`
+
+| Attribute | Meaning |
+|---|---|
+| `id` | optional, otherwise the build assigns `s<n>` (1-based) |
+| `data-layout` | one of the layouts in 2.3, default `content` |
+| `data-sec` | section id; default the previous slide's section, for the first slide `main` |
+| `data-title` | short title for the map and the HUD; default the text of the first `h1` or `h2`, else `Slide <n>` |
+| `data-transition` | transition used when this slide is entered: a name from 5.5 or `none` |
+| `data-anim` | default entrance for the children of this slide (5.1) |
+| `data-backup` | present: the slide is an appendix slide, numbered A, B, C and listed after the last normal slide in the map |
+| `aside.notes` | speaker notes (plain text or simple inline HTML); never shown on the slide |
+
+Elements anywhere in a slide MAY carry: `data-step`, `data-step-out` (5.3), `data-count` and its companions (5.4), `data-morph` (5.6), `data-anim`, `data-delay` (5.1), `data-art` (2.5), `data-bleed` (marks decoration that is allowed to leave the safe area, see 10).
+
+The build adds nothing else to slides except `id`, `data-title` and `data-sec` defaults. The runtime adds the classes listed in section 12.
+
+### 2.3 Layouts (the authoring vocabulary)
+
+Each layout is a flex or grid arrangement provided by `engine/deck.css`, styled only through tokens. `…?` means optional.
+
+| `data-layout` | Expected children |
+|---|---|
+| `title` | `.kicker?`, `h1`, `p.lead?`, `.meta?` (author, event, date), `[data-art="hero"]?` |
+| `chapter` | `.kicker?` (for example "Part 2"), `h2`, `p.lead?`, `[data-art="chapter"]?` |
+| `statement` | `.kicker?`, `p.big` or `h2.big`, `.attrib?` |
+| `content` (default) | `.kicker?`, `h2`, then free content: `ul`, `ol`, `p`, `.callout`, `figure`, `.cols` |
+| `split` | `.kicker?`, `h2`, `.cols` with two `.col`; `.cols.wide-l` is 60/40 and `.cols.wide-r` is 40/60 |
+| `diagram` | `.kicker?`, `h2`, `svg[data-diagram]` (fills the rest), `figcaption?` |
+| `stats` | `.kicker?`, `h2`, `.stats` with 2 to 4 `.stat` each holding `.num` and `.label` |
+| `quote` | `blockquote` (with `p`), `cite?` |
+| `code` | `.kicker?`, `h2`, `pre.code[data-lang]`, `.note?` |
+| `cards` | `.kicker?`, `h2`, `.cards` with 2 to 4 `.card` each holding `h3` and `p` (and `.chip?`) |
+| `timeline` | `.kicker?`, `h2`, `ol.timeline` with 3 to 6 `li`, each starting with `<b>` for the label |
+| `image` | `figure` holding `img` and `figcaption?`; the image MAY carry `data-bleed` |
+| `closing` | `h1` or `h2`, `p.lead?`, `.links?` (anchors), `[data-art="closing"]?` |
+| `blank` | anything; no padding rules besides the safe area |
+
+Shared elements: `.kicker` (small uppercase label in the accent), `h1`, `h2`, `h3`, `p.lead`, `p.big`, `.muted`, `.small`, `strong` (accent weight), `em`, inline `code`, `a`, `.chip`, `.callout`, `.cols`, `.col`, `.cards`, `.card`, `.stats`, `.stat`, `.num`, `.label`, `ul`, `ol`, `table.data`, `figure`, `figcaption`, `.swap`, `.row`, `.stack`, `.center`.
+
+### 2.4 Assets
+
+`<img src="assets/x.png">` and CSS `url(assets/x.png)` inside the deck's own `<style>` blocks, with a path relative to the source file, are inlined as data URIs by the build. Allowed types: svg, png, jpg, jpeg, webp, gif, avif. A file over 300 KB is a warning `W_ASSET_SIZE`, over 2 MB an error `E_ASSET_SIZE`. A remote URL (`http:`, `https:`, `//`) in `src`, `href` of a stylesheet, `url()` or `@import` is an error `E_REMOTE` (decks work offline). Plain anchors `<a href="https://…">` are allowed.
+
+### 2.5 Art slots
+
+An element with `data-art="<role>"` and no children is filled at boot with the theme's SVG for that role. Roles: `hero`, `chapter`, `closing`, `divider`, `mascot`. A theme MUST provide the first four. The element gets the class `art`; give it `data-alt="description"` to expose it to screen readers, otherwise it is `aria-hidden`. The author controls position and size with normal layout (a grid cell, a flex child, or `position:absolute` in the deck's own `<style>`).
+
+## 3. Slide numbering and sections
+
+The runtime numbers normal slides 1 to N and backup slides A, B, C. Each distinct `data-sec` becomes a section; sections are shown in the order of `sections` (config) and then of first appearance. Each slide receives the style `--acc: var(--a<k>)` for its section's accent index k.
+
+## 4. Stage
+
+`#stage` is 1600 by 900 stage pixels, centred in the window, scaled by `--s = min(innerWidth / 1600, innerHeight / 900)`. Safe area of content: left and right `--pad-x` (120), top `--pad-y` (84), bottom `--pad-b` (96). The HUD and track live outside the stage in window coordinates and never count as content.
+
+## 5. Motion
+
+### 5.1 Entrance cascade
+
+On slide activation the runtime has already tagged (once, at boot) the following elements with the class `a` and the style `--i: <n>` (n = order among tagged elements, capped at 18): `.kicker, h1, h2, h3, h4, p, li, blockquote, cite, figure, pre.code, .card, .stat, .chip, .callout, .meta, .links > *, .attrib, table.data, [data-art], svg[data-diagram], img`. An element is NOT tagged when it sits inside another tagged element, inside an `svg`, inside `[data-step]`, when it is itself `[data-step]`, `[data-morph]` or `[data-anim="none"]`, or when it is inside such an element with `data-anim="none"`.
+
+CSS plays `.slide.play .a { animation: var(--a-name, aIn) var(--a-dur) var(--ease) both; animation-delay: calc(var(--i) * var(--a-stagger) + var(--a-base) + var(--d, 0ms)); }`. The keyframes read `--ax`, `--ay`, `--as`, `--ab` (start x, y, scale, blur) so a theme changes the flavour with variables.
+
+`data-anim` (on an element, or on the slide as the default for its children): `rise` (default), `fade`, `left`, `right`, `zoom`, `pop`, `none`. The runtime turns it into the class `a-<value>`. `data-delay="300"` adds 300 ms (written as `--d`).
+
+### 5.2 Replaying
+
+Entering a slide removes `play`, forces a reflow, then adds `play`, so the cascade always restarts. Going back shows the target slide complete (`showAll`, class `instant`) with every step on and no entrance.
+
+### 5.3 Steps (builds)
+
+`data-step="n"` (integer n >= 1): the element is hidden (`visibility:hidden; opacity:0`, space kept) until the slide step reaches n, then it gets the class `on` and plays its entrance again (twin keyframes `aIn2` so the animation restarts). `data-step-out="m"`: from step m on the element gets the class `off` (hidden, space kept, fades). An element MAY carry both. `.swap` is a grid that stacks all its children in one cell so that a `data-step-out` element and its `data-step` replacement trade places.
+
+The step count of a slide is the largest n or m found in its elements and in its diagrams (section 9). Navigation: `next()` raises the step before moving to the next slide; `prev()` lowers it, and when the step is 0 it goes to the previous slide with all steps on. The final state of a slide is "step = steps": every `data-step` element is `on`, every `data-step-out` element is `off`. Print and capture use this final state unless a step is asked for explicitly.
+
+### 5.4 Counters
+
+`<span class="num" data-count="1200" data-prefix="€" data-suffix="k" data-decimals="1" data-dur="1400">1,200</span>`: the text inside is the authored final value (what print, capture and no-motion show). On slide activation (or on the element's step) the runtime counts from 0 to `data-count` using `Intl.NumberFormat(lang)` with `data-decimals` fraction digits (default: the number of decimals in `data-count`).
+
+### 5.5 Transitions
+
+Resolution: slide `data-transition`, else config `transition`, else the theme's `defaultTransition`, else `slide`. Under reduced motion, `instant` navigation and hash jumps the name is `none`. The engine provides `slide`, `fade`, `rise`, `zoom`, `none`; a theme adds more and lists them in `theme.json`.
+
+While a transition runs, `#stage` carries `data-tr="<name>"` and `data-dir="fwd"` or `"back"`, the entering slide has the class `entering` and the leaving slide the class `leaving`; both are displayed and absolutely stacked. A transition is pure CSS on `#stage[data-tr="<name>"] .slide.entering` and `… .slide.leaving` (and `[data-dir="back"]` variants), animating only `opacity`, `transform`, `filter`, `clip-path`. Its length is the custom property `--tr-dur` on `#stage` (default `600ms`); when it ends the runtime removes both classes and `data-tr`. A new navigation during a transition finishes the previous one at once. The theme's ambient layer is told through its `change` hook (8.5).
+
+### 5.6 Morph
+
+`data-morph="key"` (lowercase letters, digits, dashes; unique inside a slide) marks an element that should glide and resize into the element with the same key on the slide being entered. When the two slides share at least one key, `document.startViewTransition` exists and motion is allowed, the runtime gives both elements `view-transition-name: md-<key>` for the duration, runs the slide switch inside `document.startViewTransition`, and removes the names afterwards. `::view-transition-group(md-*)` lasts `calc(var(--tr-dur) * 1.2)` with `var(--ease)`. Everything else uses the normal crossfade. Without the API, or under reduced motion, the normal transition of 5.5 is used. Morph elements are never tagged for the entrance cascade. Observable by tests: `document.getAnimations()` contains animations whose `effect.pseudoElement` is `::view-transition-group(md-<key>)`.
+
+### 5.7 Reduced motion, capture, print
+
+* `prefers-reduced-motion: reduce`: no entrance, no transition, no counting, ambient paints one static frame, steps appear without animation.
+* Capture mode (`Deck.capture(true)`, or `?capture=1` in the URL at load): the class `capture` is set on `<html>`; CSS sets `animation: none !important; transition: none !important` for everything under `#stage`; ambient paints one static frame and stops; counters show the authored text; diagrams render their final frame; art animations stop. It exists so that screenshots and measurements are deterministic.
+* Print: `@page { size: 1600px 900px; margin: 0 }`, every slide in its final state on its own page, no chrome, no ambient canvas animation (the page background is the token `--bg`), `print-color-adjust: exact`. A theme MUST NOT depend on animation to make content visible.
+
+## 6. Runtime API
+
+`engine/deck.js` defines `window.Deck` and boots itself at `DOMContentLoaded`.
+
+```ts
+interface Deck {
+  version: 1
+  ready: Promise<Deck>        // resolves when the DOM is wired, the theme is registered, document.fonts.ready is settled, images are decoded and the first slide is active; rejects if boot throws
+  config: object              // the parsed deck-config
+  theme: { name: string }     // the registered theme
+  token: string               // random 16 hex per page load (presenter handshake)
+  count: number               // number of slides (backup slides included)
+  index: number               // current slide, 0-based
+  step: number                // current step, 0..steps()
+  steps(i?: number): number   // step count of slide i (default: current)
+  go(i: number, opts?: { step?: number, instant?: boolean }): void   // step defaults to 0 going forward, to steps(i) going back
+  next(): void; prev(): void
+  setStep(n: number): void
+  capture(on?: boolean): boolean            // read or set capture mode
+  openMap(on?: boolean): boolean            // read or set the map overlay
+  openPresenter(): Window | null            // needs a user gesture
+  info(): { title: string, theme: string, lang: string,
+            sections: { id: string, label: string, accent: number }[],
+            slides: { index: number, id: string, title: string, sec: string, layout: string,
+                      steps: number, backup: boolean, notes: string, morph: string[] }[] }
+  features: string[]          // subset of: map hash back step-out reduced-motion presenter morph pdf capture counters code art diagram
+  registerTheme(theme: object): void        // used by themes/<name>/theme.js
+}
+```
+
+Events, dispatched on `document`: `deck:change` with `detail = { index, from, step, dir, transition }` after each slide change (at transition start), and `deck:step` with `detail = { index, step, steps }` after each step change.
+
+Failure: if boot throws, `Deck.ready` rejects, `document.documentElement.dataset.deckError` holds the message and the error is also logged with `console.error`. A deck with zero slides is a boot error.
+
+Input: arrows, PageUp and PageDown, Space, Enter, Backspace, Home, End; `M` toggles the map; `F` fullscreen; `P` opens the presenter; `Esc` closes overlays; touch: swipe left or right, tap the right 30% or left 30%. URL: `#n` or `#n.s` (1-based slide, step) is read at load only; navigation writes `#n` with `history.replaceState`. Backup slides use `#A`, `#B`, `#C`.
+
+## 7. Build
+
+`node scripts/build.mjs <deck.src.html> [--out <file>] [--theme <name>] [--engine <dir>] [--themes <dir>]` and the same as a function:
+
+```js
+export async function build({ src, out, themeOverride, engineDir, themesDir, log }) // -> { out, bytes, slides, theme, fonts: string[], warnings: { code, message }[] }
+export class BuildError extends Error { code }  // E_SOURCE E_CONFIG E_THEME E_REMOTE E_ASSET_SIZE E_ASSET_MISSING E_LICENSE
+```
+
+Default `out` is `index.html` next to the source; default `engineDir` is `../engine` and `themesDir` is `../themes` relative to the script. Output is deterministic (no timestamps). The built file is, in this order:
+
+1. `<!doctype html><html lang data-theme="<name>">`, `<meta charset>`, `<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">`, `<meta name="generator" content="motion-deck <version>">`, `<title>` and the description meta.
+2. One comment block (the license notice): the engine's copyright line and the full MIT text, then for every embedded font family its copyright line, source URL and the full OFL text (identical license text appears once). The text MUST NOT contain `-->`.
+3. `<style id="deck-fonts">`: one `@font-face` per face of each font listed in `theme.json` (family, style, weight from `fonts.json`, `font-display: block`, `src: url(data:font/woff2;base64,…) format("woff2")`).
+4. `<style id="deck-engine">` (`engine/deck.css`), `<style id="deck-theme">` (`themes/<name>/theme.css`), `<style id="deck-custom">` (the source `<style>` blocks, in order).
+5. `<body class="deck">`, `<canvas id="ambient" aria-hidden="true"></canvas>`, `<div id="viewport"><div id="stage">` + the slides + `</div></div>`.
+6. `<script id="deck-config" type="application/json">`, then `<script id="deck-diagram">` (`engine/diagram.js`), `<script id="deck-engine-js">` (`engine/deck.js`), `<script id="deck-theme-js">` (`themes/<name>/theme.js`). The runtime boots at `DOMContentLoaded`.
+
+Inlining MUST escape `</script` and `</style` in the inlined text. Warnings `W_SIZE` over 6 MB. The log is one line per stage (`ok parse`, `ok theme space`, `ok fonts 3 faces`, `ok images 2`, `ok write index.html 412 KB`) and a final `PASS build: …` or `FAIL build: <code> <message>`.
+
+`node scripts/new.mjs <slug> [--theme <name>] [--title "…"] [--dir decks]` creates `<dir>/<slug>/deck.src.html` from `templates/deck.src.html` with the config filled in, and an empty `assets/`; it refuses to overwrite and prints the build command.
+
+## 8. Themes
+
+### 8.1 Files
+
+`themes/<name>/theme.json`:
+
+```json
+{
+  "name": "space", "label": "Space", "mode": "dark",
+  "description": "one line",
+  "fonts": [{ "id": "big-shoulders-display", "role": "display" },
+            { "id": "atkinson-hyperlegible-next", "role": "body" },
+            { "id": "atkinson-hyperlegible-mono", "role": "mono" }],
+  "defaultTransition": "warp", "transitions": ["warp"],
+  "bg": "#05060d", "text": "#e9ecf5", "muted": "#9aa3bd",
+  "accents": ["#…", "#…", "#…", "#…", "#…", "#…"]
+}
+```
+
+`fonts[].id` is a key of `themes/_shared/fonts/fonts.json`; `role` is `display`, `body` or `mono`, or an array of them when one family serves several roles. The build embeds every face the registry lists for that id. A theme embeds at most 4 font files in total (the shared mono counts). `bg`, `text`, `muted`, `accents` MUST equal the token values in `theme.css` (the check compares them) and `text` and `muted` MUST reach a 4.5:1 contrast against `bg`.
+
+### 8.2 Tokens (custom properties on `:root`, all MUST be defined by `theme.css`)
+
+| Group | Tokens |
+|---|---|
+| Color | `--bg --bg-2 --text --muted --line --panel --a1 --a2 --a3 --a4 --a5 --a6 --on-acc --c-key --c-str --c-com --c-num --c-fn --glow` |
+| Type | `--f-display --f-body --f-mono --t-hero --t-h1 --t-h2 --t-h3 --t-lead --t-body --t-small --t-label --lh-head --lh-body --ls-label --case-display --ls-display --w-display --w-body --w-bold` |
+| Geometry | `--pad-x --pad-y --pad-b --gap --radius --stroke` |
+| Motion | `--ease --ease-out --ease-spring --a-dur --a-stagger --a-base --tr-dur` |
+
+Engine defaults exist for every token, so a theme may omit one only when the default is right; the listed color tokens and the three font tokens have no default and MUST be set. Hard-coded colors in `theme.css` outside the token block and outside art are not allowed (use the tokens). Section accent `--acc` is set by the runtime on each slide and MUST be used for all section-colored things.
+
+### 8.3 CSS hooks a theme may style
+
+`#chrome`, `#hud`, `.hud-sec`, `.hud-title`, `.hud-count`, `#track`, `.seg`, `.dot`, `.dot.cur`, `#map`, `.map-sec`, `.map-item`, `#hint`, `.slide`, `.slide .kicker`, `h1`, `h2`, `h3`, `.card`, `.stat`, `.callout`, `blockquote`, `pre.code`, `.chip`, `.art`, `#ambient`. A theme MUST NOT change `#stage` size or position, the safe-area tokens' meaning, or the visibility rules of steps (`.on`, `.off`).
+
+### 8.4 Vocabulary
+
+`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `notes`, `timer`, `next`, `presenter`.
+
+### 8.5 Registration
+
+```js
+Deck.registerTheme({
+  name: 'space',
+  vocabulary: { map: 'Star chart', counter: 'Sol {n} / {N}' },
+  art: { hero: '<svg viewBox="0 0 400 400">…</svg>', chapter: '…', closing: '…', divider: '…' },
+  ambient: {
+    init(api) {},            // once, after layout
+    frame(api, t, dt) {},    // each animation frame; t and dt in ms
+    paint(api) {},           // optional: one static frame (reduced motion, capture, print); default frame(api, 0, 0)
+    change(api, info) {},    // slide change: info = { from, to, dir, transition }
+    resize(api) {}           // window or dpr changed
+  }
+})
+```
+
+`api = { canvas, ctx, w, h, dpr, accent() -> css color of the current --acc, css(name) -> computed value of a custom property, rand() -> seeded float [0,1) }`. `w` and `h` are CSS pixels of the full window. The runtime owns the animation loop: it calls `frame` only when the page is visible, motion is allowed and capture mode is off; otherwise it calls `paint` once per resize or slide change. Art SVGs use `currentColor` and the tokens only, carry a `viewBox`, and reference nothing external; animation hooks for art are classes defined in `theme.css` and stopped in capture and print.
+
+### 8.6 Acceptance for a theme
+
+Tokens complete and equal to `theme.json`; at most 4 font files; every transition listed is implemented for both directions; the four required art roles exist; the ambient layer pauses when hidden, under reduced motion, in capture and in print; the showcase deck builds and passes `check.mjs` with it; text contrast at least 4.5:1; no layout or safe-area change.
+
+## 9. Diagrams
+
+`engine/diagram.js` defines `window.MotionDiagram` (and nothing else global):
+
+```ts
+MotionDiagram.version = 1
+MotionDiagram.mount(svg: SVGSVGElement, spec: object): { steps: number }
+MotionDiagram.update(svg: SVGSVGElement, state: { step: number, replay?: boolean, capture?: boolean }): void
+MotionDiagram.steps(spec: object): number
+```
+
+A diagram in a slide is `<svg data-diagram viewBox="0 0 1360 520" role="img" aria-label="…"><script type="application/json">{ …spec… }</script></svg>`; the runtime reads the JSON text of the first `script[type="application/json"]` inside the svg (or the element named by `data-spec="#id"`), calls `mount` once after `Deck.ready`, and then `update` on every slide activation (`replay: true`), on every step change, and with `capture: true` in capture mode. A node with `step: k` appears when the slide step is at least k and plays its entrance then; nodes without `step` play when the slide becomes active. `update` MUST be idempotent. `capture: true` renders the final frame with no animation. The slide's step count includes `MotionDiagram.steps(spec)`. Colors and fonts only through the tokens; text measured after fonts are loaded; the language itself (node kinds, anchors, edges, packets, charts) is specified in `references/diagrams.md`.
+
+## 10. Check and selftest
+
+`node scripts/check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--timeout <ms>]` drives headless Chrome or Edge through the DevTools protocol (Node's built-in `WebSocket`; no npm packages). Browser launch: a throwaway profile directory, `--remote-debugging-port=0`, the endpoint read from the browser's own output, localhost only, every wait bounded by `--timeout` (default 20000), and the browser process and profile removed in a `finally` block. Viewport 1600 by 900, device scale factor 1, so `--s = 1`.
+
+It MUST verify, for the whole deck and for every slide in every step state from 0 to `steps()` (capture mode on, via `Deck.go(i, { step, instant: true })`):
+
+1. Readiness: `Deck.ready` settles within the timeout; a rejection or a timeout fails with the reason.
+2. Fonts: every `@font-face` declared in the page reports status `loaded` in `document.fonts`, and the three font tokens resolve to a loaded face (not a fallback).
+3. Overflow: in stage coordinates, every visible element of the active slide lies inside the safe area (x from `--pad-x` to `1600 - --pad-x`, y from `--pad-y` to `900 - --pad-b`, tolerance 1 px), except elements inside `[data-bleed]`, `[data-art]` (these must still lie inside the stage), `.notes`, and the internals of an `svg` (the `svg` box itself is measured). Clipping: any element with `overflow` other than visible whose `scrollWidth` or `scrollHeight` exceeds its client box by more than 1 px fails, and so does a slide whose own `scrollHeight` exceeds its `clientHeight`. Each violation names slide, step, a selector and the numbers.
+4. Console: any `console.error`, uncaught exception, unhandled rejection, or failed resource load fails.
+5. Offline: with the network disabled (`Network.emulateNetworkConditions` offline) the deck still reaches ready, and no request other than `data:` or the file itself was attempted.
+6. PDF: `Page.printToPDF` with `preferCSSPageSize` and `printBackground`; the page count equals `Deck.count` and the page size is 1600 by 900 CSS pixels (1200 by 675 points).
+7. Tokens: the computed `--bg`, `--text`, `--muted` equal the values in `theme.json` and the contrast of `--text` and `--muted` against `--bg` is at least 4.5.
+8. Screenshots of every state go to `<out>/<deck>/shots/s<NN>-<step>.png`, plus `report.json`, a `console.log`, `deck.pdf` and an `index.html` contact sheet that lists the shots.
+
+Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. Final line: `PASS check: <deck> [<browser>] <N> slides, <M> states, 0 overflow, 0 console errors, 0 missing fonts, pdf <N> pages` or `FAIL check: <deck> <count> problem(s)` with at most 5 excerpt lines.
+
+`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, and a readiness timeout). Feature probes: map open and close with `M`; hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline, 0 overflow, 0 console errors, 0 missing fonts`.
+
+## 11. Presenter protocol
+
+`Deck.openPresenter()` (from a user gesture) calls `window.open('', 'md-presenter-' + Deck.token, 'popup,width=1280,height=760')` and writes a self-contained document into the popup (`document.open/write/close`; nothing is read from storage, so it works on `file://`). All messages are `window.postMessage` objects with the field `md` equal to `Deck.token`; each side ignores a message whose `md` differs or whose `source` is not the expected window, so two decks never talk to each other.
+
+| Direction | `type` | Payload |
+|---|---|---|
+| presenter to opener | `ready` | none (sent when the popup has loaded) |
+| presenter to opener | `request` | none (ask for a fresh `state`) |
+| presenter to opener | `cmd` | `cmd`: `next`, `prev`, `go` (with `index`, optional `step`), `setStep` (with `step`) |
+| opener to presenter | `state` | `index, step, steps, count, title, notes, nextTitle, nextHtml, nextIndex, theme, vocabulary, timer, css` |
+
+The opener sends `state` on `ready`, on `request`, and on every `deck:change` and `deck:step`. `nextHtml` is the outer HTML of the slide shown next (the same slide at the next step when a step remains, else the next slide in its final state); `css` is the deck's concatenated style text so the popup can draw both previews in a scaled 1600 by 900 stage. Observable hooks in the popup: `#p-current[data-index][data-step]`, `#p-next[data-index]`, `#p-notes`, `#p-timer[data-seconds]`, `#p-count`, and `document.title` starting with `Presenter`. Closing the popup stops sending; calling `openPresenter()` again recreates it and the state resumes.
+
+## 12. Class and variable index
+
+Classes set by the runtime: on `<html>`: `capture`, `reduced`, `map-open`, `present`; on slides: `active`, `leaving`, `entering`, `play`, `instant`; on elements: `a`, `a-fade`, `a-left`, `a-right`, `a-zoom`, `a-pop`, `on`, `off`, `art`. Attributes set by the runtime: `#stage[data-tr][data-dir]`, `.slide[data-n]` (display number), `html[data-deck-error]`. Custom properties set by the runtime: `--s` on `#stage`, `--acc` and `--i` and `--d` on slides and elements. Chrome elements created by the runtime: `#chrome` (contains `#hud`, `#track`, `#map`, `#hint`).

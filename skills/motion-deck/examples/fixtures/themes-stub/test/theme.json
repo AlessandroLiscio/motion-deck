@@ -1,0 +1,16 @@
+{
+  "name": "test",
+  "label": "Test",
+  "mode": "dark",
+  "description": "Fixture theme for script tests: two fonts, no transitions of its own.",
+  "fonts": [
+    { "id": "manrope", "role": ["display", "body"] },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "fade",
+  "transitions": [],
+  "bg": "#101418",
+  "text": "#f2f5f8",
+  "muted": "#a9b4c0",
+  "accents": ["#4ea1ff", "#ffb347", "#7ed957", "#ff6b81", "#b48cff", "#36d1c4"]
+}

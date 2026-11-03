@@ -1,0 +1,16 @@
+/* Stub of the engine stylesheet: just enough stage, slide and step rules for script tests. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg, #000); color: var(--text, #fff); font: 32px/1.3 var(--f-body, sans-serif); }
+#viewport { position: fixed; inset: 0; overflow: hidden; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform: translate(-50%, -50%) scale(var(--s, 1)); }
+.slide { position: absolute; inset: 0; display: none; box-sizing: border-box; padding: var(--pad-y, 84px) var(--pad-x, 120px) var(--pad-b, 96px); }
+.slide.active { display: block; }
+.notes { display: none; }
+[data-step]:not(.on), [data-step-out].off { visibility: hidden; }
+html.capture * { animation: none !important; transition: none !important; }
+@page { size: 1600px 900px; margin: 0; }
+@media print {
+  html, body { overflow: visible; height: auto; }
+  #viewport { position: static; }
+  #stage { position: static; transform: none; }
+  .slide { position: relative; display: block; width: 1600px; height: 900px; break-after: page; }
+}
