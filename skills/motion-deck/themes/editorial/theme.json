@@ -1,0 +1,17 @@
+{
+  "name": "editorial",
+  "label": "Editorial",
+  "mode": "light",
+  "description": "Warm paper with grain and drifting ink-wash light, serif type, ruled structure instead of boxes and a page that lifts between slides.",
+  "fonts": [
+    { "id": "fraunces", "role": "display" },
+    { "id": "source-serif-4", "role": "body" },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "lift",
+  "transitions": ["lift"],
+  "bg": "#f4eee2",
+  "text": "#1b2030",
+  "muted": "#6a6358",
+  "accents": ["#1f4fa3", "#8c2f39", "#2f6b4a", "#98650f", "#5b3f8c", "#2d6670"]
+}

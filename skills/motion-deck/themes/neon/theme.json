@@ -1,0 +1,17 @@
+{
+  "name": "neon",
+  "label": "Neon",
+  "mode": "dark",
+  "description": "A black-violet night with glowing signs, a synthwave horizon scrolling under a striped sun, and a zoom-through tunnel between slides.",
+  "fonts": [
+    { "id": "unbounded", "role": "display" },
+    { "id": "chakra-petch", "role": "body" },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "tunnel",
+  "transitions": ["tunnel"],
+  "bg": "#0a0614",
+  "text": "#efe8ff",
+  "muted": "#a99cc9",
+  "accents": ["#00e5ff", "#ff2bd6", "#b6ff2e", "#ff8a1f", "#8f5bff", "#ff5fa2"]
+}
