@@ -260,6 +260,7 @@ Engine defaults exist for every token, so a theme may omit one only when the def
 ```js
 Deck.registerTheme({
   name: 'space',
+  defaultTransition: 'warp',   // the runtime reads this, not theme.json; the two MUST agree (the check compares them)
   vocabulary: { map: 'Star chart', counter: 'Sol {n} / {N}' },
   art: { hero: '<svg viewBox="0 0 400 400">…</svg>', chapter: '…', closing: '…', divider: '…' },
   ambient: {
