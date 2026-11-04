@@ -1,0 +1,17 @@
+{
+  "name": "pirates",
+  "label": "Pirates",
+  "mode": "light",
+  "description": "A treasure-map parchment with blackletter headings, rolling sea waves, drifting clouds and a rocking sail between slides.",
+  "fonts": [
+    { "id": "pirata-one", "role": "display" },
+    { "id": "alegreya-sans", "role": "body" },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "sail",
+  "transitions": ["sail"],
+  "bg": "#ecdcb6",
+  "text": "#2c1a0e",
+  "muted": "#573a1c",
+  "accents": ["#1b5d8f", "#a62a1e", "#8f6407", "#3b6e2b", "#0f6e70", "#6e2f6b"]
+}

@@ -1,0 +1,24 @@
+{
+  "expect": "nodes[1] \"db\": unknown kind \"databse\", did you mean \"cylinder\"?",
+  "spec": {
+    "nodes": [
+      {
+        "id": "app",
+        "label": "App",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "db",
+        "kind": "databse",
+        "label": "Orders",
+        "at": [
+          1,
+          0
+        ]
+      }
+    ]
+  }
+}

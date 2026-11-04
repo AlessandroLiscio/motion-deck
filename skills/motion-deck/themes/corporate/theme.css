@@ -1,0 +1,103 @@
+/* Corporate: a white page, slate-navy ink, one brand color that tints the whole deck, soft panels and a calm glide between slides. */
+
+:root {
+  --bg: #ffffff; --bg-2: #f3f6f9; --text: #13213b; --muted: #566377; --line: rgba(19, 33, 59, .13); --panel: #ffffff;
+  /* the brand color; the deck config key "accent" replaces --a1 and --glow at boot, and everything below re-tints from it */
+  --a1: #0b7a8c;
+  --a2: oklch(from var(--a1) l calc(c * 1.5) calc(h + 150));
+  --a3: oklch(from var(--a1) l calc(c * 1.45) calc(h + 62));
+  --a4: oklch(from var(--a1) calc(l + .03) calc(c * 1.4) calc(h + 238));
+  --a5: oklch(from var(--a1) l calc(c * 1.5) calc(h + 112));
+  --a6: oklch(from var(--a1) l calc(c * 1.4) calc(h + 300));
+  --on-acc: #ffffff; --c-key: var(--a3); --c-str: var(--a6); --c-com: var(--muted); --c-num: var(--a4); --c-fn: var(--a1); --glow: var(--a1);
+  --f-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --t-hero: 112px; --t-h1: 96px; --t-h2: 62px; --t-h3: 36px; --t-lead: 36px; --t-body: 30px; --t-small: 24px; --t-label: 17px;
+  --lh-head: 1.1; --lh-body: 1.5; --ls-label: .12em; --case-display: none; --ls-display: -.03em;
+  --w-display: 800; --w-body: 450; --w-bold: 700;
+  --pad-x: 120px; --pad-y: 84px; --pad-b: 96px; --gap: 32px; --radius: 14px; --stroke: 2px;
+  --ease: cubic-bezier(.22, .8, .24, 1); --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.4, .64, 1);
+  --a-dur: .75s; --a-stagger: 55ms; --a-base: 60ms; --tr-dur: 720ms;
+  --shadow: 0 1px 2px color-mix(in srgb, var(--text) 8%, transparent), 0 16px 40px -10px color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 55%, var(--bg-2) 100%); }
+@media print { body { background: var(--bg); } }
+
+/* type: heavy sentence-case titles, tight tracking, calm scale */
+.slide h3 { font-weight: 750; letter-spacing: -.02em; }
+.slide .lead { font-weight: 450; color: var(--muted); font-size: calc(var(--t-lead) * .95); line-height: 1.38; }
+.slide em { font-style: normal; color: var(--acc); font-weight: 650; }
+.slide[data-layout="title"] h1 { letter-spacing: -.04em; line-height: 1.02; }
+.slide[data-layout="title"] { gap: 28px; }
+.slide[data-layout="chapter"] h2, .slide[data-layout="closing"] h1, .slide[data-layout="closing"] h2 { letter-spacing: -.04em; }
+.slide code { background: var(--bg-2); border-color: var(--line); border-radius: 8px; }
+.slide .big { font-weight: 750; letter-spacing: -.035em; }
+.slide ul > li::before { width: .42em; height: .42em; top: .66em; border-radius: 50%; }
+.slide ol > li::before { font-weight: 800; }
+
+/* kicker: a small rounded square and mono caps in the brand color */
+.slide .kicker { display: flex; align-items: center; gap: 14px; font-weight: 600; }
+.slide .kicker::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--acc); }
+
+/* a short brand bar above content pages */
+.slide:not([data-layout="title"]):not([data-layout="chapter"]):not([data-layout="closing"]):not([data-layout="statement"]):not([data-layout="quote"]):not([data-layout="blank"]):not([data-layout="image"])::before {
+  content: ""; position: absolute; left: var(--pad-x); top: 46px; width: 56px; height: 5px; border-radius: 3px; background: var(--acc);
+}
+
+/* white panels with a soft shadow */
+.card { background: var(--panel); border: 0; border-radius: var(--radius); box-shadow: var(--shadow); padding: 38px 34px 40px; gap: 14px; position: relative; overflow: hidden; }
+.card::before { content: ""; width: 40px; height: 5px; border-radius: 3px; background: var(--acc); margin-bottom: 8px; }
+.card h3 { color: var(--text); }
+.card p { color: var(--muted); font-size: var(--t-small); }
+
+.stat { border-left: 0; padding: 38px 32px 34px; border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); position: relative; gap: 8px; }
+.stat::before { content: ""; width: 40px; height: 5px; border-radius: 3px; background: var(--acc); margin-bottom: 14px; }
+.stat .num { font-size: calc(var(--t-hero) * 1.02); letter-spacing: -.04em; }
+.stat .label { font-weight: 500; }
+
+.callout { border-left: 5px solid var(--acc); border-radius: 0 var(--radius) var(--radius) 0; background: color-mix(in srgb, var(--acc) 8%, var(--bg)); padding: 26px 34px; color: var(--text); }
+
+.slide blockquote { font-weight: 700; letter-spacing: -.03em; padding-left: 110px; font-size: calc(var(--t-h2) * .88); line-height: 1.2; }
+.slide blockquote::before { content: "\201C"; font-family: var(--f-display); font-weight: 800; font-size: 4.2em; top: -.06em; color: color-mix(in srgb, var(--acc) 34%, var(--bg)); }
+.slide cite { padding-left: 110px; font-weight: 500; }
+
+.slide pre.code { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); font-size: 28px; }
+.slide pre.code.has-hl .ln.hl { background: color-mix(in srgb, var(--acc) 12%, transparent); box-shadow: -38px 0 0 color-mix(in srgb, var(--acc) 12%, transparent), 38px 0 0 color-mix(in srgb, var(--acc) 12%, transparent); }
+.chip { border: 0; background: color-mix(in srgb, var(--acc) 11%, var(--bg)); color: color-mix(in srgb, var(--acc) 82%, var(--text)); font-weight: 600; padding: 7px 18px; }
+.links a { background: var(--bg); border: 1.5px solid color-mix(in srgb, var(--acc) 40%, var(--bg)); font-weight: 500; }
+.links a:first-child { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+table.data th { color: var(--muted); }
+
+.slide ol.timeline::before { height: 3px; border-radius: 2px; top: 17px; background: color-mix(in srgb, var(--acc) 22%, var(--bg)); }
+.slide ol.timeline > li::before { box-shadow: 0 0 0 7px var(--bg); }
+
+/* chrome */
+#hud { font-weight: 500; letter-spacing: .1em; }
+.dot { flex: 0 1 14px; width: 14px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--muted) 30%, transparent); }
+.dot.cur { transform: none; box-shadow: none; flex-basis: 26px; width: 26px; height: 5px; }
+#map { background: color-mix(in srgb, var(--bg) 94%, transparent); }
+.map-item { background: var(--panel); border-color: transparent; border-radius: 12px; box-shadow: var(--shadow); }
+.map-item:hover, .map-item:focus-visible, .map-item.cur { border-color: var(--acc); }
+#hint { background: var(--panel); border-color: transparent; box-shadow: var(--shadow); }
+
+/* diagrams: soft lift under the shapes */
+svg[data-diagram] .md-shape { filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--text) 10%, transparent)); }
+
+/* art: flat shapes in brand tints; bars grow, discs pop */
+.art svg { animation: artFloat 9s ease-in-out infinite; }
+.art .bar { transform-box: fill-box; transform-origin: 50% 100%; animation: barUp .9s var(--ease-out) both; animation-delay: calc(var(--k, 0) * 90ms + 300ms); }
+.art .pop { transform-box: fill-box; transform-origin: center; animation: popIn .8s var(--ease-spring) both; animation-delay: calc(var(--k, 0) * 120ms + 500ms); }
+.art .trace { stroke-dasharray: 1; animation: trace 1.4s var(--ease-out) .7s both; }
+@keyframes artFloat { 50% { transform: translateY(-8px); } }
+@keyframes barUp { from { transform: scaleY(.04); opacity: 0; } }
+@keyframes popIn { from { transform: scale(.3); opacity: 0; } }
+@keyframes trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* transition: glide (contract 5.5). The leaving slide drifts 60 px and fades, the entering slide comes from 90 px, so the two move at different speeds. */
+#stage[data-dir="back"] { --gx-in: -90px; --gx-out: 60px; }
+@keyframes glideIn { from { opacity: 0; transform: translateX(var(--gx-in, 90px)); } }
+@keyframes glideOut { to { opacity: 0; transform: translateX(var(--gx-out, -60px)); } }
+#stage[data-tr="glide"] .slide.entering { animation: glideIn var(--tr-dur) var(--ease) both; }
+#stage[data-tr="glide"] .slide.leaving { animation: glideOut calc(var(--tr-dur) * .7) cubic-bezier(.4, 0, .6, 1) both; }

@@ -1,0 +1,15 @@
+:root {
+  --bg: #101418; --bg-2: #171d24; --text: #f2f5f8; --muted: #a9b4c0; --line: #2b3440; --panel: #1a222b;
+  --a1: #4ea1ff; --a2: #ffb347; --a3: #7ed957; --a4: #ff6b81; --a5: #b48cff; --a6: #36d1c4;
+  --on-acc: #101418; --c-key: #b48cff; --c-str: #7ed957; --c-com: #a9b4c0; --c-num: #ffb347; --c-fn: #4ea1ff; --glow: #4ea1ff;
+  --f-display: "Manrope", system-ui, sans-serif; --f-body: "Manrope", system-ui, sans-serif; --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  --t-hero: 148px; --t-h1: 104px; --t-h2: 68px; --t-h3: 40px; --t-lead: 40px; --t-body: 32px; --t-small: 26px; --t-label: 20px;
+  --lh-head: 1.12; --lh-body: 1.38; --ls-label: .14em; --case-display: none; --ls-display: 0; --w-display: 700; --w-body: 400; --w-bold: 700;
+  --pad-x: 120px; --pad-y: 84px; --pad-b: 96px; --gap: 32px; --radius: 14px; --stroke: 2px;
+  --ease: cubic-bezier(.2, .8, .2, 1); --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --a-dur: .7s; --a-stagger: 60ms; --a-base: 80ms; --tr-dur: 600ms;
+}
+h1, h2, h3 { font-family: var(--f-display); font-weight: var(--w-display); margin: 0; }
+h1 { font-size: var(--t-h1); }
+h2 { font-size: var(--t-h2); }
+code, pre { font-family: var(--f-mono); }

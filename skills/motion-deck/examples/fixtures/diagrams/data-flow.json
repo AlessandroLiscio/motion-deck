@@ -1,0 +1,96 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "id": "app",
+      "label": "Mobile app",
+      "icon": "user",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "api",
+      "label": "Gateway",
+      "sub": "REST, auth",
+      "icon": "lock",
+      "at": [
+        1,
+        0
+      ],
+      "tone": 2
+    },
+    {
+      "id": "db",
+      "kind": "cylinder",
+      "label": "Orders",
+      "sub": "Postgres",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 3
+    },
+    {
+      "id": "lake",
+      "kind": "cloud",
+      "label": "Data lake",
+      "at": [
+        3,
+        1
+      ],
+      "tone": 5
+    },
+    {
+      "id": "bi",
+      "label": "Reports",
+      "icon": "search",
+      "at": [
+        2,
+        1
+      ],
+      "tone": 4
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "api",
+      "label": "HTTPS",
+      "packets": 2
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "label": "SQL",
+      "packets": {
+        "count": 3,
+        "dur": 3
+      }
+    },
+    {
+      "from": "db",
+      "to": "lake",
+      "label": "nightly",
+      "dashed": true,
+      "anchors": [
+        "r",
+        "t"
+      ],
+      "packets": true
+    },
+    {
+      "from": "lake",
+      "to": "bi",
+      "anchors": [
+        "l",
+        "r"
+      ]
+    }
+  ]
+}

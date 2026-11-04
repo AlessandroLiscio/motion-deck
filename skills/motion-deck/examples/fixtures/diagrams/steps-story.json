@@ -1,0 +1,112 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 2
+  },
+  "nodes": [
+    {
+      "id": "user",
+      "kind": "person",
+      "label": "Customer",
+      "at": [
+        0,
+        0
+      ],
+      "tone": 1
+    },
+    {
+      "id": "old",
+      "label": "Legacy form",
+      "sub": "retired in step 3",
+      "at": [
+        1,
+        0
+      ],
+      "tone": "muted",
+      "out": 3
+    },
+    {
+      "id": "new",
+      "label": "New checkout",
+      "sub": "replaces it",
+      "icon": "check",
+      "at": [
+        1,
+        0
+      ],
+      "tone": "ok",
+      "step": 3
+    },
+    {
+      "id": "pay",
+      "label": "Payments",
+      "icon": "lock",
+      "at": [
+        2,
+        0
+      ],
+      "tone": 2,
+      "step": 1
+    },
+    {
+      "id": "ledger",
+      "kind": "cylinder",
+      "label": "Ledger",
+      "at": [
+        3,
+        0
+      ],
+      "tone": 5,
+      "step": 2
+    },
+    {
+      "id": "mail",
+      "kind": "chip",
+      "label": "receipt sent",
+      "at": [
+        3,
+        1
+      ],
+      "tone": 3,
+      "step": 4
+    }
+  ],
+  "edges": [
+    {
+      "from": "user",
+      "to": "old",
+      "out": 3
+    },
+    {
+      "from": "user",
+      "to": "new",
+      "step": 3
+    },
+    {
+      "from": "old",
+      "to": "pay",
+      "step": 1,
+      "out": 3
+    },
+    {
+      "from": "new",
+      "to": "pay",
+      "step": 3
+    },
+    {
+      "from": "pay",
+      "to": "ledger",
+      "step": 2,
+      "packets": true
+    },
+    {
+      "from": "ledger",
+      "to": "mail",
+      "step": 4,
+      "anchors": [
+        "b",
+        "t"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# One line ending everywhere: the tests compare generated files byte for byte, and a Windows checkout with autocrlf would break them.
+* text=auto eol=lf
+*.woff2 binary
+*.png binary

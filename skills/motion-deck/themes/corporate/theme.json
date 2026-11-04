@@ -1,0 +1,16 @@
+{
+  "name": "corporate",
+  "label": "Corporate",
+  "mode": "light",
+  "description": "A white page with slate-navy ink, soft panels and drifting tinted shapes; one brand color re-tints the whole deck, and slides glide sideways.",
+  "fonts": [
+    { "id": "manrope", "role": ["display", "body"] },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "glide",
+  "transitions": ["glide"],
+  "bg": "#ffffff",
+  "text": "#13213b",
+  "muted": "#566377",
+  "accents": ["#0b7a8c", "#aa4565", "#5864b8", "#917100", "#934d98", "#1a8147"]
+}

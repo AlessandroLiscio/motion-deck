@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "mix",
+      "kind": "donut",
+      "at": [
+        0,
+        0
+      ],
+      "title": "Traffic by channel",
+      "segments": [
+        {
+          "label": "Search",
+          "value": 46
+        },
+        {
+          "label": "Direct",
+          "value": 24
+        },
+        {
+          "label": "Email",
+          "value": 17
+        },
+        {
+          "label": "Social",
+          "value": 13
+        }
+      ],
+      "centerSub": "visits"
+    }
+  ]
+}

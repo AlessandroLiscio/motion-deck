@@ -1,0 +1,25 @@
+<!-- A comment before the config; it mentions <section class="slide"> and </section> and must be skipped. -->
+<script type="application/json" id="deck-config">
+{ "title": "Tricky <deck> & \"quotes\"", "theme": "test", "description": "less < than & greater > than" }
+</script>
+
+<style>
+  .slide p::after { content: "</section>"; }
+</style>
+
+<!--
+<section class="slide" data-title="commented out">
+  <h2>Never built</h2>
+</section>
+-->
+
+<section class="slide" data-title="a > b and <i>">
+  <h2>Json inside</h2>
+  <svg data-diagram viewBox="0 0 1360 520" role="img" aria-label="spec">
+    <script type="application/json">{ "nodes": [{ "id": "a", "label": "</section> <section class=\"slide\">", "step": 1 }] }</script>
+  </svg>
+</section>
+
+<section class="slide" data-layout="statement">
+  <p class="big" title='single > quoted'>Q&amp;A &mdash; <em>done</em></p>
+</section>

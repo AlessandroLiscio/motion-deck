@@ -1,0 +1,241 @@
+<script type="application/json" id="deck-config">
+{
+  "title": "Slides that move",
+  "subtitle": "A tour of motion-deck",
+  "author": "motion-deck",
+  "lang": "en",
+  "theme": "space",
+  "sections": [
+    { "id": "open", "label": "Open" },
+    { "id": "motion", "label": "Motion" },
+    { "id": "show", "label": "Show" },
+    { "id": "close", "label": "Close" }
+  ],
+  "description": "A showcase deck for motion-deck: entrances, builds, counters, morph, code, a timeline and a living background.",
+  "timer": 8
+}
+</script>
+
+<section class="slide" data-layout="title" data-sec="open" data-title="Slides that move">
+  <p class="kicker">motion-deck · showcase</p>
+  <h1>Slides that move</h1>
+  <p class="lead">One file. No installs. Entrances, builds, diagrams and a living background.</p>
+  <p class="meta"><span>Showcase deck</span><span>Six themes</span><span>2026</span></p>
+  <div data-art="hero"></div>
+  <aside class="notes">Welcome. This deck shows what the engine does; every slide here is plain HTML with a few attributes. The theme is a single word in the config.</aside>
+</section>
+
+<section class="slide" data-sec="open" data-title="What you get">
+  <p class="kicker">The kit</p>
+  <h2>What you get</h2>
+  <ul>
+    <li>A <strong>cascade</strong> on every slide, with nothing animated by hand</li>
+    <li data-step="1"><strong>Builds</strong> that reveal a slide one idea at a time</li>
+    <li data-step="2"><strong>Diagrams</strong> that draw themselves</li>
+    <li data-step="3"><strong>Transitions</strong> and a living background that match the theme</li>
+  </ul>
+  <aside class="notes">Press the right arrow three times: each press reveals one more point before the next slide.</aside>
+</section>
+
+<section class="slide" data-layout="chapter" data-sec="motion" data-title="Motion">
+  <p class="kicker">Part 1</p>
+  <h2>Motion</h2>
+  <p class="lead">How things arrive, change and leave.</p>
+  <div data-art="chapter"></div>
+</section>
+
+<section class="slide" data-layout="statement" data-sec="motion" data-title="The cascade">
+  <p class="kicker">The cascade</p>
+  <p class="big">Write the content. The deck decides how it moves.</p>
+</section>
+
+<section class="slide" data-layout="split" data-sec="motion" data-title="Builds">
+  <p class="kicker">Builds</p>
+  <h2>Show one idea at a time</h2>
+  <div class="cols wide-r">
+    <div class="col">
+      <ul>
+        <li data-step="1">Hide parts of a slide until you need them</li>
+        <li data-step="2">Swap one box for another in place</li>
+        <li data-step="3">Count a number up when it appears</li>
+      </ul>
+    </div>
+    <div class="col">
+<pre class="code" data-lang="html" data-hl="2-3">
+&lt;ul&gt;
+  &lt;li data-step="1"&gt;First idea&lt;/li&gt;
+  &lt;li data-step="2"&gt;Second idea&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="motion" data-title="Swap in place">
+  <p class="kicker">Swap</p>
+  <h2>Replace a block, keep its spot</h2>
+  <div class="swap" style="width: 960px">
+    <div class="card" data-step-out="1"><h3>Before</h3><p>Slides pasted from a template and animated by hand, one by one.</p></div>
+    <div class="card" data-step="1"><h3>After</h3><p>Plain HTML slides. The engine and the theme take care of the motion.</p></div>
+  </div>
+  <aside class="notes">One press swaps the first card for the second, in the same place.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="motion" data-title="By the numbers">
+  <p class="kicker">By the numbers</p>
+  <h2>Small kit, big range</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="6">6</span><span class="label">themes, one word apart</span></div>
+    <div class="stat"><span class="num" data-count="14">14</span><span class="label">layouts, ready to fill</span></div>
+    <div class="stat"><span class="num" data-count="100" data-suffix="%">100%</span><span class="label">offline, in one file</span></div>
+  </div>
+</section>
+
+<section class="slide" data-layout="quote" data-sec="motion" data-title="Details">
+  <blockquote><p>The details are not the details. They make the design.</p></blockquote>
+  <cite>Charles Eames</cite>
+</section>
+
+<section class="slide" data-layout="chapter" data-sec="show" data-title="Show">
+  <p class="kicker">Part 2</p>
+  <h2>Show</h2>
+  <p class="lead">Morph, code, a timeline and the map.</p>
+  <div data-art="chapter"></div>
+</section>
+
+<section class="slide" data-sec="show" data-title="Morph, before">
+  <p class="kicker">Morph</p>
+  <h2>Elements can travel between slides</h2>
+  <div class="card" data-morph="m1" style="width: 640px">
+    <h3>One card</h3>
+    <p>Press next and watch it travel.</p>
+  </div>
+</section>
+
+<section class="slide" data-sec="show" data-title="Morph, after">
+  <p class="kicker">Morph</p>
+  <h2>Same card, new place</h2>
+  <div class="row" style="align-items: flex-start; justify-content: space-between">
+    <ul style="width: 760px">
+      <li>It keeps its identity</li>
+      <li>It changes size and position</li>
+      <li>Everything else cross-fades</li>
+    </ul>
+    <div class="card" data-morph="m1" style="width: 420px">
+      <h3>One card</h3>
+      <p>It moved and resized.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="show" data-title="Diagrams">
+  <p class="kicker">Diagrams</p>
+  <h2>Diagrams draw themselves</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="A source file is built, checked and becomes one offline file">
+    <script type="application/json">
+    {
+      "grid": { "cols": 4, "rows": 1 },
+      "nodes": [
+        { "id": "src", "label": "Source", "sub": "deck.src.html", "icon": "doc", "at": [0, 0], "tone": 1 },
+        { "id": "build", "label": "Build", "sub": "engine and theme", "icon": "gear", "at": [1, 0], "tone": 2 },
+        { "id": "check", "label": "Check", "sub": "every slide and step", "icon": "check", "at": [2, 0], "tone": 3, "step": 1 },
+        { "id": "out", "label": "One file", "sub": "works offline", "icon": "globe", "at": [3, 0], "tone": 4, "step": 2 }
+      ],
+      "edges": [
+        { "from": "src", "to": "build", "packets": true },
+        { "from": "build", "to": "check", "packets": true },
+        { "from": "check", "to": "out", "packets": true }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">The diagram is a small JSON spec. Press next to bring in the check, then the finished file.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="show" data-title="Charts">
+  <p class="kicker">Charts · sample data</p>
+  <h2>Charts follow the theme</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="Bar chart of sample decks built per quarter, the fourth quarter highlighted, next to a growth figure">
+    <script type="application/json">
+    {
+      "grid": { "cols": 3, "rows": 1 },
+      "nodes": [
+        { "kind": "bars", "at": [0, 0], "span": [2, 1], "values": [12, 18, 27, 41], "labels": ["Q1", "Q2", "Q3", "Q4"], "hi": 3, "unit": "k", "title": "Decks built per quarter" },
+        { "kind": "kpi", "at": [2, 0], "value": 41, "suffix": "k", "label": "decks in Q4", "delta": "+52%", "tone": 3, "step": 1 }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">Bars grow, then one press brings in the figure. The numbers are sample data.</aside>
+</section>
+
+<section class="slide" data-layout="code" data-sec="show" data-title="A slide in source">
+  <p class="kicker">Source</p>
+  <h2>A slide is a few lines of HTML</h2>
+<pre class="code" data-lang="html" data-hl="2">
+&lt;section class="slide" data-layout="stats"&gt;
+  &lt;h2&gt;Small kit, big range&lt;/h2&gt;
+  &lt;div class="stats"&gt;
+    &lt;div class="stat"&gt;
+      &lt;span class="num" data-count="6"&gt;6&lt;/span&gt;
+      &lt;span class="label"&gt;themes&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+</pre>
+  <p class="note">No CSS, no animation code: the layout and the motion come from the engine and the theme.</p>
+</section>
+
+<section class="slide" data-layout="timeline" data-sec="show" data-title="Shape the story">
+  <p class="kicker">A talk in five beats</p>
+  <h2>Shape the story</h2>
+  <ol class="timeline">
+    <li><b>Hook</b>Start with the surprise.</li>
+    <li><b>Problem</b>Name what hurts.</li>
+    <li><b>Turn</b>Show what changed.</li>
+    <li><b>Proof</b>Give the evidence.</li>
+    <li><b>Ask</b>End with one action.</li>
+  </ol>
+</section>
+
+<section class="slide" data-layout="cards" data-sec="show" data-title="One file">
+  <p class="kicker">Extras</p>
+  <h2>Everything stays in one file</h2>
+  <div class="cards">
+    <div class="card"><h3>Print</h3><p>Each slide is one PDF page, every build step shown in full.</p></div>
+    <div class="card"><h3>Offline</h3><p>Fonts and images are embedded. Nothing loads from the network.</p></div>
+    <div class="card"><h3>Present</h3><p>Press P for notes, a timer and a preview of the next slide.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="show" data-title="Keys">
+  <p class="kicker">Controls</p>
+  <h2>Move around</h2>
+  <table class="data">
+    <tr><th>Key</th><th>Does</th></tr>
+    <tr><td><code>→</code> <code>Space</code></td><td>Next step, then next slide</td></tr>
+    <tr><td><code>←</code></td><td>Back one step or slide</td></tr>
+    <tr><td><code>M</code></td><td>Open the map of all slides</td></tr>
+    <tr><td><code>P</code></td><td>Open the presenter window</td></tr>
+    <tr><td><code>F</code></td><td>Full screen</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-layout="closing" data-sec="close" data-title="Make yours">
+  <p class="kicker">Your turn</p>
+  <h1>Make yours</h1>
+  <p class="lead">Pick a theme, write the slides, build one file.</p>
+  <p class="links"><a href="https://github.com/AlessandroLiscio/motion-deck">github.com/AlessandroLiscio/motion-deck</a></p>
+  <div data-art="closing"></div>
+</section>
+
+<section class="slide" data-backup data-sec="close" data-title="Under the hood">
+  <p class="kicker">Backup</p>
+  <h2>Under the hood</h2>
+  <ul>
+    <li>A fixed 1600 by 900 stage, scaled to any screen</li>
+    <li>Plain HTML slides, engine and theme joined by a build script</li>
+    <li>A headless check that steps through every slide before you present</li>
+  </ul>
+  <p class="callout">Backup slides sit after the last slide and are numbered A, B, C.</p>
+</section>

@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    {
+      "id": "rev",
+      "kind": "bars",
+      "at": [
+        0,
+        0
+      ],
+      "title": "Revenue per quarter",
+      "values": [
+        12,
+        18,
+        26,
+        41,
+        38
+      ],
+      "labels": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5"
+      ],
+      "hi": 3,
+      "unit": "k",
+      "prefix": "$",
+      "highlight": 1
+    }
+  ]
+}

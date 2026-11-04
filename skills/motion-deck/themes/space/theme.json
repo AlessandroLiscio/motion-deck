@@ -1,0 +1,17 @@
+{
+  "name": "space",
+  "label": "Space",
+  "mode": "dark",
+  "description": "A dark void with twinkling stars, one accent per chapter and a warp streak between slides.",
+  "fonts": [
+    { "id": "big-shoulders-display", "role": "display" },
+    { "id": "atkinson-hyperlegible-next", "role": "body" },
+    { "id": "atkinson-hyperlegible-mono", "role": "mono" }
+  ],
+  "defaultTransition": "warp",
+  "transitions": ["warp"],
+  "bg": "#04060f",
+  "text": "#e8ecf8",
+  "muted": "#9ba6c6",
+  "accents": ["#5ad7ff", "#ffb454", "#6df2b0", "#ff7a6b", "#a98bff", "#ff7ad9"]
+}

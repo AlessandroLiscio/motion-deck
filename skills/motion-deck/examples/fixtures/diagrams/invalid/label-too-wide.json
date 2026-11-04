@@ -1,0 +1,27 @@
+{
+  "expect": "nodes[0] \"a\": the text \"Internationalization\" is ",
+  "spec": {
+    "grid": {
+      "cols": 6,
+      "rows": 1
+    },
+    "nodes": [
+      {
+        "id": "a",
+        "label": "Internationalization",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "label": "Next",
+        "at": [
+          1,
+          0
+        ]
+      }
+    ]
+  }
+}

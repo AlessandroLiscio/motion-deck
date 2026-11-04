@@ -1,0 +1,17 @@
+{
+  "name": "fantasy",
+  "label": "Fantasy",
+  "mode": "dark",
+  "description": "A candlelit manuscript: parchment type on burgundy dark, fireflies, rising embers and low fog, a magic dissolve between folios.",
+  "fonts": [
+    { "id": "cinzel", "role": "display" },
+    { "id": "eb-garamond", "role": "body" },
+    { "id": "jetbrains-mono", "role": "mono" }
+  ],
+  "defaultTransition": "dissolve",
+  "transitions": ["dissolve"],
+  "bg": "#120b0d",
+  "text": "#f0e4c8",
+  "muted": "#b8a07b",
+  "accents": ["#d8a93e", "#e5647f", "#3fc08c", "#5f90f2", "#b88ae6", "#f0883a"]
+}

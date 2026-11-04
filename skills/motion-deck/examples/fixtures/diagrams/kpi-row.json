@@ -1,0 +1,60 @@
+{
+  "grid": {
+    "cols": 4,
+    "rows": 1
+  },
+  "nodes": [
+    {
+      "id": "k1",
+      "kind": "kpi",
+      "at": [
+        0,
+        0
+      ],
+      "value": 1280,
+      "prefix": "$",
+      "suffix": "k",
+      "label": "Monthly revenue",
+      "delta": "+12%",
+      "tone": 1
+    },
+    {
+      "id": "k2",
+      "kind": "kpi",
+      "at": [
+        1,
+        0
+      ],
+      "value": 4.8,
+      "label": "Support rating",
+      "delta": "+0.3",
+      "tone": 3
+    },
+    {
+      "id": "k3",
+      "kind": "kpi",
+      "at": [
+        2,
+        0
+      ],
+      "value": 7.2,
+      "suffix": "%",
+      "label": "Churn",
+      "delta": "-1.4%",
+      "deltaTone": "ok",
+      "tone": 4
+    },
+    {
+      "id": "g1",
+      "kind": "gauge",
+      "at": [
+        3,
+        0
+      ],
+      "value": 78,
+      "unit": "%",
+      "label": "Goal reached",
+      "tone": 6
+    }
+  ]
+}
