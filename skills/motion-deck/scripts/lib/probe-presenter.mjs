@@ -37,6 +37,18 @@ export async function presenter({ client, file, open }) {
   if (!s0.notes.trim() || !s0.notes.includes(notes.trim().slice(0, 15))) fail(`#p-notes does not show the slide notes (got "${s0.notes.slice(0, 40)}")`);
   same([s0.index, s0.step, s0.next], ['1', '0', '1'], '#p-current index, step and #p-next index at the start');
 
+  // timing (contract 11): the progress bar, the pace mark and the pace word follow the plan of the opener
+  const planned = await a.evaluate('(() => { const i = Deck.info(); return { duration: i.duration, minutes: i.slides.map((s) => s.minutes) }; })()');
+  if (!(planned.duration > 0)) fail('Deck.info().duration is not a positive number');
+  const t0 = await popA.evaluate(`({ pct: document.querySelector('#p-bar').dataset.pct, state: document.querySelector('#p-pace').dataset.state, markHidden: document.querySelector('#p-mark').hidden, mark: document.querySelector('#p-mark').style.left })`);
+  same([t0.state, t0.markHidden], ['ahead', false], 'pace state and mark on slide 2 a few seconds in (its planned start is later)');
+  if (!/^\d+(\.\d+)?%$/.test(t0.mark)) fail(`the pace mark has no position (got "${t0.mark}")`);
+  await until(popA, `document.querySelector('#p-pace').dataset.state === 'ahead' && +document.querySelector('#p-pace').dataset.seconds > 0 && /\\d\\d:\\d\\d/.test(document.querySelector('#p-pace').textContent)`, { what: 'the ahead time as mm:ss' });
+  await a.evaluate('Deck.go(0, { instant: true })');
+  await until(popA, `document.querySelector('#p-current').dataset.index === '0' && document.querySelector('#p-pace').dataset.state === 'ontime'`, { what: 'on pace on the first slide' });
+  await a.evaluate('Deck.go(1, { instant: true })');
+  await until(popA, `document.querySelector('#p-current').dataset.index === '1'`, { what: 'the popup to come back to slide 2' });
+
   await a.evaluate('Deck.next()');
   await until(popA, `document.querySelector('#p-current').dataset.step === '1'`, { what: 'the popup to follow Deck.next()' });
 
@@ -76,5 +88,5 @@ export async function presenter({ client, file, open }) {
   same(await deckState(a), aMid, 'deck A after a command from deck B\'s popup');
 
   await Promise.all([popA2, popB].map((p) => p.closeTarget()));
-  return 'popup state, both directions, close and reopen, diagram preview one step ahead, two decks apart';
+  return 'popup state, progress and pace, both directions, close and reopen, diagram preview one step ahead, two decks apart';
 }

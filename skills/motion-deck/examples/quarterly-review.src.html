@@ -1,0 +1,126 @@
+<script type="application/json" id="deck-config">
+{
+  "title": "Q3 business review",
+  "subtitle": "Northwind Logistics",
+  "author": "Priya Raman",
+  "event": "Leadership meeting",
+  "lang": "en",
+  "theme": "editorial",
+  "sections": [
+    { "id": "results", "label": "Results" },
+    { "id": "learn", "label": "Learnings" },
+    { "id": "next", "label": "Next quarter" }
+  ],
+  "description": "A quarterly business review for a fictional logistics company: results, misses, lessons and the plan.",
+  "duration": 12
+}
+</script>
+
+<section class="slide" data-layout="title" data-sec="results" data-title="Q3 business review">
+  <p class="kicker">Northwind Logistics</p>
+  <h1>Q3 business review</h1>
+  <p class="lead">What we delivered, what we missed and what changes in Q4.</p>
+  <p class="meta"><span>Priya Raman</span><span>Operations</span><span>October 2026</span></p>
+  <div data-art="hero"></div>
+  <aside class="notes">Welcome. This review has three parts: the results, what they taught us, and the plan for the next quarter. I will keep the numbers to those we can trace to a report, and I will name every miss. Please interrupt me when a number does not match what you see in your own area.</aside>
+</section>
+
+<section class="slide" data-layout="statement" data-sec="results" data-title="The headline">
+  <p class="kicker">The headline</p>
+  <p class="big">Revenue grew 14% while late deliveries fell by a third.</p>
+  <aside class="notes">If you remember only one sentence, take this one. We grew faster than planned and, for the first time in two years, we did it without paying for it in service quality. The next slides show the numbers behind each half of the sentence, and then the places where we did not do as well.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="results" data-title="By the numbers">
+  <p class="kicker">Q3 against Q2</p>
+  <h2>The quarter in three numbers</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="14" data-suffix="%">14%</span><span class="label">revenue growth</span></div>
+    <div class="stat"><span class="num" data-count="34" data-suffix="%">34%</span><span class="label">fewer late deliveries</span></div>
+    <div class="stat"><span class="num" data-count="92" data-suffix="%">92%</span><span class="label">on-time rate</span></div>
+  </div>
+  <p class="source">Source: finance close and dispatch report, Q3 (example figures; replace with yours).</p>
+  <aside class="notes">Revenue is up fourteen percent on the second quarter. Late deliveries dropped by thirty-four percent, which lifted the on-time rate to ninety-two. The on-time figure counts a delivery as late after a fifteen-minute window, the same definition as last quarter. Nothing in these three numbers was restated, and the sources are on this slide.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="results" data-title="Revenue by month">
+  <p class="kicker">Revenue · example data</p>
+  <h2>Growth came from the last two months</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="Line chart of monthly revenue in millions, rising from 2.8 in April to 3.9 in September">
+    <script type="application/json">
+    {
+      "grid": { "cols": 1, "rows": 1 },
+      "nodes": [
+        { "kind": "line", "at": [0, 0], "values": [2.8, 2.9, 3.1, 3.4, 3.6, 3.9], "labels": ["Apr", "May", "Jun", "Jul", "Aug", "Sep"], "area": true, "unit": "M", "decimals": 1, "title": "Revenue per month" }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">Spring was flat. The curve bends in July when the two new regional contracts started to ship. August and September carry most of the growth. Because those contracts were signed in June, the line should keep rising, but I would not extend it past the next quarter without seeing the October invoices.</aside>
+</section>
+
+<section class="slide" data-layout="cards" data-sec="results" data-title="Three wins">
+  <p class="kicker">What went well</p>
+  <h2>Three wins worth repeating</h2>
+  <div class="cards">
+    <div class="card"><h3>Route planning</h3><p>New tool cut empty miles by 9%.</p></div>
+    <div class="card"><h3>Hub handover</h3><p>Night shift now ends clean.</p></div>
+    <div class="card"><h3>Customer calls</h3><p>Proactive delay alerts went live.</p></div>
+  </div>
+  <aside class="notes">Three changes explain most of the improvement. The route planning tool removed nine percent of empty miles. The hub handover checklist ended the habit of leaving unsorted pallets for the morning team. Proactive delay alerts reduced inbound calls, so the support team could handle the volume growth without hiring. All three are ready to copy to other depots.</aside>
+</section>
+
+<section class="slide" data-layout="chapter" data-sec="learn" data-title="Learnings">
+  <p class="kicker">Part 2</p>
+  <h2>What we missed</h2>
+  <p class="lead">Three misses, in order of cost.</p>
+  <div data-art="chapter"></div>
+  <aside class="notes">Now the less comfortable part. We missed three targets, and I have ordered them by what they cost us, not by how embarrassing they were. For each one I will say what happened, what we believe the cause is, and what we decided to do about it. I would rather list them here than have you find them later.</aside>
+</section>
+
+<section class="slide" data-layout="content" data-sec="learn" data-title="The misses">
+  <p class="kicker">Misses</p>
+  <h2>Where we fell short</h2>
+  <ul>
+    <li data-step="1">Warehouse overtime ran 18% over budget</li>
+    <li data-step="2">Two driver hires slipped by six weeks</li>
+    <li data-step="3">Fuel savings stayed below target</li>
+  </ul>
+  <aside class="notes">Overtime is the costliest miss: the extra volume arrived faster than the hiring. That leads to the second miss, because two driver hires slipped by six weeks while we waited for licence checks. Fuel savings were the smallest of the three. We expected the route tool to deliver more, and we think the effect is delayed, not absent.</aside>
+</section>
+
+<section class="slide" data-layout="split" data-sec="learn" data-title="What we learned">
+  <p class="kicker">What we learned</p>
+  <h2>Cause and change</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>Cause</h3>
+      <p>We hired after the volume, not before it.</p>
+    </div>
+    <div class="col">
+      <h3>Change</h3>
+      <p>Hiring now follows the signed pipeline.</p>
+    </div>
+  </div>
+  <aside class="notes">The root cause behind the first two misses is the same: we started hiring when the volume arrived rather than when the contracts were signed. The change is simple and already agreed with finance. From this quarter, hiring requests follow the signed pipeline, with a lead time of eight weeks. This one rule would have avoided most of the overtime.</aside>
+</section>
+
+<section class="slide" data-layout="timeline" data-sec="next" data-title="Q4 plan">
+  <p class="kicker">Next quarter</p>
+  <h2>The plan for Q4</h2>
+  <ol class="timeline">
+    <li><b>Oct</b>Hire six drivers early</li>
+    <li><b>Nov</b>Extend route tool to north depot</li>
+    <li><b>Dec</b>Peak season staffing review</li>
+    <li><b>Jan</b>Quarter close and report</li>
+  </ol>
+  <aside class="notes">The Q4 plan has four dated steps. In October we hire six drivers against the signed pipeline. In November the route tool reaches the north depot, which is the last site without it. December is the peak season staffing review, with a go or no-go for temporary staff. We close the quarter in January and report against these four steps.</aside>
+</section>
+
+<section class="slide" data-layout="closing" data-sec="next" data-title="Questions">
+  <h2>Questions and decisions</h2>
+  <p class="lead">One decision needed today: approve the early hiring plan.</p>
+  <p class="links"><a href="https://example.com/q3-report">Full report</a><a href="https://example.com/q3-data">Data sheets</a></p>
+  <div data-art="closing"></div>
+  <aside class="notes">I have one request for this meeting: approve the early hiring plan, so recruiting can start this week. Everything else on the slides is for information. The full report and the data sheets are linked here. I will take questions now, and I will note any number you want me to check and answer in writing tomorrow.</aside>
+</section>

@@ -2,7 +2,7 @@
 // The lints are pure functions over measured data (contract 10, Lints), so they are tested without a browser.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LIMITS, lintAccents, lintContent, lintType, summarize } from '../lib/lint.mjs';
+import { LIMITS, lintAccents, lintContent, lintPace, lintType, summarize } from '../lib/lint.mjs';
 import { contrast } from '../lib/measure.mjs';
 
 const slide = (over = {}) => ({ index: 0, layout: 'content', backup: false, title: 'A claim', titleWords: 2, words: 12, lists: [], imgsNoAlt: 0, hasNotes: true, notesWords: 60, hasSource: false, ...over });
@@ -72,4 +72,21 @@ describe('lintAccents', () => {
 
 test('summarize counts per code in first-seen order', () => {
   assert.equal(summarize([{ code: 'W_B' }, { code: 'W_A' }, { code: 'W_B' }]), 'W_B 2, W_A 1');
+});
+
+describe('lintPace', () => {
+  const s = (index, notesWords, over = {}) => ({ index, backup: false, notesWords, minutes: null, ...over });
+  test('off without --wpm', () => {
+    assert.deepEqual(lintPace([s(0, 900)], { wpm: 0, duration: 1 }), []);
+  });
+  test('total notes against the duration: over, under and within', () => {
+    const slides = [s(0, 650), s(1, 650)]; // 1300 words at 130 wpm = 10 min
+    assert.deepEqual(lintPace(slides, { wpm: 130, duration: 10 }), []);
+    assert.match(lintPace(slides, { wpm: 130, duration: 8 })[0].message, /about 10 min at 130 words per minute, over the 8 min plan/);
+    assert.match(lintPace(slides, { wpm: 130, duration: 20 })[0].message, /well under the 20 min plan/);
+  });
+  test('a slide with data-minutes warns when its notes need much longer; backup slides never count', () => {
+    const w = lintPace([s(0, 260, { minutes: 1 }), s(1, 100, { minutes: 1 }), s(2, 5000, { backup: true })], { wpm: 130, duration: 0 });
+    assert.deepEqual(w.map((x) => [x.code, x.slide]), [['W_PACE', 1]]);
+  });
 });

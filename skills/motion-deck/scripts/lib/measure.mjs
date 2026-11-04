@@ -93,7 +93,7 @@ function measureContent() {
     });
     const meta = info.slides[index] || {};
     return {
-      index, layout: s.dataset.layout || 'content', backup: !!meta.backup,
+      index, layout: s.dataset.layout || 'content', backup: !!meta.backup, minutes: meta.minutes || null,
       title: head ? head.textContent.trim() : '', titleWords: head ? words(head.textContent) : 0,
       words: words(text.textContent), lists,
       imgsNoAlt: [...s.querySelectorAll('img')].filter((i) => !i.hasAttribute('alt')).length,
@@ -101,7 +101,7 @@ function measureContent() {
       hasSource: !!s.querySelector('.source'),
     };
   });
-  return { lang: document.documentElement.getAttribute('lang') || '', slides };
+  return { lang: document.documentElement.getAttribute('lang') || '', duration: info.duration || 0, slides };
 }
 
 // Computed font size of every visible text run on the active slide, in stage pixels, with its tier: label (kicker, caption, table head, svg text, code), compact (cards, timeline, tables, stats) or body.

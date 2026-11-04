@@ -1,0 +1,154 @@
+<script type="application/json" id="deck-config">
+{
+  "title": "Fernlight",
+  "subtitle": "Seed round, 2026",
+  "author": "Mara Okafor",
+  "event": "Investor meeting",
+  "lang": "en",
+  "theme": "corporate",
+  "accent": "#1f7a5a",
+  "sections": [
+    { "id": "problem", "label": "Problem" },
+    { "id": "answer", "label": "Answer" },
+    { "id": "proof", "label": "Proof" },
+    { "id": "ask", "label": "Ask" }
+  ],
+  "description": "A seed-stage pitch deck for a fictional plant-care company. Replace the content and keep the shape.",
+  "duration": 10
+}
+</script>
+
+<section class="slide" data-layout="title" data-sec="problem" data-title="Fernlight">
+  <p class="kicker">Seed round · 2026</p>
+  <h1>Fernlight</h1>
+  <p class="lead">Plant care that runs itself, for offices with more plants than people.</p>
+  <p class="meta"><span>Mara Okafor</span><span>Founder</span></p>
+  <div data-art="hero"></div>
+  <aside class="notes">Thank you for the time. I am Mara, and I started Fernlight after watching my own office lose eleven plants in one winter. In the next ten minutes I will show the problem, the product, the early numbers and what we plan to do with your money. Questions are welcome at any point.</aside>
+</section>
+
+<section class="slide" data-layout="statement" data-sec="problem" data-title="The problem">
+  <p class="kicker">The problem</p>
+  <p class="big">Office plants die because nobody owns them.</p>
+  <aside class="notes">Every office buys plants, and every office watches them fade. Facilities teams have bigger fires to fight, and employees assume somebody else is watering. The plants are not expensive, but the replacement cycle and the sad corner of dry leaves cost more than anyone budgets. This is a service problem, not a gardening problem.</aside>
+</section>
+
+<section class="slide" data-layout="cards" data-sec="problem" data-title="Three ways plants are lost">
+  <p class="kicker">Why they fail</p>
+  <h2>Three ways offices lose plants</h2>
+  <div class="cards">
+    <div class="card"><h3>Overwatering</h3><p>Everyone helps, nobody tracks.</p></div>
+    <div class="card"><h3>Neglect</h3><p>Holidays empty the floor.</p></div>
+    <div class="card"><h3>Wrong spot</h3><p>Light never matched the species.</p></div>
+  </div>
+  <aside class="notes">We interviewed forty office managers. Three causes came up again and again. Overwatering happens when many people help without a shared record. Neglect happens over holidays and in hybrid weeks. The wrong spot is a purchasing mistake that nobody notices until the leaves turn yellow. Each cause is a data problem we can measure.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="answer" data-title="How Fernlight works">
+  <p class="kicker">The answer</p>
+  <h2>A sensor, an app and a visit</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="A soil sensor sends readings to a hub, the app flags a plant, and a care visit fixes it">
+    <script type="application/json">
+    {
+      "grid": { "cols": 4, "rows": 1 },
+      "nodes": [
+        { "id": "sensor", "label": "Soil sensor", "sub": "moisture and light", "icon": "bolt", "at": [0, 0], "tone": 1 },
+        { "id": "hub", "label": "Hub", "sub": "one per floor", "icon": "gear", "at": [1, 0], "tone": 2 },
+        { "id": "app", "label": "Care app", "sub": "flags what needs help", "icon": "chat", "at": [2, 0], "tone": 3, "step": 1 },
+        { "id": "visit", "label": "Care visit", "sub": "monthly, by a local grower", "icon": "user", "at": [3, 0], "tone": 4, "step": 2 }
+      ],
+      "edges": [
+        { "from": "sensor", "to": "hub", "packets": true },
+        { "from": "hub", "to": "app", "packets": true },
+        { "from": "app", "to": "visit", "packets": true }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">A small sensor sits in each pot and reports moisture and light every hour. A hub per floor collects the readings. The app flags only the plants that need help, so nobody waters by habit. Once a month a local grower visits with exactly the supplies the app predicted. The office does nothing.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="answer" data-title="The market">
+  <p class="kicker">The market</p>
+  <h2>Offices already pay for greenery</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="4200" data-prefix="€" data-suffix="">€4,200</span><span class="label">average yearly plant budget</span></div>
+    <div class="stat"><span class="num" data-count="38" data-suffix="%">38%</span><span class="label">of plants replaced yearly</span></div>
+    <div class="stat"><span class="num" data-count="9">9</span><span class="label">months to payback</span></div>
+  </div>
+  <p class="source">Source: interviews with 40 office managers, spring 2026 (example figures; replace with yours).</p>
+  <aside class="notes">These figures come from our own interviews and are the base of our model. The average office spends about four thousand two hundred euros a year on plants and replaces more than a third of them. When we remove the replacements, the service pays for itself in about nine months. We will share the interview notes on request.</aside>
+</section>
+
+<section class="slide" data-layout="split" data-sec="answer" data-title="The product">
+  <p class="kicker">The product</p>
+  <h2>One subscription, no chores</h2>
+  <div class="cols wide-l">
+    <div class="col">
+      <ul>
+        <li>Sensors and hub included</li>
+        <li>Monthly visit by a local grower</li>
+        <li>Replacements at no extra cost</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="callout"><p>From €89 a month per floor.</p></div>
+    </div>
+  </div>
+  <aside class="notes">Customers pay one monthly fee per floor. It covers the hardware, the visits and every replacement plant. We keep the hardware, so the customer never buys a sensor. Growers are paid per visit, which lets us start in a new city with a handful of local partners rather than a large payroll.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="proof" data-title="Traction">
+  <p class="kicker">Traction · example data</p>
+  <h2>Sites live, quarter by quarter</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="Bar chart of offices on Fernlight per quarter, growing from 3 to 31, next to the growth figure">
+    <script type="application/json">
+    {
+      "grid": { "cols": 3, "rows": 1 },
+      "nodes": [
+        { "kind": "bars", "at": [0, 0], "span": [2, 1], "values": [3, 8, 17, 31], "labels": ["Q1", "Q2", "Q3", "Q4"], "hi": 3, "title": "Offices on Fernlight" },
+        { "kind": "kpi", "at": [2, 0], "value": 31, "label": "offices live", "delta": "+82%", "tone": 3, "step": 1 }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">We launched with three pilot offices and finished the year with thirty-one paying sites. Growth is mostly referral: nine of the last twelve customers came from an existing one. Churn so far is zero, which is encouraging but based on a short history. The chart uses sample figures for this template.</aside>
+</section>
+
+<section class="slide" data-layout="timeline" data-sec="proof" data-title="Roadmap">
+  <p class="kicker">Roadmap</p>
+  <h2>Where the money goes</h2>
+  <ol class="timeline">
+    <li><b>Q1</b>Second sensor generation</li>
+    <li><b>Q2</b>Open three new cities</li>
+    <li><b>Q3</b>Partner with two facility firms</li>
+    <li><b>Q4</b>Break even on visits</li>
+  </ol>
+  <aside class="notes">The round funds four things in order. First, a cheaper second-generation sensor. Second, three new cities opened through grower partners. Third, two partnerships with facility management firms, who already hold the building contracts. Finally, the visit network should break even in the fourth quarter. Each step has an owner and a measurable goal.</aside>
+</section>
+
+<section class="slide" data-layout="quote" data-sec="proof" data-title="A customer">
+  <blockquote><p>We stopped talking about the plants. They just look good now.</p></blockquote>
+  <cite>Office manager, pilot customer (example quote)</cite>
+  <aside class="notes">This is from our first pilot customer, a design studio with sixty desks. What matters is the last sentence: the plants stopped being a topic. That is the product. When a service becomes invisible, it is easy to keep paying for and hard to replace. Replace this quote with a real one before you present.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="ask" data-title="The ask">
+  <p class="kicker">The ask</p>
+  <h2>We are raising a seed round</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="1.2" data-prefix="€" data-suffix="M" data-decimals="1">€1.2M</span><span class="label">seed round</span></div>
+    <div class="stat"><span class="num" data-count="18">18</span><span class="label">months of runway</span></div>
+    <div class="stat"><span class="num" data-count="120">120</span><span class="label">offices by the end</span></div>
+  </div>
+  <p class="source">Source: company plan, version 3 (example figures; replace with yours).</p>
+  <aside class="notes">We are raising one million two hundred thousand euros. That gives eighteen months of runway and, in our plan, one hundred and twenty offices by the end. We are looking for investors who understand subscriptions and local operations. I would like to hear which of those two is your stronger suit.</aside>
+</section>
+
+<section class="slide" data-layout="closing" data-sec="ask" data-title="Thank you">
+  <h2>Let us grow something together</h2>
+  <p class="lead">mara@fernlight.example</p>
+  <p class="links"><a href="https://example.com/fernlight">Data room</a><a href="https://example.com/fernlight/demo">Live demo</a></p>
+  <div data-art="closing"></div>
+  <aside class="notes">Thank you. The data room link has the interview notes, the financial model and the customer list, and the demo link shows a live office. I am happy to take questions now, and to send anything you want to look at before a second meeting. Please tell me what would make this an easy yes for you.</aside>
+</section>

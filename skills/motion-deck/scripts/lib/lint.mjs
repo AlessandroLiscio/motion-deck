@@ -38,6 +38,23 @@ export function lintContent(slides, { lang = '' } = {}) {
   return out;
 }
 
+// Words to minutes (check --wpm): the speaker notes of the normal slides against the planned duration, and against data-minutes where a slide has them.
+export function lintPace(slides, { wpm, duration }) {
+  if (!(wpm > 0)) return [];
+  const out = [];
+  const normal = slides.filter((s) => !s.backup);
+  const est = normal.reduce((n, s) => n + s.notesWords, 0) / wpm;
+  const min = (n) => (Math.round(n * 10) / 10).toString();
+  if (duration > 0 && est > duration * 1.1) out.push({ code: 'W_PACE', slide: null, message: `the notes take about ${min(est)} min at ${wpm} words per minute, over the ${min(duration)} min plan` });
+  else if (duration > 0 && est < duration * 0.6) out.push({ code: 'W_PACE', slide: null, message: `the notes take about ${min(est)} min at ${wpm} words per minute, well under the ${min(duration)} min plan` });
+  for (const s of normal) {
+    if (!s.minutes) continue;
+    const need = s.notesWords / wpm;
+    if (need > s.minutes * 1.5 && need - s.minutes > 0.5) out.push({ code: 'W_PACE', slide: s.index + 1, message: `the notes take about ${min(need)} min but the slide has ${min(s.minutes)} (data-minutes)` });
+  }
+  return out;
+}
+
 // Text samples come from MEASURE_TYPE: { selector, px, tier, slide }. Returns { warnings, errors }, one entry per selector and size with the slides it appears on.
 export function lintType(samples) {
   const groups = new Map();

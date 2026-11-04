@@ -6,19 +6,19 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { launchBrowser } from './lib/browser.mjs';
 import { openPage } from './lib/cdp.mjs';
 import { short } from './lib/format.mjs';
-import { lintAccents, lintContent, lintType, summarize } from './lib/lint.mjs';
+import { lintAccents, lintContent, lintPace, lintType, summarize } from './lib/lint.mjs';
 import { MEASURE_CONTENT, MEASURE_FONTS, MEASURE_SLIDE, MEASURE_TOKENS, MEASURE_TYPE, contrast, normHex } from './lib/measure.mjs';
 import { printPdf } from './lib/pdf.mjs';
 import { shotName, writeReport } from './lib/report.mjs';
 
 const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const USAGE = 'usage: check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--timeout <ms>] [--themes <dir>]';
+const USAGE = 'usage: check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--wpm <n>] [--timeout <ms>] [--themes <dir>]';
 
 class UsageError extends Error {}
 
 function parseArgs(argv) {
-  const o = { file: null, out: 'tmp/reports/check', browser: 'auto', shots: 'all', pdf: true, strict: false, timeout: 20000, themes: join(SKILL, 'themes') };
-  const takes = new Set(['--out', '--browser', '--shots', '--timeout', '--themes']);
+  const o = { file: null, out: 'tmp/reports/check', browser: 'auto', shots: 'all', pdf: true, strict: false, wpm: 0, timeout: 20000, themes: join(SKILL, 'themes') };
+  const takes = new Set(['--out', '--browser', '--shots', '--timeout', '--themes', '--wpm']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--no-pdf') o.pdf = false;
@@ -27,6 +27,7 @@ function parseArgs(argv) {
       if (argv[i + 1] === undefined) throw new UsageError(`${a} needs a value`);
       const v = argv[++i];
       if (a === '--timeout') o.timeout = Number(v);
+      else if (a === '--wpm') o.wpm = Number(v);
       else o[a.slice(2)] = v;
     } else if (a.startsWith('--')) throw new UsageError(`unknown option ${a}`);
     else if (o.file === null) o.file = a;
@@ -35,6 +36,7 @@ function parseArgs(argv) {
   if (!o.file) throw new UsageError('missing <built.html>');
   if (!['auto', 'chrome', 'edge'].includes(o.browser)) throw new UsageError('--browser must be auto, chrome or edge');
   if (!['all', 'final', 'none'].includes(o.shots)) throw new UsageError('--shots must be all, final or none');
+  if (o.wpm !== 0 && !(o.wpm > 0)) throw new UsageError('--wpm must be a positive number of words per minute');
   if (!(o.timeout > 0)) throw new UsageError('--timeout must be a positive number of milliseconds');
   return o;
 }
@@ -193,7 +195,7 @@ export async function runCheck(opts, out = console.log) {
       const content = await page.evaluate(MEASURE_CONTENT);
       const legible = lintType(type);
       for (const e of legible.errors) add('legibility', e.message);
-      warnings.push(...lintContent(content.slides, { lang: content.lang }), ...legible.warnings);
+      warnings.push(...lintContent(content.slides, { lang: content.lang }), ...lintPace(content.slides, { wpm: opts.wpm, duration: content.duration }), ...legible.warnings);
       stage('legibility', `${type.length} text styles`, problems.length > mark);
 
       // 7. tokens

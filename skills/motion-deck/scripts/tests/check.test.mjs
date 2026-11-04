@@ -60,7 +60,7 @@ describe('helpers', () => {
 
 describe('tool errors exit 2', () => {
   test('missing file, missing argument, unknown option', () => {
-    for (const args of [[join(fixtures, 'nope.html')], [], [join(fixtures, 'ok.html'), '--bogus']]) {
+    for (const args of [[join(fixtures, 'nope.html')], [], [join(fixtures, 'ok.html'), '--bogus'], [join(fixtures, 'ok.html'), '--wpm', 'fast']]) {
       const res = spawnSync(process.execPath, [checkScript, ...args], { encoding: 'utf8' });
       assert.equal(res.status, 2, args.join(' '));
       assert.match(res.stdout.trim().split('\n').pop(), /^FAIL check: /);
