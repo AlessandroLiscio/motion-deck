@@ -27,6 +27,7 @@ const NEGATIVES = [
   { name: 'never-ready', cls: 'ready', timeout: 3000 },
   { name: 'console-error', cls: 'console' },
   { name: 'remote', cls: 'offline' },
+  { name: 'local-asset', cls: 'offline' },
   { name: 'bad-contrast', cls: 'tokens' },
 ];
 

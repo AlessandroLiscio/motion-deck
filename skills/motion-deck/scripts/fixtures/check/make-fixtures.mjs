@@ -67,8 +67,11 @@ const fixtures = {
   'never-ready.html': page({ after: 'Deck.ready = new Promise(function () {});' }),
   'console-error.html': page({ after: 'console.error("fixture console error");' }),
   'remote.html': page({ slides: [slideOf('<h2>Remote</h2><img src="https://example.invalid/pixel.png" width="100" height="100" alt="">')] }),
+  // The sibling file exists, so the deck loads and runs here; sending the HTML alone would break it.
+  'local-asset.html': page({ slides: [slideOf('<h2>Sibling file</h2><script src="local-asset.js"></script>')] }),
   'bad-contrast.html': page({ custom: `${monoFix} :root { --text: #101418; }` }),
 };
 
 for (const [name, html] of Object.entries(fixtures)) writeFileSync(join(here, name), html);
+writeFileSync(join(here, 'local-asset.js'), '/* a sibling file that local-asset.html must not depend on */\n');
 console.log(`PASS make-fixtures: ${Object.keys(fixtures).length} files in ${here}`);

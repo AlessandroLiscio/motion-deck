@@ -1,5 +1,5 @@
 // Presenter probe (contract section 11): trusted P opens a popup, the two windows follow each other, and two decks never cross-talk.
-import { fail, reset, same, sleep, until, untilNode } from './probe-kit.mjs';
+import { fail, reset, same, sleep, titleIndex, until, untilNode } from './probe-kit.mjs';
 
 const POPUP_STATE = `JSON.stringify({ title: document.title, count: (document.querySelector('#p-count') || {}).textContent || '',
   notes: (document.querySelector('#p-notes') || {}).textContent || '', frames: document.querySelectorAll('iframe').length,
@@ -51,6 +51,12 @@ export async function presenter({ client, file, open }) {
   const s2 = await popupState(popA2);
   same([s2.index, s2.step], [String(now.index), String(now.step)], 'recreated popup state against the deck');
 
+  // a slide with diagram builds: the Next preview shows the diagram one step ahead of the current preview
+  await reset(a, await titleIndex(a, 'Diagrams'));
+  const shown = `(() => { const n = (sel) => { const f = document.querySelector(sel + ' iframe'); const d = f && f.contentDocument; return d ? d.querySelectorAll('svg[data-diagram] .md-el:not(.md-hid)').length : 0; };
+    const cur = n('#p-current'), next = n('#p-next'); return cur > 0 && next > cur ? [cur, next] : false; })()`;
+  await until(popA2, shown, { what: 'the Next preview to show more diagram elements than the current preview', timeout: 6000 });
+
   // two decks, two popups: a command from one moves only its own deck
   const b = await open();
   await reset(b, 1);
@@ -70,5 +76,5 @@ export async function presenter({ client, file, open }) {
   same(await deckState(a), aMid, 'deck A after a command from deck B\'s popup');
 
   await Promise.all([popA2, popB].map((p) => p.closeTarget()));
-  return 'popup state, both directions, close and reopen, two decks apart';
+  return 'popup state, both directions, close and reopen, diagram preview one step ahead, two decks apart';
 }

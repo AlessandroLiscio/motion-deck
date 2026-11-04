@@ -40,6 +40,7 @@ const negatives = [
   { fixture: 'never-ready', show: /ready: Deck\.ready did not settle within 3000 ms/, extra: ['--timeout', '3000'] },
   { fixture: 'console-error', show: /console: console\.error: fixture console error/ },
   { fixture: 'remote', show: /offline: request to https:\/\/example\.invalid\/pixel\.png/ },
+  { fixture: 'local-asset', show: /offline: request to file:\/\/\/\S*local-asset\.js/ },
   { fixture: 'bad-contrast', show: /tokens: contrast of --text .* is 1\.00, needs 4\.5/ },
 ];
 

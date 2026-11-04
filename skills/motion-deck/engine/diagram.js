@@ -792,7 +792,14 @@
       else { const k = counters[e.step] = (counters[e.step] === undefined ? 0 : counters[e.step] + 1); d = (e.step ? 0 : START) + k * STAG; }
       e.d = d; prev = e;
     });
-    els.forEach((e) => { e.g.style.setProperty('--md-d', e.d + 'ms'); if (e.step > 0) e.g.classList.add('md-hid'); });
+    // data-ds, data-do and data-dh (build, leave and highlight step) let a copy of the drawing, such as the presenter's preview, show any step without the instance.
+    els.forEach((e) => {
+      e.g.style.setProperty('--md-d', e.d + 'ms');
+      e.g.setAttribute('data-ds', e.step);
+      if (e.out != null) e.g.setAttribute('data-do', e.out);
+      if (e.hl) e.g.setAttribute('data-dh', e.hl);
+      if (e.step > 0) e.g.classList.add('md-hid');
+    });
     return { els, steps: stepsOf(M), vis: null };
   }
   function stepsOf(M) { let m = 0; M.nodes.concat(M.edges).forEach((o) => { m = Math.max(m, o.step || 0, o.out || 0, o.hl || 0); }); return m; }

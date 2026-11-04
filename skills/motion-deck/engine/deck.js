@@ -87,7 +87,9 @@
       setupAmbient();
       fit();
       bindInput();
-      await Promise.all([doc.fonts ? doc.fonts.ready : null, ...$$('img').map((i) => (i.decode ? i.decode().catch(() => {}) : null))]);
+      // Load every embedded face first: a face only slide content uses may not have started while the slides are hidden, and the measure pass needs its metrics.
+      const faces = doc.fonts ? Promise.all(Array.from(doc.fonts, (f) => f.load().catch(() => {}))) : null;
+      await Promise.all([faces, doc.fonts ? doc.fonts.ready : null, ...$$('img').map((i) => (i.decode ? i.decode().catch(() => {}) : null))]);
       measurePass();
 
       const start = readHash();
@@ -236,7 +238,8 @@
       nums.forEach((n) => {
         n.style.fontSize = '';
         let fs = parseFloat(getComputedStyle(n).fontSize);
-        while (n.scrollWidth > n.clientWidth + 1 && fs > 28) { fs -= 2; n.style.fontSize = `${fs}px`; }
+        // Both widths are rounded to whole pixels, so a difference of 1 can already be a number that pokes out of its column by a pixel.
+        while (n.scrollWidth > n.clientWidth && fs > 28) { fs -= 2; n.style.fontSize = `${fs}px`; }
         best = Math.min(best, fs);
       });
       nums.forEach((n) => { n.style.fontSize = `${best}px`; });
@@ -779,6 +782,13 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
       clone.classList.add('active', 'complete');
       $$('[data-step]', clone).forEach((e) => { e.classList.remove('anim'); e.classList.toggle('on', step >= (parseInt(e.dataset.step, 10) || 0)); });
       $$('[data-step-out]', clone).forEach((e) => e.classList.toggle('off', step >= (parseInt(e.dataset.stepOut, 10) || 0)));
+      // The diagram's builds live in classes, not in data-step: redraw them from the step marks the diagram writes on each element.
+      $$('svg[data-diagram] [data-ds]', clone).forEach((g) => {
+        const vis = step >= +g.dataset.ds && !(g.dataset.do !== undefined && step >= +g.dataset.do);
+        g.classList.toggle('md-hid', !vis);
+        const ov = g.dataset.dh ? $('.md-hl', g) : null;
+        if (ov) ov.classList.toggle('md-on', vis && step === +g.dataset.dh);
+      });
       return clone.outerHTML;
     };
     if (nextSlide !== s) updateDiagrams(nextSlide, { step: nextSlide.steps, capture: true });

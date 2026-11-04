@@ -63,7 +63,8 @@ export async function loadDeck(client, file, { hash = '', query = '', reduced = 
   await page.send('Page.enable');
   await page.send('Runtime.enable');
   await page.send('Emulation.setDeviceMetricsOverride', { width: 1600, height: 900, deviceScaleFactor: 1, mobile: false });
-  if (reduced) await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  // Always set: a host with window animations switched off (a Windows server session such as GitHub's runners) reports reduce on its own.
+  await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: reduced ? 'reduce' : 'no-preference' }] });
   const loaded = page.waitFor('Page.domContentEventFired');
   await page.send('Page.navigate', { url: pathToFileURL(file).href + query + hash });
   await loaded;

@@ -46,7 +46,6 @@ const READY = `new Promise((resolve, reject) => {
   tick();
 })`;
 const TWO_FRAMES = 'new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))';
-const allowed = (url) => /^(data|file|blob):/i.test(url);
 
 function describe(v) {
   const n = v.numbers;
@@ -73,6 +72,9 @@ export async function runCheck(opts, out = console.log) {
   const file = resolve(opts.file);
   if (!existsSync(file)) throw new Error(`file not found: ${file}`);
   const deck = basename(file, extname(file)) === 'index' ? basename(dirname(file)) : basename(file, extname(file));
+  // A deck is one file: embedded data and the deck itself are the only requests it may make, so a sibling script or stylesheet fails the check.
+  const deckUrl = pathToFileURL(file).href;
+  const allowed = (url) => /^(data|blob):/i.test(url) || url.split(/[?#]/)[0] === deckUrl;
   const problems = [];
   const add = (cls, message) => problems.push({ cls, message });
   const consoleLines = [];
