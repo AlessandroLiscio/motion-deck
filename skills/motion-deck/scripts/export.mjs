@@ -64,7 +64,7 @@ function deckFacts() {
     const doc = new DOMParser().parseFromString(html, 'text/html'); // inert: nothing in the notes runs or loads
     const out = [];
     let cur = '';
-    const flush = () => { const t = cur.replace(/\s+/g, ' ').trim(); if (t) out.push(t); cur = ''; };
+    const flush = () => { const t = cur.replace(/\s+/g, ' ').trim(); if (t && t !== '•') out.push(t); cur = ''; }; // an empty list item leaves no bare bullet
     const walk = (node) => {
       for (const c of node.childNodes) {
         if (c.nodeType === 3) cur += c.nodeValue;

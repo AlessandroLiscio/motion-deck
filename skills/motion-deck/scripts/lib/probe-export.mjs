@@ -32,7 +32,8 @@ export async function probeExport({ file, browser, outDir }, log = () => {}) {
     const facts = await page.evaluate(FACTS);
     const deckSlides = facts.slides.length;
     // export order: the main slides, then the backup slides, each in deck order
-    const order = [...facts.slides.map((s, i) => [s, i]).filter(([s]) => !s.backup), ...facts.slides.map((s, i) => [s, i]).filter(([s]) => s.backup)];
+    const indexed = facts.slides.map((s, i) => [s, i]);
+    const order = [...indexed.filter(([s]) => !s.backup), ...indexed.filter(([s]) => s.backup)];
     const states = (steps) => order.flatMap(([s, i]) => (steps === 'all' ? Array.from({ length: s.steps + 1 }, (_, k) => [i + 1, k]) : [[i + 1, s.steps]]));
     const parse = browserXml(page);
     const parts = [];

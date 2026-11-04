@@ -29,7 +29,7 @@ try {
   }
   $result = [ordered]@{ version = $app.Version; slideCount = $pres.Slides.Count; width = $pres.PageSetup.SlideWidth; height = $pres.PageSetup.SlideHeight; slides = $slides; pdf = $null }
   if ($Pdf) {
-    $pdfFull = [System.IO.Path]::GetFullPath($Pdf)
+    $pdfFull = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Pdf) # relative to the shell's folder, not the process folder
     $pres.SaveAs($pdfFull, 32) # ppSaveAsPDF
     $result.pdf = $pdfFull
   }

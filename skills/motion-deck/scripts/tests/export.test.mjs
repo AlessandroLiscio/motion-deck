@@ -246,11 +246,11 @@ describe('export.mjs', { skip: browserSkip }, () => {
   });
 
   test('the default output is <slug>.pptx next to the deck, and --scale sets the picture size', () => {
-    const r = run(html, ['--scale', '1', '--steps', 'final', '--format', 'jpeg']);
+    const r = run(html, ['--scale', '1', '--steps', 'final', '--format', 'png']);
     assert.equal(r.code, 0, r.text);
     const zip = readZip(readFileSync(join(work, 'deck', 'deck.pptx')));
-    const info = imageInfo(zip.read('ppt/media/image1.jpg'));
-    assert.deepEqual([info.type, info.width, info.height], ['jpeg', 1600, 900]);
+    const info = imageInfo(zip.read('ppt/media/image1.png'));
+    assert.deepEqual([info.type, info.width, info.height], ['png', 1600, 900]);
   });
 
   test('a missing file, a bad option and a deck that cannot start fail with a FAIL line and exit 2', () => {
