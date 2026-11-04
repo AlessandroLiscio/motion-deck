@@ -96,10 +96,12 @@ Each layout is a flex or grid arrangement provided by `engine/deck.css`, styled 
 | `cards` | `.kicker?`, `h2`, `.cards` with 2 to 4 `.card` each holding `h3` and `p` (and `.chip?`) |
 | `timeline` | `.kicker?`, `h2`, `ol.timeline` with 3 to 6 `li`, each starting with `<b>` for the label |
 | `image` | `figure` holding `img` and `figcaption?`; the image MAY carry `data-bleed` |
-| `closing` | `h1` or `h2`, `p.lead?`, `.links?` (anchors), `[data-art="closing"]?` |
+| `closing` | `h1` or `h2`, `p.lead?`, `.links?` (anchors; a sources list is a `ul` of anchors or plain lines, one per source), `[data-art="closing"]?` |
 | `blank` | anything; no padding rules besides the safe area |
 
-Shared elements: `.kicker` (small uppercase label in the accent), `h1`, `h2`, `h3`, `p.lead`, `p.big`, `.muted`, `.small`, `strong` (accent weight), `em`, inline `code`, `a`, `.chip`, `.callout`, `.cols`, `.col`, `.cards`, `.card`, `.stats`, `.stat`, `.num`, `.label`, `ul`, `ol`, `table.data`, `figure`, `figcaption`, `.swap`, `.row`, `.stack`, `.center`.
+`p.source` is the citation footnote: one short line ("Source: name, year") at the bottom of the slide, in the mono font and the muted color, inside the safe area (it takes the free space under the content with `margin-top: auto`). A figure on a slide comes from the user's material and its `.source` names that material; the `stats` layout expects one (lint `W_STAT_SOURCE`, section 10).
+
+Shared elements: `.kicker` (small uppercase label in the accent), `h1`, `h2`, `h3`, `p.lead`, `p.big`, `.muted`, `.small`, `strong` (accent weight), `em`, inline `code`, `a`, `.chip`, `.callout`, `.cols`, `.col`, `.cards`, `.card`, `.stats`, `.stat`, `.num`, `.label`, `.source`, `ul`, `ol`, `table.data`, `figure`, `figcaption`, `.swap`, `.row`, `.stack`, `.center`.
 
 ### 2.4 Assets
 
@@ -294,7 +296,7 @@ A diagram in a slide is `<svg data-diagram viewBox="0 0 1360 520" role="img" ari
 
 ## 10. Check and selftest
 
-`node scripts/check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--timeout <ms>]` drives headless Chrome or Edge through the DevTools protocol (Node's built-in `WebSocket`; no npm packages). Browser launch: a throwaway profile directory, `--remote-debugging-port=0`, the endpoint read from the browser's own output, localhost only, every wait bounded by `--timeout` (default 20000), and the browser process and profile removed in a `finally` block. Viewport 1600 by 900, device scale factor 1, so `--s = 1`.
+`node scripts/check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--timeout <ms>]` drives headless Chrome or Edge through the DevTools protocol (Node's built-in `WebSocket`; no npm packages). Browser launch: a throwaway profile directory, `--remote-debugging-port=0`, the endpoint read from the browser's own output, localhost only, every wait bounded by `--timeout` (default 20000), and the browser process and profile removed in a `finally` block. Viewport 1600 by 900, device scale factor 1, so `--s = 1`.
 
 It MUST verify, for the whole deck and for every slide in every step state from 0 to `steps()` (capture mode on, via `Deck.go(i, { step, instant: true })`):
 
@@ -304,12 +306,40 @@ It MUST verify, for the whole deck and for every slide in every step state from 
 4. Console: any `console.error`, uncaught exception, unhandled rejection, or failed resource load fails.
 5. Offline: with the network disabled (`Network.emulateNetworkConditions` offline) the deck still reaches ready, and no request other than `data:` or the file itself was attempted.
 6. PDF: `Page.printToPDF` with `preferCSSPageSize` and `printBackground`; the page count equals `Deck.count` and the page size is 1600 by 900 CSS pixels (1200 by 675 points).
-7. Tokens: the computed `--bg`, `--text`, `--muted` equal the values in `theme.json` and the contrast of `--text` and `--muted` against `--bg` is at least 4.5.
-8. Screenshots of every state go to `<out>/<deck>/shots/s<NN>-<step>.png`, plus `report.json`, a `console.log`, `deck.pdf` and an `index.html` contact sheet that lists the shots.
+7. Tokens: the computed `--bg`, `--text`, `--muted` equal the values in `theme.json` and the contrast of `--text` and `--muted` against `--bg` is at least 4.5. The six accents `--a1` to `--a6` reach 3:1 against `--bg` (WCAG 1.4.11, non-text contrast: they colour diagram strokes, chips and bars). A theme's own accent under 3:1 is a failure (class `tokens`), because all six themes reach at least 3.88 today and a theme author can fix it; an accent the deck changed through config `accent` is only the warning `W_ACCENT_CONTRAST`, since a brand colour is the author's choice.
+8. Legibility: the computed font size of every visible text run on every slide in its final step state, measured in stage pixels (text in an `svg` is scaled by the svg's transform). The runs fall in three tiers: `label` (`.kicker`, `.label`, `th`, `cite`, `.attrib`, `.meta`, `figcaption`, `.chip`, `.note`, `.source`, `.small`, `code`, `pre`, `.links`, text inside `svg`), `compact` (inside `.card`, `.timeline`, `table.data`, `.stat`) and `body` (everything else). At 1600 by 900 the stage is about 120 px per inch, so 30 px is 18 pt. Under the `warn` size the lint `W_FONT_SIZE` is raised (one entry per selector and size, with the slides it appears on); under the `error` size the check fails with class `legibility`.
+
+   | Tier | warn under | fail under |
+   |---|---|---|
+   | body | 30 px | 20 px |
+   | compact | 24 px | 20 px |
+   | label | 16 px | 14 px |
+
+   The floors were tuned on the showcase in all six themes: its smallest body text is 24 px and its smallest label text 17 px, so the showcase passes, with warnings for the few body and compact runs under the warn size, and a deck that shrinks text by hand fails.
+9. Screenshots of every state go to `<out>/<deck>/shots/s<NN>-<step>.png`, plus `report.json`, a `console.log`, `deck.pdf` and an `index.html` contact sheet that lists the shots.
+
+### Lints
+
+Content lints are warnings, not failures: each is `{ code, slide, message }` (`slide` is 1-based, null for the whole deck) in `report.warnings`, shown in the contact sheet and summed up in one line `warn lint <N> warning(s): <code> <count>, …` before the final line. The check exits 0 with warnings; `--strict` turns every warning into a failure of class `lint`. The limits are the rules of `SKILL.md`, in `scripts/lib/lint.mjs`:
+
+   | Code | Warns when |
+   |---|---|
+   | `W_WORDS` | a slide holds more than 30 words (notes, svg, `pre.code`, art and `.source` are not counted) |
+   | `W_LIST_LEN` | a `ul` or `ol` (not `.timeline`, not `.links`) has more than 5 items |
+   | `W_LIST_ITEM` | a list item has more than 12 words |
+   | `W_TITLE_LEN` | the first `h1` or `h2` has more than 10 words |
+   | `W_LAYOUT_RUN` | three or more slides in a row use the same layout (one warning per run) |
+   | `W_NOTES_MISSING` | a slide has no `aside.notes` text |
+   | `W_NOTES_LEN` | notes have fewer than 40 or more than 90 words |
+   | `W_IMG_ALT` | an `img` has no `alt` attribute (`alt=""` marks decoration and is fine) |
+   | `W_STAT_SOURCE` | a `stats` slide has no `.source` |
+   | `W_LANG` | the page has no `lang` |
+   | `W_FONT_SIZE` | text under the `warn` size of its tier (item 8) |
+   | `W_ACCENT_CONTRAST` | a deck-set accent is under 3:1 (item 7) |
 
 Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. Final line: `PASS check: <deck> [<browser>] <N> slides, <M> states, 0 overflow, 0 console errors, 0 missing fonts, pdf <N> pages` or `FAIL check: <deck> <count> problem(s)` with at most 5 excerpt lines.
 
-`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, and a readiness timeout). Feature probes: map open and close with `M`; hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline, 0 overflow, 0 console errors, 0 missing fonts`.
+`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, a readiness timeout, text under the legibility floor, a console error and a remote request), and runs the lint fixture (`scripts/fixtures/check/lint.html`, which trips every content lint: the check passes it with all ten codes reported, and `--strict` fails it). Feature probes: map open and close with `M`; hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline/lint, 0 overflow, 0 console errors, 0 missing fonts`.
 
 ## 11. Presenter protocol
 

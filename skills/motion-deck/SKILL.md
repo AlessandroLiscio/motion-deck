@@ -11,13 +11,13 @@ You write the slide content as small HTML. The scripts of this skill join it wit
 
 ## Workflow
 
-1. **Brief.** Topic, goal, audience, length in minutes (about one slide per minute, 10 to 14 slides when unsaid), language (follow the brief), theme. Read the source notes or document the user gives you. Never invent facts, figures or quotes. Ask only when the topic or the source is missing.
+1. **Brief.** Topic, goal, audience, length in minutes (about one slide per minute, 10 to 14 slides when unsaid), language (follow the brief), theme. Read the source notes or document the user gives you. Never invent facts, figures or quotes: every figure on a slide comes from the user's material and is named in a `<p class="source">` footnote on that slide. Ask only when the topic or the source is missing.
 2. **Theme.** When the user names none, pick from the table below, say which and why in one line, and say that changing it is one word in the config.
 3. **Story.** Plan before markup: one claim per slide, an arc (hook, problem, turn, proof, ask), sections that share one metaphor, a chapter slide every three to five slides (`references/storytelling.md`). Show the outline only when the user asked for it or the brief was thin.
 4. **Scaffold.** `node "SKILL/scripts/new.mjs" <slug> --theme <theme> --title "<title>" --lang <code>` creates `decks/<slug>/deck.src.html`.
 5. **Write the slides** in that file (`references/authoring.md`). Use steps, morph and counters where they help (`references/motion.md`) and diagrams or charts for flows, structures and data (`references/diagrams.md`). Every slide gets speaker notes. A deck in another language than English also translates the HUD words through `vocabulary` in the config.
 6. **Build.** `node "SKILL/scripts/build.mjs" decks/<slug>/deck.src.html` writes `decks/<slug>/index.html`.
-7. **Check, then look.** `node "SKILL/scripts/check.mjs" decks/<slug>/index.html` must end with `PASS`. Then open screenshots from `tmp/reports/check/<deck>/shots/` with the Read tool: the first slide, one slide per layout you used, every slide with steps (last step), every diagram, the densest slide. Fix what is cramped, unbalanced, repeated or generic, rebuild, look again. Three rounds at most.
+7. **Check, then look.** `node "SKILL/scripts/check.mjs" decks/<slug>/index.html` must end with `PASS`; read its `warn lint` line and fix the warnings that are real (the list is in `report.json`). Then open screenshots from `tmp/reports/check/<deck>/shots/` with the Read tool: the first slide, one slide per layout you used, every slide with steps (last step), every diagram, the densest slide. Fix what is cramped, unbalanced, repeated or generic, rebuild, look again. Three rounds at most.
 8. **Hand over.** Path to `index.html`, slide count, theme, how to present: arrows or Space move, `M` opens the map, `P` opens the presenter window (notes, timer, next slide), `F` is full screen, printing to PDF gives one slide per page. Say what was not verified: only Chrome and Edge were tested.
 
 To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`. To restyle, change `"theme"` in the config, rebuild and check again, because other fonts move the line breaks.
@@ -51,7 +51,7 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 |---|---|
 | `node "SKILL/scripts/new.mjs" <slug> [--theme t] [--title "…"] [--lang xx] [--dir decks]` | creates `<dir>/<slug>/deck.src.html` and `assets/` |
 | `node "SKILL/scripts/build.mjs" <deck.src.html> [--out file] [--theme t]` | builds one offline HTML (`--theme` builds the same deck in another theme) |
-| `node "SKILL/scripts/check.mjs" <index.html> [--shots all\|final\|none] [--browser chrome\|edge]` | steps through every slide and build step, fails on overflow, clipping, console errors, missing fonts, network use or a wrong PDF page count, saves screenshots and a PDF |
+| `node "SKILL/scripts/check.mjs" <index.html> [--shots all\|final\|none] [--browser chrome\|edge] [--strict]` | steps through every slide and build step, fails on overflow, clipping, text under the legibility floor, console errors, missing fonts, network use or a wrong PDF page count, saves screenshots and a PDF; content lints (too many words, long lists, repeated layouts, notes, alt text, sources) are warnings, and `--strict` makes them fail |
 | `node "SKILL/scripts/selftest.mjs" [--quick]` | checks the skill itself (all themes, all features, negative fixtures); run it after changing the engine or a theme |
 
 ## Where things are

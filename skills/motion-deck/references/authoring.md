@@ -61,7 +61,7 @@ Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and 
 | `content` | `.kicker`, `h2`, then `ul`, `ol`, `p`, `.callout`, `figure` or `.cols` | the default; keep it to one block under the title |
 | `split` | `.kicker`, `h2`, `div.cols` with two `div.col` | `.cols.wide-l` is 60/40, `.cols.wide-r` is 40/60 |
 | `diagram` | `.kicker`, `h2`, `svg[data-diagram]` with its JSON spec | see `diagrams.md` |
-| `stats` | `.kicker`, `h2`, `div.stats` with 2 to 4 `div.stat` of `span.num` and `span.label` | `.num` is short: `42`, `3.2x`, `98%` |
+| `stats` | `.kicker`, `h2`, `div.stats` with 2 to 4 `div.stat` of `span.num` and `span.label`, `p.source` | `.num` is short: `42`, `3.2x`, `98%`; the source line names where the figures come from |
 | `quote` | `blockquote > p`, `cite` | |
 | `code` | `.kicker`, `h2`, `pre.code[data-lang]`, `p.note` | 14 lines at most; `data-hl="2-4,7"` highlights lines |
 | `cards` | `.kicker`, `h2`, `div.cards` with 2 to 4 `div.card` of `h3`, `p`, optional `.chip` | |
@@ -105,6 +105,8 @@ Give the same `data-morph="key"` to one element on two consecutive slides. Movin
 
 `<aside class="notes">…</aside>` inside a slide is never shown on the slide; the presenter window shows it. Backup slides (`data-backup`) hold answers to questions you expect; they are reachable from the map and by arrow keys after the last slide.
 
+Citations: `<p class="source">Source: Annual report 2025, p. 14.</p>` is a footnote that sits at the bottom of the slide. Put one on every slide that shows a figure, a quote or a claim taken from the user's material, and a closing slide that lists the sources when there are more than three. Never write a figure the material does not contain.
+
 ## Custom CSS
 
 Rarely needed. Put it in one `<style>` block right after the config, use only theme tokens, and keep it small: `var(--a1)` to `var(--a6)` (accents), `var(--acc)` (the current section accent), `var(--text)`, `var(--muted)`, `var(--bg)`, `var(--panel)`, `var(--line)`, `var(--radius)`, `var(--gap)`, `var(--f-display)`, `var(--f-body)`, `var(--f-mono)`. A literal color breaks other themes.
@@ -131,4 +133,6 @@ Slides live on a 1600 by 900 stage. Content must stay inside the margins (120 px
 - Literal colors and sizes in custom CSS. Use the tokens.
 - Editing the built `index.html`. Edit the source and rebuild.
 - Forgetting `lang` and `vocabulary` for a deck that is not in English.
+- A figure with no `.source` line, or a figure the user's material does not contain.
+- Ignoring the `warn lint` line of the check: it names too many words, long lists, a layout three times in a row, missing or off-length notes and images without `alt`.
 - Using `data-anim` on everything. The default entrance is already tuned for the theme.

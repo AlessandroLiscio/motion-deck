@@ -78,6 +78,63 @@ function measureSlide() {
   return out;
 }
 
+// Content facts of every slide, for the lints (lint.mjs). Needs no particular slide state: it reads the markup.
+function measureContent() {
+  const words = (t) => (String(t).match(/\S+/g) || []).length;
+  const info = window.Deck && typeof window.Deck.info === 'function' ? window.Deck.info() : { slides: [] };
+  const slides = [...document.querySelectorAll('#stage > .slide')].map((s, index) => {
+    const notes = s.querySelector('.notes');
+    const text = s.cloneNode(true);
+    text.querySelectorAll('.notes, svg, pre.code, [data-art], .source, script, style').forEach((e) => e.remove());
+    const head = s.querySelector('h1, h2');
+    const lists = [...s.querySelectorAll('ul, ol')].filter((l) => !l.matches('.timeline, .links') && !l.closest('.notes, svg')).map((l) => {
+      const items = [...l.children].filter((c) => c.localName === 'li');
+      return { items: items.length, maxWords: Math.max(0, ...items.map((li) => words(li.textContent))) };
+    });
+    const meta = info.slides[index] || {};
+    return {
+      index, layout: s.dataset.layout || 'content', backup: !!meta.backup,
+      title: head ? head.textContent.trim() : '', titleWords: head ? words(head.textContent) : 0,
+      words: words(text.textContent), lists,
+      imgsNoAlt: [...s.querySelectorAll('img')].filter((i) => !i.hasAttribute('alt')).length,
+      hasNotes: !!(notes && notes.textContent.trim()), notesWords: notes ? words(notes.textContent) : 0,
+      hasSource: !!s.querySelector('.source'),
+    };
+  });
+  return { lang: document.documentElement.getAttribute('lang') || '', slides };
+}
+
+// Computed font size of every visible text run on the active slide, in stage pixels, with its tier: label (kicker, caption, table head, svg text, code), compact (cards, timeline, tables, stats) or body.
+function measureType() {
+  const stage = document.getElementById('stage');
+  const slide = stage && stage.querySelector('.slide.active');
+  if (!slide) return [];
+  const sc = stage.getBoundingClientRect().width / 1600 || 1;
+  const LABEL = '.kicker, .label, th, cite, .attrib, .meta, figcaption, .chip, .note, .source, .small, code, pre, .links, .hint';
+  const COMPACT = '.card, .timeline, table.data, .stat';
+  const seen = new Map();
+  const walker = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
+  for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+    if (!t.nodeValue.trim()) continue;
+    const e = t.parentElement;
+    if (!e || e.closest('.notes, [data-art], script, style')) continue;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const svg = e.closest('svg');
+    let px = parseFloat(cs.fontSize);
+    if (svg) {
+      const m = svg.getScreenCTM();
+      px = (px * (m ? m.a : 1)) / sc;
+    }
+    px = Math.round(px * 10) / 10;
+    const tier = svg || e.closest(LABEL) ? 'label' : e.closest(COMPACT) ? 'compact' : 'body';
+    const cls = [...e.classList].filter((c) => !/^(active|play|instant|entering|leaving|on|off|a|a-[a-z]+|tk-.+|ln|hl)$/.test(c)).slice(0, 2).join('.');
+    const selector = (svg ? 'svg ' : '') + e.localName + (cls ? '.' + cls : '');
+    seen.set(tier + ' ' + selector + ' ' + px, { selector, px, tier });
+  }
+  return [...seen.values()];
+}
+
 // Loads every declared face, then reports face statuses and the first family of each font token.
 async function measureFonts() {
   const faces = [...document.fonts];
@@ -109,13 +166,15 @@ function measureTokens() {
   };
   const root = getComputedStyle(document.documentElement);
   const out = { theme: window.Deck && window.Deck.theme && window.Deck.theme.name, colors: {} };
-  for (const name of ['bg', 'text', 'muted']) out.colors[name] = hex(root.getPropertyValue(`--${name}`).trim());
+  for (const name of ['bg', 'text', 'muted', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6']) out.colors[name] = hex(root.getPropertyValue(`--${name}`).trim());
   return out;
 }
 
 export const MEASURE_SLIDE = `(${measureSlide})()`;
 export const MEASURE_FONTS = `(${measureFonts})()`;
 export const MEASURE_TOKENS = `(${measureTokens})()`;
+export const MEASURE_CONTENT = `(${measureContent})()`;
+export const MEASURE_TYPE = `(${measureType})()`;
 
 export function normHex(value) {
   const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(value || '').trim());

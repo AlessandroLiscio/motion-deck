@@ -120,6 +120,7 @@ body { font-family: var(--f-body); font-size: var(--t-body); line-height: var(--
 .slide pre.code.has-hl .ln.hl { opacity: 1; background: color-mix(in srgb, var(--acc) 16%, transparent); box-shadow: -38px 0 0 color-mix(in srgb, var(--acc) 16%, transparent), 38px 0 0 color-mix(in srgb, var(--acc) 16%, transparent); }
 .tk-k { color: var(--c-key); } .tk-s { color: var(--c-str); } .tk-n { color: var(--c-num); } .tk-f { color: var(--c-fn); } .tk-c { color: var(--c-com); font-style: italic; }
 .slide .note { font-size: var(--t-small); color: var(--muted); }
+.slide .source { margin: auto 0 0; padding-top: 12px; font-family: var(--f-mono); font-size: var(--t-label); letter-spacing: .02em; color: var(--muted); }
 
 .cards { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 32px; flex: 1 1 auto; min-height: 0; align-content: center; }
 .card { display: flex; flex-direction: column; gap: 18px; padding: 40px 36px; background: var(--panel); border: var(--stroke) solid var(--line); border-radius: var(--radius); }

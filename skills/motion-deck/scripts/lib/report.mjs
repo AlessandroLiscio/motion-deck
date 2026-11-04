@@ -22,11 +22,12 @@ function contactSheet(report) {
     return `<section><h2>Slide ${slide}</h2><div class="row">${figs.join('')}</div></section>`;
   });
   const problems = report.problems.map((p) => `<li><b>${esc(p.cls)}</b> ${esc(p.message)}</li>`).join('');
+  const warnings = (report.warnings || []).map((w) => `<li><b>${esc(w.code)}</b>${w.slide ? ` slide ${w.slide}` : ''} ${esc(w.message)}</li>`).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>check ${esc(report.deck)}</title>
-<style>body{font:14px system-ui,sans-serif;margin:24px;background:#fafafa;color:#111}.row{display:flex;flex-wrap:wrap;gap:16px}figure{margin:0;width:400px}img{width:400px;border:1px solid #ccc;display:block}.bad{color:#b00020;margin:4px 0;padding-left:18px}.fail{color:#b00020}.pass{color:#0a7d33}</style></head><body>
+<style>body{font:14px system-ui,sans-serif;margin:24px;background:#fafafa;color:#111}.row{display:flex;flex-wrap:wrap;gap:16px}figure{margin:0;width:400px}img{width:400px;border:1px solid #ccc;display:block}.bad{color:#b00020;margin:4px 0;padding-left:18px}.fail{color:#b00020}.warn{color:#8a5a00}.pass{color:#0a7d33}</style></head><body>
 <h1>${esc(report.deck)} <span class="${report.ok ? 'pass' : 'fail'}">${report.ok ? 'PASS' : 'FAIL'}</span></h1>
 <p>${esc(report.browser)}, ${report.slides} slides, ${report.states.length} states${report.pdf ? `, pdf ${report.pdf.pages} pages` : ''}</p>
-${problems ? `<ul class="fail">${problems}</ul>` : ''}${sections.join('')}</body></html>
+${problems ? `<ul class="fail">${problems}</ul>` : ''}${warnings ? `<h2>Warnings</h2><ul class="warn">${warnings}</ul>` : ''}${sections.join('')}</body></html>
 `;
 }
 

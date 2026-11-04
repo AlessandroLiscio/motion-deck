@@ -41,6 +41,7 @@ const negatives = [
   { fixture: 'console-error', show: /console: console\.error: fixture console error/ },
   { fixture: 'remote', show: /offline: request to https:\/\/example\.invalid\/pixel\.png/ },
   { fixture: 'local-asset', show: /offline: request to file:\/\/\/\S*local-asset\.js/ },
+  { fixture: 'tiny-text', show: /legibility: p is 14 px on slide 1, under the 20 px floor for body text/ },
   { fixture: 'bad-contrast', show: /tokens: contrast of --text .* is 1\.00, needs 4\.5/ },
 ];
 
@@ -118,6 +119,19 @@ if (browsers.includes('chrome')) {
       assert.deepEqual(shots, ['s01-0.png', 's02-2.png', 's03-0.png']);
       assert.ok(!existsSync(join(r.out, 'ok', 'deck.pdf')));
       assert.deepEqual(r.leaked, []);
+    });
+    test('lint warnings are non-fatal by default and fail with --strict', () => {
+      const r = run('lint', 'chrome', ['--no-pdf', '--shots', 'none']);
+      assert.equal(r.code, 0, r.text);
+      assert.match(r.text, /^warn lint 10 warning\(s\): W_LANG 1, W_WORDS 1, W_LIST_LEN 1/m);
+      assert.match(r.last, /^PASS check: lint /);
+      const rep = reportOf(r, 'lint');
+      assert.deepEqual([...new Set(rep.warnings.map((w) => w.code))].sort(), ['W_IMG_ALT', 'W_LANG', 'W_LAYOUT_RUN', 'W_LIST_ITEM', 'W_LIST_LEN', 'W_NOTES_LEN', 'W_NOTES_MISSING', 'W_STAT_SOURCE', 'W_TITLE_LEN', 'W_WORDS']);
+      const s = run('lint', 'chrome', ['--no-pdf', '--shots', 'none', '--strict']);
+      assert.equal(s.code, 1, s.text);
+      assert.match(s.text, /^fail lint 10 warning\(s\)/m);
+      assert.match(s.last, /^FAIL check: lint 10 problem(s)$/);
+      assert.deepEqual(r.leaked.concat(s.leaked), []);
     });
     test('theme.json not found: warns, skips the compare, still checks contrast', () => {
       const res = run('bad-contrast', 'chrome', ['--themes', join(outRoot, 'no-themes')]);
