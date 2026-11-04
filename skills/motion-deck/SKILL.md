@@ -1,6 +1,6 @@
 ---
 name: motion-deck
-description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in six themes (space, editorial, neon, corporate, fantasy, pirates). Not for .pptx or .pdf deliverables.
+description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in six themes (space, editorial, neon, corporate, fantasy, pirates). It can also hand over an image-based .pptx of the finished deck for clients who ask for PowerPoint; it does not build editable or natively animated PowerPoint decks, which is the pptx skill's job.
 ---
 
 # motion-deck
@@ -18,7 +18,7 @@ You write the slide content as small HTML. The scripts of this skill join it wit
 5. **Write the slides** in that file (`references/authoring.md`). Use steps, morph and counters where they help (`references/motion.md`) and diagrams or charts for flows, structures and data (`references/diagrams.md`). Every slide gets speaker notes. A deck in another language than English also translates the HUD words through `vocabulary` in the config.
 6. **Build.** `node "SKILL/scripts/build.mjs" decks/<slug>/deck.src.html` writes `decks/<slug>/index.html`.
 7. **Check, then look.** `node "SKILL/scripts/check.mjs" decks/<slug>/index.html` must end with `PASS`. Then open screenshots from `tmp/reports/check/<deck>/shots/` with the Read tool: the first slide, one slide per layout you used, every slide with steps (last step), every diagram, the densest slide. Fix what is cramped, unbalanced, repeated or generic, rebuild, look again. Three rounds at most.
-8. **Hand over.** Path to `index.html`, slide count, theme, how to present: arrows or Space move, `M` opens the map, `P` opens the presenter window (notes, timer, next slide), `F` is full screen, printing to PDF gives one slide per page. Say what was not verified: only Chrome and Edge were tested.
+8. **Hand over.** Path to `index.html`, slide count, theme, how to present: arrows or Space move, `M` opens the map, `P` opens the presenter window (notes, timer, next slide), `F` is full screen, printing to PDF gives one slide per page. Say what was not verified: only Chrome and Edge were tested. When the user also needs a PowerPoint file, run `node "SKILL/scripts/export.mjs" decks/<slug>/index.html` and say what it is: one picture per slide and per build step in a `.pptx` next to the deck, each click showing the next step, speaker notes included, text not editable and no animations (`references/contract.md` section 13); offer the HTML deck for presenting and the `.pptx` only for hand-over.
 
 To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`. To restyle, change `"theme"` in the config, rebuild and check again, because other fonts move the line breaks.
 
@@ -52,6 +52,7 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 | `node "SKILL/scripts/new.mjs" <slug> [--theme t] [--title "…"] [--lang xx] [--dir decks]` | creates `<dir>/<slug>/deck.src.html` and `assets/` |
 | `node "SKILL/scripts/build.mjs" <deck.src.html> [--out file] [--theme t]` | builds one offline HTML (`--theme` builds the same deck in another theme) |
 | `node "SKILL/scripts/check.mjs" <index.html> [--shots all\|final\|none] [--browser chrome\|edge]` | steps through every slide and build step, fails on overflow, clipping, console errors, missing fonts, network use or a wrong PDF page count, saves screenshots and a PDF |
+| `node "SKILL/scripts/export.mjs" <index.html> [--out file.pptx] [--steps all\|final] [--scale 2] [--format jpeg|png]\|jpeg] [--transition fade\|none] [--no-notes]` | writes an image-based `.pptx` (`<deck folder>/<slug>.pptx`): a picture of every slide in every build step, a fade between them, speaker notes, outline titles; verifies the package itself |
 | `node "SKILL/scripts/selftest.mjs" [--quick]` | checks the skill itself (all themes, all features, negative fixtures); run it after changing the engine or a theme |
 
 ## Where things are

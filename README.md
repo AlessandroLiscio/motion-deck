@@ -45,6 +45,10 @@ The build joins the source with the engine, the theme, the embedded fonts and th
 
 `check.mjs` opens the built deck in headless Chrome or Edge, walks through every slide and every build step, and fails on content outside the safe margins, clipped boxes, console errors, a font that did not load, any network request, a wrong PDF page count and text with too little contrast. It saves a screenshot of every state, the PDF and a contact sheet, so the model (or you) can look at the result before presenting.
 
+## Hand over a PowerPoint file
+
+`node skills/motion-deck/scripts/export.mjs decks/my-talk/index.html` writes `decks/my-talk/my-talk.pptx` for clients who ask for PowerPoint. The file is image-based: every slide, and every build step of a slide, becomes a picture, so one click in PowerPoint shows what one step shows in the deck, with a fade between them and the speaker notes in the notes pane. The limits are real. The pictures are not editable and there are no native animations, so entrances, counters and morphs are lost. Text is not selectable except the slide titles, which sit in the outline view and are read by screen readers. Files are much larger than the HTML deck (the showcase is 5 to 26 MB as JPEG and up to 189 MB as PNG), and fonts are baked into the pictures. Use the HTML deck to present; use the `.pptx` for hand-over. The export checks its own package (ZIP, content types, relationships, XML, picture sizes, counts) before it writes it; whether PowerPoint opens it was tested only where PowerPoint is installed (see `skills/motion-deck/references/contract.md`, section 13). An editable or natively animated PowerPoint deck is a different job for the `pptx` skill.
+
 ## Develop
 
 ```bash
