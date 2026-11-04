@@ -209,11 +209,27 @@ table.data th { font-family: var(--f-mono); font-size: var(--t-label); letter-sp
 .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
 .map-item { display: flex; align-items: baseline; gap: 12px; padding: 12px 16px; text-align: left; font: inherit; font-size: 16px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .map-item:hover, .map-item:focus-visible, .map-item.cur { border-color: var(--acc); outline: none; }
+.map-item:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 .map-n { min-width: 1.6em; font-family: var(--f-mono); font-weight: 600; color: var(--acc); }
 
 #hint { position: fixed; left: 50%; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 20px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(8px); font-size: 13px; letter-spacing: .08em; color: var(--muted); white-space: nowrap; animation: hintIn .5s var(--ease) both; }
 #hint[hidden] { display: none; }
 @keyframes hintIn { from { opacity: 0; transform: translate(-50%, 10px); } }
+.hud-btn { pointer-events: auto; margin-left: 4px; padding: 2px 10px; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; }
+.hud-btn:hover, .hud-btn:focus-visible { color: var(--text); border-color: var(--acc); }
+.hud-btn[aria-pressed="false"] { text-decoration: line-through; opacity: .75; }
+#help { position: fixed; inset: 0; z-index: 35; display: flex; align-items: center; justify-content: center; padding: 24px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(6px); }
+#help[hidden], #jump[hidden], #blackout[hidden] { display: none; }
+.help-card { min-width: min(520px, 92vw); padding: 28px 36px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 20px 60px rgba(0, 0, 0, .35); }
+.help-card h2 { margin: 0 0 14px; font-family: var(--f-display); font-weight: var(--w-display); font-size: 34px; line-height: 1.1; letter-spacing: var(--ls-display); text-transform: var(--case-display); }
+.help-card dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 20px; margin: 0; font-size: 16px; }
+.help-card dt { text-align: right; } .help-card dd { margin: 0; color: var(--text); align-self: center; }
+.help-card kbd { display: inline-block; min-width: 1.8em; padding: 2px 8px; text-align: center; font: 600 14px var(--f-mono); color: var(--acc); border: 1px solid var(--line); border-radius: 6px; background: var(--bg-2); }
+.help-hint { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+#jump { position: fixed; left: 50%; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 20px; border: 1px solid var(--acc); border-radius: 999px; background: var(--panel); color: var(--text); font-size: 16px; letter-spacing: .08em; }
+#blackout { position: fixed; inset: 0; z-index: 60; background: #000; cursor: none; }
+html.still .art, html.still .art *, html.still .md-spin { animation-play-state: paused !important; }
+.capture .hud-btn, .capture #help, .capture #jump { display: none; }
 #rotate { display: none; position: fixed; inset: 0; z-index: 40; align-items: center; justify-content: center; padding: 24px; background: var(--bg); color: var(--text); font-size: 20px; text-align: center; }
 @media (orientation: portrait) and (max-width: 700px) { #rotate { display: flex; } }
 

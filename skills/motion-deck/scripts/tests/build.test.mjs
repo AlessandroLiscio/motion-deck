@@ -154,6 +154,7 @@ test('E_CONFIG and W_CONFIG_KEY', async () => {
   await assert.rejects(buildText(bad('{ "title": "  " }')), fails('E_CONFIG', /"title"/));
   await assert.rejects(buildText(bad('{ "title": "x", }')), fails('E_CONFIG', /not valid JSON/));
   await assert.rejects(buildText(bad('{ "title": "x", "accent": "blue" }')), fails('E_CONFIG', /"accent"/));
+  await assert.rejects(buildText(bad('{ "title": "x", "ambient": "maybe" }')), fails('E_CONFIG', /"ambient" must be "on" or "off"/));
   await assert.rejects(buildText(bad('{ "title": "x", "lang": "english language" }')), fails('E_CONFIG', /"lang"/));
   await assert.rejects(buildText(bad('{ "title": "x", "sections": [{ "id": "a", "accent": 9 }] }')), fails('E_CONFIG', /accent/));
   const ok = await buildText(bad('{ "title": "x", "theme": "test", "accent": "#2a7", "colour": 1 }'));

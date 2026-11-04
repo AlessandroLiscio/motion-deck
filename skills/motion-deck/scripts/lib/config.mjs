@@ -1,7 +1,7 @@
 // Validation of the deck config (contract 2.1). Returns the config to embed: known keys only, theme and lang resolved.
 import { BuildError } from './errors.mjs';
 
-const KEYS = ['title', 'subtitle', 'author', 'event', 'date', 'lang', 'theme', 'accent', 'transition', 'sections', 'vocabulary', 'description', 'timer'];
+const KEYS = ['title', 'subtitle', 'author', 'event', 'date', 'lang', 'theme', 'accent', 'transition', 'sections', 'vocabulary', 'description', 'timer', 'ambient'];
 const STRINGS = ['subtitle', 'author', 'event', 'date', 'transition', 'description'];
 
 export function parseConfig(text, line, warn) {
@@ -33,6 +33,7 @@ export function parseConfig(text, line, warn) {
   if (raw.timer !== undefined && (typeof raw.timer !== 'number' || !Number.isFinite(raw.timer) || raw.timer <= 0)) {
     fail('"timer" must be a positive number of minutes');
   }
+  if (raw.ambient !== undefined && raw.ambient !== 'on' && raw.ambient !== 'off') fail(`"ambient" must be "on" or "off", got ${JSON.stringify(raw.ambient)}`);
   if (raw.vocabulary !== undefined) {
     const v = raw.vocabulary;
     if (!v || typeof v !== 'object' || Array.isArray(v) || Object.values(v).some((s) => typeof s !== 'string')) {

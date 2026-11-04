@@ -295,7 +295,8 @@ ${twinkle([[112, 100, 8], [292, 92, 6], [200, 70, 7], [330, 150, 4.5], [66, 150,
     vocabulary: {
       map: 'The treasure map', mapHint: 'Pick a landmark to sail there. Esc closes.', counter: 'Port {n} of {N}', backupCounter: 'Hold {L}',
       now: 'On deck', next: 'Next port', notes: "Captain's log", timer: 'Hourglass', presenter: "Captain's quarters",
-      hint: "← → set sail · M treasure map · P captain's quarters · F full screen",
+      hint: "← → set sail · M treasure map · P captain's quarters · F full screen · ? rules",
+      ambient: 'Waves', help: 'Ship rules',
     },
     art: { hero, chapter: compass, closing, divider },
     ambient: {

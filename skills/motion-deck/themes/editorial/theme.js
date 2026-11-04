@@ -262,7 +262,8 @@ ${star(60, 300, 8)}${star(340, 76, 7)}${star(334, 330, 5)}
     vocabulary: {
       map: 'Contents', mapHint: 'Pick a page. Esc closes.', counter: '{n} of {N}', backupCounter: 'Appendix {L}',
       now: 'This page', next: 'Next page', notes: 'Margin notes', timer: 'Reading time', presenter: 'The desk',
-      hint: '← → turn the page · M contents · P the desk · F full screen',
+      hint: '← → turn the page · M contents · P the desk · F full screen · ? guide',
+      ambient: 'Flourish', help: 'Reading guide',
     },
     art: { hero, chapter, closing, divider },
     ambient: {

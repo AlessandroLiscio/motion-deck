@@ -47,6 +47,7 @@ Use the theme's default for the whole deck. Set `data-transition="none"` on a sl
 ## Reduced motion, capture and print
 
 - With the system setting "reduce motion": no entrance, no transition, no counting, one static background frame, steps appear instantly. Everything stays readable.
+- Pause: the `.` key, the HUD button `Motion` and `?ambient=off` (or `"ambient": "off"` in the config) stop the moving background and the looping art and leave one still frame; use `"off"` for a deck shown on a weak projector laptop or to an audience that needs calm. Entrances and transitions are not affected.
 - Capture mode (`?capture=1` in the URL) freezes all motion and finishes every animation; the check uses it for screenshots.
 - Print and PDF: one slide per page, every step shown, the theme's page color, no HUD, no moving background.
 

@@ -43,7 +43,8 @@ Comments and whitespace may sit between them. Any other top-level element is a b
   "sections": [{ "id": "open", "label": "Opening", "accent": 1 }],
   "vocabulary": { "map": "Chapters" },
   "description": "meta description",
-  "timer": 20
+  "timer": 20,
+  "ambient": "on"
 }
 ```
 
@@ -57,6 +58,7 @@ Comments and whitespace may sit between them. Any other top-level element is a b
 | `sections` | optional list; order defines the map order; `accent` is 1 to 6 (index of `--a1` to `--a6`); a section used by a slide but missing here is created from its `data-sec` (label = id with the first letter capitalised) with the next free accent, cycling |
 | `vocabulary` | optional partial override of the theme vocabulary (section 8.4) |
 | `timer` | presenter timer target in minutes, default 20 |
+| `ambient` | `"on"` (default) or `"off"`: whether the moving background and the looping art run at load (5.8); anything else is `E_CONFIG` |
 | unknown keys | warning `W_CONFIG_KEY`, ignored |
 
 ### 2.2 Slide element
@@ -159,6 +161,10 @@ While a transition runs, `#stage` carries `data-tr="<name>"` and `data-dir="fwd"
 * Capture mode (`Deck.capture(true)`, or `?capture=1` in the URL at load): the class `capture` is set on `<html>`; CSS sets `animation: none !important; transition: none !important` for everything under `#stage`; ambient paints one static frame and stops; counters show the authored text; diagrams render their final frame; art animations stop. It exists so that screenshots and measurements are deterministic.
 * Print: `@page { size: 1600px 900px; margin: 0 }`, every slide in its final state on its own page, no chrome, no ambient canvas animation (the page background is the token `--bg`), `print-color-adjust: exact`. A theme MUST NOT depend on animation to make content visible.
 
+### 5.8 Pausing the ambient layer
+
+The moving background (theme `ambient.frame`) and the looping art animations start by themselves and run for more than five seconds beside the content, so the viewer MUST be able to pause them (WCAG 2.2.2). The state is `Deck.ambient()`: true at load unless config `"ambient": "off"` or `?ambient=off` is set. Off means: the loop does not run and the layer paints one static frame (as under reduced motion), `<html>` carries the class `still`, and every `.art` animation and the diagram spinner (`.md-spin`) is paused (`animation-play-state: paused`, so content stays visible). Entrance, step and transition animations are not affected. Ways to change it: the `.` key, the HUD button `#hud-amb` (`aria-pressed` mirrors the state, label from the vocabulary word `ambient`), and `Deck.ambient(on)`. The button is hidden in capture mode.
+
 ## 6. Runtime API
 
 `engine/deck.js` defines `window.Deck` and boots itself at `DOMContentLoaded`.
@@ -179,12 +185,15 @@ interface Deck {
   setStep(n: number): void
   capture(on?: boolean): boolean            // read or set capture mode
   openMap(on?: boolean): boolean            // read or set the map overlay
+  ambient(on?: boolean): boolean            // read or set the moving background and looping art (5.8)
+  blackout(on?: boolean): boolean           // read or set the black screen
+  help(on?: boolean): boolean               // read or set the key help panel
   openPresenter(): Window | null            // needs a user gesture
   info(): { title: string, theme: string, lang: string,
             sections: { id: string, label: string, accent: number }[],
             slides: { index: number, id: string, title: string, sec: string, layout: string,
                       steps: number, backup: boolean, notes: string, morph: string[] }[] }
-  features: string[]          // subset of: map hash back step-out reduced-motion presenter morph pdf capture counters code art diagram
+  features: string[]          // subset of: map hash back step-out reduced-motion presenter morph pdf capture counters code art diagram ambient blackout help jump
   registerTheme(theme: object): void        // used by themes/<name>/theme.js
 }
 ```
@@ -193,7 +202,7 @@ Events, dispatched on `document`: `deck:change` with `detail = { index, from, st
 
 Failure: if boot throws, `Deck.ready` rejects, `document.documentElement.dataset.deckError` holds the message and the error is also logged with `console.error`. A deck with zero slides is a boot error.
 
-Input: arrows, PageUp and PageDown, Space, Enter, Backspace, Home, End; `M` toggles the map; `F` fullscreen; `P` opens the presenter; `Esc` closes overlays; touch: swipe left or right, tap the right 30% or left 30%. URL: `#n` or `#n.s` (1-based slide, step) is read at load only; navigation writes `#n` with `history.replaceState`. Backup slides use `#A`, `#B`, `#C`.
+Input: arrows, PageUp and PageDown, Space, Enter, Backspace, Home, End; `M` toggles the map; `F` fullscreen; `P` opens the presenter; `B` blacks the screen out (`B`, `Esc`, Enter, Space or a click end it; other keys are ignored meanwhile); `.` pauses or resumes the ambient layer (5.8); `?` or `H` opens the key help (`Esc`, `?`, `H` or a click close it); `G` starts a jump: digits build a slide number shown in `#jump`, Enter goes, a pause of 1.5 s after the last digit goes, `Esc` or any other key cancels, and a number past the last normal slide goes to the last one; `Esc` closes overlays; touch: swipe left or right, tap the right 30% or left 30%. URL: `?ambient=off` starts with the ambient layer paused (read at load only); `#n` or `#n.s` (1-based slide, step) is read at load only; navigation writes `#n` with `history.replaceState`. Backup slides use `#A`, `#B`, `#C`.
 
 ## 7. Build
 
@@ -255,7 +264,7 @@ Engine defaults exist for every token, so a theme may omit one only when the def
 
 ### 8.4 Vocabulary
 
-`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `now` (label of the current-slide preview in the presenter), `notes`, `timer`, `next`, `presenter`, `rotate` (message on a phone held in portrait) and `hint` (the key hint shown briefly after load, hidden by `?nohint` and in capture mode).
+`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `now` (label of the current-slide preview in the presenter), `notes`, `timer`, `next`, `presenter`, `rotate` (message on a phone held in portrait) and `hint` (the key hint shown briefly after load, hidden by `?nohint` and in capture mode). Live keys add `ambient` (label of the HUD pause button), `help` (title of the key help), `helpClose`, `jump` (prefix of the jump toast) and the help rows `keyMove`, `keyMap`, `keyPresenter`, `keyFull`, `keyBlackout`, `keyAmbient`, `keyJump`, `keyHelp`. Every theme words `hint`, `ambient` and `help` in its own world; the rest has engine defaults.
 
 ### 8.5 Registration
 
@@ -339,7 +348,7 @@ Content lints are warnings, not failures: each is `{ code, slide, message }` (`s
 
 Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. Final line: `PASS check: <deck> [<browser>] <N> slides, <M> states, 0 overflow, 0 console errors, 0 missing fonts, pdf <N> pages` or `FAIL check: <deck> <count> problem(s)` with at most 5 excerpt lines.
 
-`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, a readiness timeout, text under the legibility floor, a console error and a remote request), and runs the lint fixture (`scripts/fixtures/check/lint.html`, which trips every content lint: the check passes it with all ten codes reported, and `--strict` fails it). Feature probes: map open and close with `M`; hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline/lint, 0 overflow, 0 console errors, 0 missing fonts`.
+`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, a readiness timeout, text under the legibility floor, a console error and a remote request), runs the ambient pause and live key probes, and runs the lint fixture (`scripts/fixtures/check/lint.html`, which trips every content lint: the check passes it with all ten codes reported, and `--strict` fails it). Feature probes: map open and close with `M`; ambient pause (the `.` key, the HUD button, `Deck.ambient()`, `?ambient=off`: the canvas stops changing and looping art stops running); live keys (`B` blackout, `?` help, `G` jump, focus outline, slide roles); hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline/lint/ambient-pause/live-keys, 0 overflow, 0 console errors, 0 missing fonts`.
 
 ## 11. Presenter protocol
 
@@ -356,4 +365,4 @@ The opener sends `state` on `ready`, on `request`, and on every `deck:change` an
 
 ## 12. Class and variable index
 
-Classes set by the runtime: on `<html>`: `capture`, `reduced`, `map-open`, `present`; on slides: `active`, `leaving`, `entering`, `play`, `instant`; on elements: `a`, `a-fade`, `a-left`, `a-right`, `a-zoom`, `a-pop`, `on`, `off`, `art`. Attributes set by the runtime: `#stage[data-tr][data-dir]`, `.slide[data-n]` (display number), `html[data-deck-error]`. Custom properties set by the runtime: `--s` on `#stage`, `--acc` and `--i` and `--d` on slides and elements. Chrome elements created by the runtime: `#chrome` (contains `#hud`, `#track`, `#map`, `#hint`).
+Classes set by the runtime: on `<html>`: `capture`, `reduced`, `map-open`, `help-open`, `blackout`, `still`, `present`; on slides: `active`, `leaving`, `entering`, `play`, `instant`; on elements: `a`, `a-fade`, `a-left`, `a-right`, `a-zoom`, `a-pop`, `on`, `off`, `art`. Attributes set by the runtime: `#stage[data-tr][data-dir]`, `.slide[data-n]` (display number), `html[data-deck-error]`. Custom properties set by the runtime: `--s` on `#stage`, `--acc` and `--i` and `--d` on slides and elements. Chrome elements created by the runtime: `#chrome` (contains `#hud` with the button `#hud-amb`, `#track`, `#map`, `#help`, `#jump`, `#blackout`, `#hint`). Every slide carries `role="group"`, `aria-roledescription="slide"` and an `aria-label`; the map items and HUD button show a focus outline with `:focus-visible`.

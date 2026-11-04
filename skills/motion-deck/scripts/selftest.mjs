@@ -17,7 +17,7 @@ const USAGE = 'usage: selftest.mjs [--quick] [--out <dir>] [--browser auto|chrom
 const FIXTURES = join(SKILL, 'scripts', 'fixtures', 'check');
 const THEMES_STUB = join(SKILL, 'examples', 'fixtures', 'themes-stub');
 const LINT_CODES = 10; // the codes the lint fixture trips, see scripts/fixtures/check/make-fixtures.mjs
-const FEATURE_ORDER = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'presenter', 'morph', 'pdf', 'offline', 'lint'];
+const FEATURE_ORDER = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'presenter', 'morph', 'pdf', 'offline', 'lint', 'ambient-pause', 'live-keys'];
 
 // Each negative fixture must make the check fail with a problem of this class (and message).
 const NEGATIVES = [

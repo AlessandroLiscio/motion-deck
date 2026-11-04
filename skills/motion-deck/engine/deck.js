@@ -12,7 +12,10 @@
   const VOCAB = {
     map: 'Map', mapHint: 'Pick a slide to jump to it. Esc closes.', counter: '{n} / {N}', backupCounter: 'Backup {L}',
     section: '', now: 'Now', notes: 'Notes', timer: 'Time', next: 'Next', presenter: 'Presenter', rotate: 'Rotate your device',
-    hint: 'Arrows move · M map · P presenter · F full screen',
+    hint: 'Arrows move · M map · P presenter · F full screen · ? keys',
+    ambient: 'Motion', help: 'Keys', helpClose: 'Esc or ? closes.', jump: 'Go to slide',
+    keyMove: 'Next, previous', keyMap: 'Map', keyPresenter: 'Presenter', keyFull: 'Full screen', keyBlackout: 'Blackout', keyAmbient: 'Pause or resume the moving background',
+    keyJump: 'Jump to a slide: G, a number, Enter', keyHelp: 'This help',
   };
   // Elements that get the entrance cascade (contract 5.1).
   const ANIM_SEL = '.kicker,h1,h2,h3,h4,p,li,blockquote,cite,figure,pre.code,.card,.stat,.chip,.callout,.meta,.links>*,.attrib,table.data,[data-art],svg[data-diagram],img';
@@ -22,7 +25,7 @@
   const S = {
     config: null, theme: null, vocab: {}, token: '', slides: [], sections: [], secById: {}, normalCount: 0,
     index: -1, step: 0, captureOn: false, mapOpen: false, trTimer: 0, stage: null, amb: null, ambRun: false, presenter: null,
-    morphing: false, queue: [],
+    morphing: false, queue: [], ambientOn: true, blackoutOn: false, helpOpen: false, jump: null, jumpTimer: 0,
   };
   let resolveReady;
   let rejectReady;
@@ -77,6 +80,8 @@
       root.classList.toggle('reduced', reducedMQ.matches);
       if (S.config.accent) { root.style.setProperty('--a1', S.config.accent); root.style.setProperty('--glow', S.config.accent); }
       if (/[?&]capture=1\b/.test(location.search)) { S.captureOn = true; root.classList.add('capture'); }
+      S.ambientOn = !(String(S.config.ambient).toLowerCase() === 'off' || /[?&]ambient=off\b/.test(location.search));
+      root.classList.toggle('still', !S.ambientOn);
 
       collectSlides();
       fillArt();
@@ -488,11 +493,15 @@
 
   function buildChrome() {
     const chrome = h('div', { id: 'chrome' },
-      h('div', { id: 'hud' }, h('span', { class: 'hud-sec' }), h('span', { class: 'hud-title' }), h('span', { class: 'hud-count' })),
+      h('div', { id: 'hud' }, h('span', { class: 'hud-sec' }), h('span', { class: 'hud-title' }), h('span', { class: 'hud-count' }),
+        h('button', { id: 'hud-amb', class: 'hud-btn', type: 'button', 'aria-pressed': String(S.ambientOn), title: S.vocab.keyAmbient, onclick: (e) => { ambient(!S.ambientOn); if (e.detail) e.currentTarget.blur(); } }, S.vocab.ambient)),
       h('nav', { id: 'track', 'aria-label': 'Progress' }),
       h('div', { id: 'map', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.vocab.map, hidden: true }),
       h('div', { id: 'hint', hidden: true, text: S.vocab.hint }),
       h('div', { id: 'rotate', text: S.vocab.rotate }),
+      h('div', { id: 'help', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.vocab.help, hidden: true, onclick: () => help(false) }),
+      h('div', { id: 'jump', role: 'status', hidden: true }),
+      h('div', { id: 'blackout', hidden: true, onclick: () => blackout(false) }),
       h('div', { id: 'sr', class: 'sr-only', 'aria-live': 'polite' }));
     doc.body.append(chrome);
     const nav = $('#track');
@@ -561,6 +570,20 @@
     doc.addEventListener('keydown', (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key;
+      if (S.helpOpen) {
+        if (k === 'Escape' || k === '?' || k === 'h' || k === 'H') { e.preventDefault(); help(false); }
+        return;
+      }
+      if (S.blackoutOn) {
+        if (k === 'Escape' || k === 'b' || k === 'B' || k === '.' || k === 'Enter' || k === ' ') { e.preventDefault(); blackout(false); }
+        return;
+      }
+      if (S.jump !== null) {
+        if (/^\d$/.test(k)) { e.preventDefault(); jumpDigit(k); }
+        else if (k === 'Enter') { e.preventDefault(); jumpCommit(); }
+        else { if (k === 'Escape' || k === 'g' || k === 'G') e.preventDefault(); jumpCancel(); }
+        return;
+      }
       if (S.mapOpen) {
         if (k === 'Escape' || k === 'm' || k === 'M') { e.preventDefault(); openMap(false); }
         return;
@@ -573,6 +596,10 @@
       else if (k === 'm' || k === 'M') openMap(true);
       else if (k === 'f' || k === 'F') { if (doc.fullscreenElement) doc.exitFullscreen(); else if (root.requestFullscreen) root.requestFullscreen().catch(() => {}); }
       else if (k === 'p' || k === 'P') openPresenter();
+      else if (k === 'b' || k === 'B') blackout(true);
+      else if (k === '.') ambient(!S.ambientOn);
+      else if (k === '?' || k === 'h' || k === 'H') help(true);
+      else if (k === 'g' || k === 'G') jumpStart();
     });
     let t0 = null;
     doc.addEventListener('touchstart', (e) => { t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
@@ -636,9 +663,60 @@
 
   function syncAmbient() {
     if (!S.amb) return;
-    const should = !doc.hidden && !reducedMQ.matches && !S.captureOn && !!S.theme.ambient.frame;
+    const should = S.ambientOn && !doc.hidden && !reducedMQ.matches && !S.captureOn && !!S.theme.ambient.frame;
     if (should && !S.ambRun) { S.ambRun = true; ambLast = performance.now(); ambRaf = requestAnimationFrame(ambLoop); }
     else if (!should) { S.ambRun = false; cancelAnimationFrame(ambRaf); paintAmbient(); }
+  }
+
+  // Pause, stop and hide for the moving background and the looping art (WCAG 2.2.2). Off paints one static frame and pauses the art loops through html.still.
+  function ambient(on) {
+    if (on === undefined) return S.ambientOn;
+    S.ambientOn = !!on;
+    root.classList.toggle('still', !S.ambientOn);
+    const b = $('#hud-amb');
+    if (b) b.setAttribute('aria-pressed', String(S.ambientOn));
+    syncAmbient();
+    return S.ambientOn;
+  }
+
+  /* ---------- live keys: blackout, help, jump ---------- */
+
+  function blackout(on) {
+    if (on === undefined) return S.blackoutOn;
+    S.blackoutOn = !!on;
+    root.classList.toggle('blackout', S.blackoutOn);
+    $('#blackout').hidden = !S.blackoutOn;
+    return S.blackoutOn;
+  }
+
+  function help(on) {
+    if (on === undefined) return S.helpOpen;
+    S.helpOpen = !!on;
+    root.classList.toggle('help-open', S.helpOpen);
+    const el = $('#help');
+    el.hidden = !S.helpOpen;
+    if (S.helpOpen) {
+      const v = S.vocab;
+      const rows = [['← → ↑ ↓ Space', v.keyMove], ['M', v.keyMap], ['P', v.keyPresenter], ['F', v.keyFull], ['B', v.keyBlackout], ['.', v.keyAmbient], ['G', v.keyJump], ['?', v.keyHelp]];
+      el.replaceChildren(h('div', { class: 'help-card' }, h('h2', { text: v.help }),
+        h('dl', {}, rows.flatMap(([key, label]) => [h('dt', {}, h('kbd', { text: key })), h('dd', { text: label })])),
+        h('p', { class: 'help-hint', text: v.helpClose })));
+    }
+    return S.helpOpen;
+  }
+
+  function jumpShow() {
+    const el = $('#jump');
+    el.hidden = S.jump === null;
+    if (S.jump !== null) el.textContent = `${S.vocab.jump}: ${S.jump || '…'}`;
+  }
+  function jumpStart() { S.jump = ''; jumpShow(); clearTimeout(S.jumpTimer); S.jumpTimer = setTimeout(jumpCancel, 4000); }
+  function jumpDigit(d) { S.jump = (S.jump + d).slice(0, 3); jumpShow(); clearTimeout(S.jumpTimer); S.jumpTimer = setTimeout(jumpCommit, 1500); }
+  function jumpCancel() { clearTimeout(S.jumpTimer); S.jump = null; jumpShow(); }
+  function jumpCommit() {
+    const n = parseInt(S.jump, 10);
+    jumpCancel();
+    if (n >= 1) go(clamp(n, 1, Math.max(1, S.normalCount)) - 1);
   }
 
   /* ---------- capture, print ---------- */
@@ -823,7 +901,7 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
   /* ---------- public surface ---------- */
 
   function computeFeatures() {
-    const f = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'capture', 'counters', 'code', 'art', 'pdf', 'presenter'];
+    const f = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'capture', 'counters', 'code', 'art', 'pdf', 'presenter', 'ambient', 'blackout', 'help', 'jump'];
     if (window.MotionDiagram) f.push('diagram');
     if (morphSupported()) f.push('morph');
     return f;
@@ -836,6 +914,9 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
   D.setStep = setStep;
   D.capture = capture;
   D.openMap = openMap;
+  D.ambient = ambient;
+  D.blackout = blackout;
+  D.help = help;
   D.openPresenter = openPresenter;
   D.registerTheme = (t) => { S.theme = t; };
   D.info = () => ({

@@ -89,7 +89,8 @@
     vocabulary: {
       map: 'Star chart', mapHint: 'Pick a star to fly there. Esc closes.', counter: 'SOL {n} / {N}', backupCounter: 'CARGO {L}',
       now: 'On screen', next: 'Next jump', notes: 'Ship log', timer: 'Mission time', presenter: 'Mission control',
-      hint: '← → fly · M star chart · P mission control · F full screen',
+      hint: '← → fly · M star chart · P mission control · F full screen · ? manual',
+      ambient: 'Starfield', help: 'Flight manual',
     },
     art: {
       hero: `<svg viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

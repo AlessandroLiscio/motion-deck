@@ -27,9 +27,10 @@ The config comes first, then the `<style>` blocks, then the slides; anything els
 | `sections` | ordered list of `{ "id", "label", "accent" }`; `accent` is 1 to 6; the list order is the map order. A `data-sec` missing here is created with its id as label |
 | `vocabulary` | translate or rename the HUD words (below) |
 | `timer` | presenter timer target in minutes (default 20) |
+| `ambient` | `"off"` starts with the moving background and the looping art paused (the audience or the presenter can resume with `.`); default `"on"` |
 | `subtitle`, `author`, `event`, `date`, `description` | free text; `description` becomes the meta description |
 
-Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and `{N}`), `backupCounter` (`{L}` is the letter), `section` (prefix before a section name in the HUD), `now`, `next`, `notes`, `timer`, `presenter` (the presenter window), `hint` (the line shown at start), `rotate`. Every theme brings flavoured defaults in English, so a deck in another language translates all of them. Example for Italian: `{ "map": "Mappa", "mapHint": "Scegli una slide. Esc chiude.", "counter": "{n} / {N}", "backupCounter": "Extra {L}", "now": "In scena", "next": "Prossima", "notes": "Note", "timer": "Tempo", "presenter": "Relatore", "hint": "Frecce per muoversi · M mappa · P relatore · F schermo intero" }`.
+Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and `{N}`), `backupCounter` (`{L}` is the letter), `section` (prefix before a section name in the HUD), `now`, `next`, `notes`, `timer`, `presenter` (the presenter window), `hint` (the line shown at start), `rotate`, `ambient` (the pause button), `help`, `helpClose`, `jump`, `keyMove`, `keyMap`, `keyPresenter`, `keyFull`, `keyBlackout`, `keyAmbient`, `keyJump`, `keyHelp` (the key help). Every theme brings flavoured defaults in English, so a deck in another language translates all of them. Example for Italian: `{ "map": "Mappa", "mapHint": "Scegli una slide. Esc chiude.", "counter": "{n} / {N}", "backupCounter": "Extra {L}", "now": "In scena", "next": "Prossima", "notes": "Note", "timer": "Tempo", "presenter": "Relatore", "hint": "Frecce per muoversi · M mappa · P relatore · F schermo intero" }`.
 
 ## A slide
 

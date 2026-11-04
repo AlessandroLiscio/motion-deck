@@ -171,7 +171,8 @@
     vocabulary: {
       map: 'Agenda', mapHint: 'Select a slide. Esc closes.', counter: '{n} / {N}', backupCounter: 'Appendix {L}',
       now: 'Current', next: 'Up next', notes: 'Speaker notes', timer: 'Elapsed', presenter: 'Presenter view',
-      hint: '← → navigate · M agenda · P presenter · F full screen',
+      hint: '← → navigate · M agenda · P presenter · F full screen · ? shortcuts',
+      ambient: 'Motion', help: 'Shortcuts',
     },
     art: { hero, chapter, closing, divider },
     ambient: {
