@@ -1,0 +1,171 @@
+/* Skyrim: a cold Nordic night. Thin condensed capitals, hairline rules with a diamond, dark-glass panels with corner ticks, a compass bar and a journal for the map, and a frost between slides. An unofficial homage: nothing here comes from the game. */
+
+:root {
+  --bg: #0b1016; --bg-2: #131d29; --text: #eef3f8; --muted: #9db0c4; --line: rgba(176, 205, 235, .26); --panel: rgba(18, 28, 40, .66);
+  --a1: #7ec8f0; --a2: #e3ab4c; --a3: #52d6a0; --a4: #e5544b; --a5: #a99cf2; --a6: #8499ad;
+  --on-acc: #0b1016; --c-key: #a99cf2; --c-str: #52d6a0; --c-com: #7f93a8; --c-num: #e3ab4c; --c-fn: #7ec8f0; --glow: #7ec8f0;
+  --f-display: "Big Shoulders Display", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-body: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+  --t-hero: 156px; --t-h1: 112px; --t-h2: 80px; --t-h3: 46px; --t-lead: 40px; --t-body: 34px; --t-small: 28px; --t-label: 20px;
+  --lh-head: 1.02; --lh-body: 1.4; --ls-label: .26em; --case-display: uppercase; --ls-display: .1em;
+  --w-display: 260; --w-body: 300; --w-bold: 600;
+  --pad-x: 120px; --pad-y: 84px; --pad-b: 96px; --gap: 32px; --radius: 0px; --stroke: 1px;
+  --ease: cubic-bezier(.22, .7, .2, 1); --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.3, .64, 1);
+  --a-dur: .9s; --a-stagger: 70ms; --a-base: 100ms; --tr-dur: 760ms;
+  --hair: color-mix(in srgb, var(--acc, var(--a1)) 42%, transparent);
+}
+
+body { background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg-2) 70%, var(--bg)) 70%, var(--bg)); }
+
+/* entrance flavour: a slow settle out of a soft blur */
+.slide { --ay: 14px; --ab: 8px; }
+
+/* headings: thin condensed capitals with wide tracking, a hairline rule with a diamond underneath */
+.slide h1, .slide h2, .slide .big { font-weight: var(--w-display); text-shadow: 0 0 44px color-mix(in srgb, var(--acc) 26%, transparent); }
+.slide h1 { position: relative; }
+.slide h2 { position: relative; }
+.slide[data-layout="title"] h1 { font-size: var(--t-hero); line-height: .98; letter-spacing: .08em; }
+.slide[data-layout="chapter"] h2, .slide[data-layout="closing"] h1, .slide[data-layout="closing"] h2 { font-size: var(--t-h1); line-height: 1; }
+.slide h3 { font-weight: 360; letter-spacing: .14em; }
+.slide .big { font-size: calc(var(--t-h2) * 1.12); line-height: 1.1; }
+.slide h1::after, .slide h2::after { content: ""; position: absolute; left: 0; top: 100%; width: 420px; height: 12px; margin-top: 10px; background:
+  linear-gradient(90deg, transparent, var(--acc)) 0 50% / calc(50% - 14px) 1px no-repeat,
+  linear-gradient(270deg, transparent, var(--acc)) 100% 50% / calc(50% - 14px) 1px no-repeat,
+  linear-gradient(to bottom right, transparent 50%, var(--a2) 50%) calc(50% - 6px) 0 / 6px 6px no-repeat,
+  linear-gradient(to bottom left, transparent 50%, var(--a2) 50%) 50% 0 / 6px 6px no-repeat,
+  linear-gradient(to top right, transparent 50%, var(--a2) 50%) calc(50% - 6px) 6px / 6px 6px no-repeat,
+  linear-gradient(to top left, transparent 50%, var(--a2) 50%) 50% 6px / 6px 6px no-repeat; }
+.center h1::after, .center h2::after { left: 50%; margin-left: -210px; }
+.slide[data-layout="chapter"] h2::after, .slide[data-layout="closing"] h1::after, .slide[data-layout="closing"] h2::after { margin-top: 14px; }
+.slide[data-layout="title"] h1::after { margin-top: 18px; width: 520px; }
+
+.slide .lead { font-size: calc(var(--t-lead) * 1.02); font-weight: 300; color: color-mix(in srgb, var(--text) 86%, var(--bg)); }
+.slide .kicker { font-weight: 500; letter-spacing: var(--ls-label); }
+.slide .kicker::before { content: ""; display: inline-block; width: .42em; height: .42em; margin-right: 1em; vertical-align: .1em; border: 1.5px solid var(--acc); transform: rotate(45deg); }
+.slide .attrib, .slide cite, .slide[data-layout="title"] .meta { letter-spacing: .12em; text-transform: uppercase; font-size: calc(var(--t-small) * .8); }
+.slide strong { color: var(--text); font-weight: var(--w-bold); }
+.slide em { font-style: normal; color: color-mix(in srgb, var(--acc) 62%, var(--text)); }
+.slide code { border-radius: 0; background: color-mix(in srgb, var(--acc) 9%, transparent); border-color: color-mix(in srgb, var(--acc) 34%, transparent); }
+.slide a { text-decoration-thickness: 1px; }
+
+/* lists: hollow diamonds; the numbered list keeps its numerals in the mono face */
+.slide ul > li::before { left: .1em; top: .56em; width: .3em; height: .3em; border-radius: 0; background: transparent; border: 1.5px solid var(--acc); transform: rotate(45deg); }
+.slide ol > li::before { font-weight: 500; font-size: .86em; top: .1em; }
+.slide li { line-height: 1.32; }
+
+/* dark glass with a hairline border and corner ticks */
+.card, .slide pre.code, .help-card { --ticks:
+  linear-gradient(var(--acc), var(--acc)) 0 0 / 18px 2px no-repeat, linear-gradient(var(--acc), var(--acc)) 0 0 / 2px 18px no-repeat,
+  linear-gradient(var(--acc), var(--acc)) 100% 0 / 18px 2px no-repeat, linear-gradient(var(--acc), var(--acc)) 100% 0 / 2px 18px no-repeat,
+  linear-gradient(var(--acc), var(--acc)) 0 100% / 18px 2px no-repeat, linear-gradient(var(--acc), var(--acc)) 0 100% / 2px 18px no-repeat,
+  linear-gradient(var(--acc), var(--acc)) 100% 100% / 18px 2px no-repeat, linear-gradient(var(--acc), var(--acc)) 100% 100% / 2px 18px no-repeat; }
+.card { position: relative; padding: 44px 40px; border: 1px solid var(--hair); border-radius: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, var(--panel)), var(--panel)); backdrop-filter: blur(6px); }
+.card::before { content: ""; position: absolute; inset: -1px; pointer-events: none; background: var(--ticks); }
+.card h3 { text-shadow: 0 0 26px color-mix(in srgb, var(--acc) 30%, transparent); }
+.card p { font-size: var(--t-small); line-height: 1.38; font-weight: 300; }
+
+/* key figures: large light numerals beside a hairline with a diamond */
+.stat { position: relative; padding: 4px 0 4px 38px; border-left: 1px solid var(--hair); }
+.stat::before { content: ""; position: absolute; left: -6px; top: 10px; width: 11px; height: 11px; background: var(--acc); transform: rotate(45deg); box-shadow: 0 0 0 5px var(--bg); }
+.stat .num { font-weight: 190; color: var(--text); letter-spacing: .04em; text-shadow: 0 0 40px color-mix(in srgb, var(--acc) 38%, transparent); }
+.stat .label { font-family: var(--f-mono); font-size: calc(var(--t-small) * .87); letter-spacing: .14em; text-transform: uppercase; }
+
+/* callout: a journal note */
+.callout { border: 1px solid var(--hair); border-left: 3px solid var(--acc); border-radius: 0; font-weight: 300; background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 13%, transparent), color-mix(in srgb, var(--acc) 2%, transparent)); }
+
+/* quote: a book page, framed twice, with a turned corner */
+.slide blockquote { font-family: var(--f-body); font-weight: 300; text-transform: none; letter-spacing: 0; font-size: 54px; line-height: 1.26; padding: 64px 88px 56px; max-width: 1280px; position: relative;
+  border: 1px solid var(--hair); background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 7%, var(--panel)), var(--panel)); box-shadow: inset 0 0 0 10px var(--bg), inset 0 0 0 11px color-mix(in srgb, var(--acc) 26%, transparent); }
+.slide blockquote::before { content: "\201C"; left: 30px; top: 14px; font-family: var(--f-display); font-weight: 200; font-size: 230px; line-height: 1; color: var(--acc); text-shadow: none; }
+.slide blockquote::after { content: ""; position: absolute; right: -1px; top: -1px; width: 38px; height: 38px; background: linear-gradient(225deg, var(--bg) 50%, color-mix(in srgb, var(--acc) 26%, var(--panel)) 50%); border-left: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+.slide cite { padding-left: 0; margin-left: 88px; }
+
+/* code: a dark panel with the same ticks */
+.slide pre.code { border: 1px solid var(--hair); border-radius: 0; font-size: 28px; font-weight: 400; background: var(--ticks), color-mix(in srgb, var(--bg) 88%, transparent); }
+.slide pre.code.has-hl .ln.hl { background: color-mix(in srgb, var(--acc) 15%, transparent); box-shadow: -38px 0 0 color-mix(in srgb, var(--acc) 15%, transparent), 38px 0 0 color-mix(in srgb, var(--acc) 15%, transparent); }
+
+/* chips and links: menu entries with a marker */
+.chip { position: relative; padding: 6px 18px 6px 36px; border: 1px solid var(--hair); border-radius: 0; color: var(--text); letter-spacing: .2em; }
+.chip::before { content: ""; position: absolute; left: 15px; top: 50%; width: 8px; height: 8px; margin-top: -4px; background: var(--acc); transform: rotate(45deg); }
+.links a { position: relative; padding: 14px 32px 14px 52px; border: 1px solid var(--hair); border-radius: 0; font-size: calc(var(--t-small) * .78); letter-spacing: .16em; text-transform: uppercase; background: color-mix(in srgb, var(--acc) 7%, transparent); }
+.links a::before { content: ""; position: absolute; left: 24px; top: 50%; width: 8px; height: 8px; margin-top: -4px; background: var(--acc); transform: rotate(45deg); }
+
+/* timeline: quest markers on a hairline */
+.slide ol.timeline::before { height: 1px; background: linear-gradient(90deg, var(--acc), color-mix(in srgb, var(--acc) 18%, transparent)); }
+.slide ol.timeline > li::before { width: 14px; height: 14px; top: -45px; left: 3px; border-radius: 0; transform: rotate(45deg); box-shadow: 0 0 0 5px var(--bg), 0 0 0 6px color-mix(in srgb, var(--acc) 72%, transparent); }
+.slide ol.timeline > li b { font-weight: 500; letter-spacing: .14em; text-transform: uppercase; font-size: calc(var(--t-small) * .87); }
+.slide ol.timeline > li { font-size: var(--t-small); font-weight: 300; }
+
+table.data th { font-weight: 500; letter-spacing: .2em; }
+table.data th, table.data td { border-bottom-width: 1px; }
+
+/* chrome: a compass bar across the top. Letters mark sections, ticks mark slides, the current slide is a gold diamond. */
+#chrome::before { content: ""; position: fixed; left: 0; right: 0; top: 0; height: 50px; pointer-events: none; border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); background:
+  repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 24px) 0 100% / 100% 6px no-repeat,
+  linear-gradient(180deg, color-mix(in srgb, var(--bg) 90%, transparent), color-mix(in srgb, var(--bg) 35%, transparent)); }
+#hud { top: 0; bottom: auto; height: 50px; align-items: center; padding: 0 28px; font-size: 13px; letter-spacing: .22em; }
+.hud-sec { text-shadow: 0 0 16px color-mix(in srgb, var(--acc) 45%, transparent); }
+.hud-count { color: var(--text); }
+.hud-title { max-width: 22vw; }
+#track { top: 0; bottom: auto; height: 50px; gap: 20px; }
+.seg { gap: 0; }
+.seg::before { content: "N"; margin-right: 8px; font: 500 12px var(--f-mono); letter-spacing: .08em; color: var(--acc); }
+.seg:nth-child(8n+2)::before { content: "NE"; } .seg:nth-child(8n+3)::before { content: "E"; } .seg:nth-child(8n+4)::before { content: "SE"; }
+.seg:nth-child(8n+5)::before { content: "S"; } .seg:nth-child(8n+6)::before { content: "SW"; } .seg:nth-child(8n+7)::before { content: "W"; } .seg:nth-child(8n+8)::before { content: "NW"; }
+.dot, .dot.seen, .dot.cur, .dot:hover { background: none; }
+.dot { position: relative; flex: 0 0 11px; width: 11px; min-width: 11px; height: 26px; background: none; border-radius: 0; transition: none; }
+.dot::before { content: ""; position: absolute; left: 50%; top: 50%; width: 1px; height: 10px; margin: -5px 0 0 -.5px; background: color-mix(in srgb, var(--muted) 55%, transparent); }
+.dot.seen::before { background: color-mix(in srgb, var(--acc) 75%, transparent); }
+.dot:hover::before { background: var(--text); height: 14px; margin-top: -7px; }
+.dot.cur { transform: none; box-shadow: none; }
+.dot.cur::before { width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--a2); transform: rotate(45deg); box-shadow: 0 0 12px 1px color-mix(in srgb, var(--a2) 70%, transparent); }
+.hud-btn { border-radius: 0; border-color: var(--line); letter-spacing: .18em; }
+
+/* the map is a journal: two columns of entries under each region */
+#map { align-items: center; gap: 20px; padding-block: max(3vh, 20px); background: radial-gradient(1000px 640px at 50% 0%, color-mix(in srgb, var(--bg-2) 92%, transparent), transparent 76%), color-mix(in srgb, var(--bg) 95%, transparent); }
+#map > * { width: min(1180px, 100%); flex: none; }
+.map-head h2 { position: relative; font-size: 52px; font-weight: var(--w-display); letter-spacing: .16em; padding-bottom: 24px; }
+.map-head h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 420px; height: 12px; background:
+  linear-gradient(90deg, transparent, var(--a1)) 0 50% / calc(50% - 14px) 1px no-repeat, linear-gradient(270deg, transparent, var(--a1)) 100% 50% / calc(50% - 14px) 1px no-repeat,
+  linear-gradient(to bottom right, transparent 50%, var(--a2) 50%) calc(50% - 6px) 0 / 6px 6px no-repeat, linear-gradient(to bottom left, transparent 50%, var(--a2) 50%) 50% 0 / 6px 6px no-repeat,
+  linear-gradient(to top right, transparent 50%, var(--a2) 50%) calc(50% - 6px) 6px / 6px 6px no-repeat, linear-gradient(to top left, transparent 50%, var(--a2) 50%) 50% 6px / 6px 6px no-repeat; }
+.map-hint { font-size: 18px; }
+.map-sec h3 { padding-bottom: 8px; border-bottom: 1px solid var(--hair); font-weight: 500; letter-spacing: .24em; }
+.map-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 56px; }
+.map-item { position: relative; gap: 18px; padding: 6px 12px 6px 34px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; font-size: 21px; color: var(--muted); }
+.map-item::before { content: ""; position: absolute; left: 12px; top: 50%; width: 7px; height: 7px; margin-top: -4px; border: 1px solid var(--acc); transform: rotate(45deg); }
+.map-item:hover, .map-item:focus-visible, .map-item.cur { color: var(--text); border-color: var(--line); background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 12%, transparent), transparent 80%); }
+.map-item.cur::before, .map-item:hover::before { background: var(--a2); border-color: var(--a2); }
+.map-n { font-weight: 500; }
+
+#hint { border-radius: 0; font-size: 14px; letter-spacing: .12em; border-color: var(--line); }
+.help-card { position: relative; padding: 34px 44px; border: 1px solid var(--hair); border-radius: 0; box-shadow: 0 24px 70px color-mix(in srgb, var(--bg) 80%, transparent); background: var(--ticks), color-mix(in srgb, var(--bg) 88%, var(--bg-2)); }
+.help-card h2 { position: relative; padding-bottom: 14px; margin-bottom: 18px; font-size: 44px; letter-spacing: .16em; border-bottom: 1px solid var(--hair); }
+.help-card kbd { border-radius: 0; border-color: var(--hair); }
+#jump { border-radius: 0; letter-spacing: .16em; }
+
+/* diagrams: nothing to add; tones follow --a3 (ok) and --a4 (danger) */
+
+/* art: slow motion that stops in capture and print, and pauses with the background */
+.art svg { overflow: visible; }
+.art .twinkle { transform-box: fill-box; transform-origin: center; animation: skTwinkle 3.6s ease-in-out infinite; }
+.art .twinkle:nth-child(2n) { animation-duration: 4.8s; animation-delay: -1.4s; }
+.art .twinkle:nth-child(3n) { animation-duration: 3s; animation-delay: -2.2s; }
+.art .wave { animation: skWave 14s ease-in-out infinite; }
+.art .wave2 { animation: skWave 18s ease-in-out -6s infinite reverse; }
+.art .spin { transform-box: fill-box; transform-origin: center; animation: skSpin 160s linear infinite; }
+.art .spin-r { transform-box: fill-box; transform-origin: center; animation: skSpin 220s linear infinite reverse; }
+.art .flame { transform-box: fill-box; transform-origin: 50% 100%; animation: skFlame 2.2s ease-in-out infinite; }
+@keyframes skTwinkle { 50% { opacity: .25; transform: scale(.6); } }
+@keyframes skWave { 0%, 100% { transform: translateX(-10px); opacity: .55; } 50% { transform: translateX(12px); opacity: 1; } }
+@keyframes skSpin { to { transform: rotate(360deg); } }
+@keyframes skFlame { 30% { transform: scale(1, 1.1) skewX(3deg); } 65% { transform: scale(.94, .94) skewX(-3deg); } }
+
+/* transition: frost (contract 5.5). The leaving slide is blown away in a gust and whitens; the entering slide clears out of the frost. Reversed going back. */
+#stage { --gx: 1; }
+#stage[data-dir="back"] { --gx: -1; }
+@keyframes frostIn { from { opacity: 0; transform: translateX(calc(var(--gx) * 70px)) scale(1.012); filter: blur(18px) brightness(1.7); } 60% { opacity: 1; } }
+@keyframes frostOut { to { opacity: 0; transform: translateX(calc(var(--gx) * -90px)) scale(.992); filter: blur(14px) brightness(1.5); } }
+#stage[data-tr="frost"] .slide.entering { animation: frostIn var(--tr-dur) var(--ease) both; }
+#stage[data-tr="frost"] .slide.leaving { animation: frostOut calc(var(--tr-dur) * .8) var(--ease) both; }
