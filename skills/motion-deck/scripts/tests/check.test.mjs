@@ -130,7 +130,7 @@ if (browsers.includes('chrome')) {
       const s = run('lint', 'chrome', ['--no-pdf', '--shots', 'none', '--strict']);
       assert.equal(s.code, 1, s.text);
       assert.match(s.text, /^fail lint 10 warning\(s\)/m);
-      assert.match(s.last, /^FAIL check: lint 10 problem(s)$/);
+      assert.match(s.last, /^FAIL check: lint 10 problem\(s\)$/);
       assert.deepEqual(r.leaked.concat(s.leaked), []);
     });
     test('theme.json not found: warns, skips the compare, still checks contrast', () => {
