@@ -1,6 +1,6 @@
 ---
 name: motion-deck
-description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in six themes (space, editorial, neon, corporate, fantasy, pirates). It can also hand over an image-based .pptx of the finished deck for clients who ask for PowerPoint; it does not build editable or natively animated PowerPoint decks, which is the pptx skill's job.
+description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in seven themes (space, editorial, neon, corporate, fantasy, pirates, pipboy). It can also hand over an image-based .pptx of the finished deck for clients who ask for PowerPoint; it does not build editable or natively animated PowerPoint decks, which is the pptx skill's job.
 ---
 
 # motion-deck
@@ -32,6 +32,7 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 | `corporate` | business reviews, sales, internal updates | white, one brand color from `"accent"` in the config, soft drifting shapes, smooth slide |
 | `fantasy` | storytelling, tabletop games, training with a narrative | candlelit dark, gold and burgundy, fireflies and fog, magic dissolve |
 | `pirates` | kids, playful workshops, team events | treasure-map parchment, sea blue, rolling waves, sailing slide |
+| `pipboy` | games, retro-futurist tech, dev tools, terminal-style talks | green phosphor terminal in capitals, bracketed panels, scanlines, top-to-bottom scan |
 
 `references/themes.md` has the details of each theme (accents, fonts, vocabulary, what it does best).
 
@@ -59,4 +60,4 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 
 ## Where things are
 
-`references/authoring.md` the source format, layouts and attributes. `references/motion.md` builds, morph, counters, transitions, reduced motion and print. `references/diagrams.md` the diagram and chart language. `references/storytelling.md` structure, metaphor, pacing and notes. `references/themes.md` the six themes. `references/contract.md` the exact specification of the engine, build, check and themes; read it only when the other guides leave a question. `examples/showcase.src.html` is a complete deck that uses every layout and feature; `examples/<kind>.src.html` are six starter decks with real content.
+`references/authoring.md` the source format, layouts and attributes. `references/motion.md` builds, morph, counters, transitions, reduced motion and print. `references/diagrams.md` the diagram and chart language. `references/storytelling.md` structure, metaphor, pacing and notes. `references/themes.md` the seven themes. `references/contract.md` the exact specification of the engine, build, check and themes; read it only when the other guides leave a question. `examples/showcase.src.html` is a complete deck that uses every layout and feature; `examples/<kind>.src.html` are six starter decks with real content.

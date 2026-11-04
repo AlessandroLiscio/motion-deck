@@ -4,12 +4,12 @@
     "name": "Alessandro Liscio",
     "url": "https://github.com/AlessandroLiscio"
   },
-  "description": "The motion-deck plugin: animated, one-file HTML presentations in six themes.",
+  "description": "The motion-deck plugin: animated, one-file HTML presentations in seven themes.",
   "plugins": [
     {
       "name": "motion-deck",
       "source": "./",
-      "description": "Build animated, one-file HTML presentations in six swappable themes (space, editorial, neon, corporate, fantasy, pirates) with step builds, animated diagrams, morph transitions and a presenter view."
+      "description": "Build animated, one-file HTML presentations in seven swappable themes (space, editorial, neon, corporate, fantasy, pirates, pipboy) with step builds, animated diagrams, morph transitions and a presenter view."
     }
   ]
 }

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Downloads the latin WOFF2 subsets the themes embed plus each family's OFL text, and writes fonts.json.
-// Run it when a font is added or refreshed: node tools/fetch-fonts.mjs
-import { mkdir, writeFile } from 'node:fs/promises';
+// Run it when a font is added or refreshed: node tools/fetch-fonts.mjs [--only id[,id]]
+// With --only just those families are fetched and every other entry of fonts.json stays as it is.
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,7 +24,16 @@ const FAMILIES = [
   { id: 'eb-garamond', family: 'EB Garamond', query: 'EB+Garamond:ital,wght@0,400..800;1,400..800', dir: 'ebgaramond' },
   { id: 'pirata-one', family: 'Pirata One', query: 'Pirata+One', dir: 'pirataone' },
   { id: 'alegreya-sans', family: 'Alegreya Sans', query: 'Alegreya+Sans:wght@400;700', dir: 'alegreyasans' },
+  { id: 'share-tech-mono', family: 'Share Tech Mono', query: 'Share+Tech+Mono', dir: 'sharetechmono' },
 ];
+
+const flag = process.argv.indexOf('--only');
+const only = flag < 0 ? null : (process.argv[flag + 1] || '').split(',').filter(Boolean);
+if (only && (!only.length || only.some((id) => !FAMILIES.some((f) => f.id === id)))) {
+  console.error(`usage: node tools/fetch-fonts.mjs [--only id[,id]]; ids: ${FAMILIES.map((f) => f.id).join(', ')}`);
+  process.exit(2);
+}
+const todo = only ? FAMILIES.filter((f) => only.includes(f.id)) : FAMILIES;
 
 const get = async (url, binary = false) => {
   const res = await fetch(url, { headers: { 'user-agent': UA } });
@@ -42,7 +52,7 @@ const latinFaces = (css) => [...css.matchAll(/\/\*\s*([\w-]+)\s*\*\/\s*@font-fac
 const registry = [];
 let files = 0;
 let bytes = 0;
-for (const fam of FAMILIES) {
+for (const fam of todo) {
   try {
     const cssUrl = `https://fonts.googleapis.com/css2?family=${fam.query}&display=swap`;
     const faces = latinFaces(await get(cssUrl));
@@ -73,5 +83,10 @@ for (const fam of FAMILIES) {
     process.exitCode = 1;
   }
 }
-await writeFile(join(OUT, 'fonts.json'), JSON.stringify(registry, null, 2) + '\n');
-console.log(`${process.exitCode ? 'FAIL' : 'PASS'} fetch-fonts: ${registry.length}/${FAMILIES.length} families, ${files} files, ${bytes} bytes -> ${OUT}`);
+let out = registry;
+if (only) {
+  const kept = JSON.parse(await readFile(join(OUT, 'fonts.json'), 'utf8').catch(() => '[]'));
+  out = FAMILIES.map((f) => registry.find((e) => e.id === f.id) || kept.find((e) => e.id === f.id)).filter(Boolean);
+}
+await writeFile(join(OUT, 'fonts.json'), JSON.stringify(out, null, 2) + '\n');
+console.log(`${process.exitCode ? 'FAIL' : 'PASS'} fetch-fonts: ${registry.length}/${todo.length} families, ${files} files, ${bytes} bytes -> ${OUT}`);
