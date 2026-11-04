@@ -36,7 +36,7 @@ When two consecutive slides hold an element with the same `data-morph` key, that
 | `rise` | new slide rises while the old fades | engine |
 | `zoom` | slight zoom through | engine |
 | `none` | cut | engine |
-| theme transitions | `warp` (space), `lift` (editorial), `tunnel` (neon), `glide` (corporate), `dissolve` (fantasy), `sail` (pirates) | each theme, its default |
+| theme transitions | `warp` (space), `lift` (editorial), `tunnel` (neon), `glide` (corporate), `dissolve` (fantasy), `sail` (pirates), `scan` (pipboy) | each theme, its default |
 
 Use the theme's default for the whole deck. Set `data-transition="none"` on a slide that continues the previous one (a second half of a diagram, a reveal), or `data-transition="fade"` for a quiet slide such as a quote. Set the config key `transition` only to force one style on every slide.
 

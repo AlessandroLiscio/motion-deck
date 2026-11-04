@@ -1,8 +1,8 @@
 # motion-deck
 
-Animated presentations that are one HTML file. A Claude Code plugin with a skill that turns a brief, notes or a document into a deck with entrance animations, step-by-step builds, diagrams that draw themselves, cinematic transitions, a living background, a map of the talk and a presenter window, in six themes.
+Animated presentations that are one HTML file. A Claude Code plugin with a skill that turns a brief, notes or a document into a deck with entrance animations, step-by-step builds, diagrams that draw themselves, cinematic transitions, a living background, a map of the talk and a presenter window, in seven themes.
 
-**[See the showcase deck in all six themes](https://alessandroliscio.github.io/motion-deck/)**
+**[See the showcase deck in all seven themes](https://alessandroliscio.github.io/motion-deck/)**
 
 | Theme | Look | Background | Transition |
 |---|---|---|---|
@@ -12,6 +12,7 @@ Animated presentations that are one HTML file. A Claude Code plugin with a skill
 | `corporate` | white with one brand color from the config | soft drifting shapes | smooth glide |
 | `fantasy` | candlelit dark, gold and burgundy | fireflies, embers, low fog | magic dissolve |
 | `pirates` | treasure-map parchment and sea blue | rolling waves and clouds | sailing sway |
+| `pipboy` | green phosphor terminal, bracketed panels, inverse-video tabs | scanlines, a rolling refresh bar | top-to-bottom scan |
 
 Changing the theme is one word in the deck's config. Slides name their illustrations by role (hero, chapter, closing), and each theme draws its own.
 

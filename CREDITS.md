@@ -25,7 +25,12 @@ All fonts are licensed under the [SIL Open Font License 1.1](https://openfontlic
 | EB Garamond | 2017 The EB Garamond Project Authors, [octaviopardo/EBGaramond12](https://github.com/octaviopardo/EBGaramond12) | fantasy |
 | Pirata One | 2012 Rodrigo Fuenzalida and Nicolas Massi, [taip.com.ar](https://www.taip.com.ar), with Reserved Font Name "Pirata" | pirates |
 | Alegreya Sans | 2013 The Alegreya Sans Project Authors, [huertatipografica/Alegreya-Sans](https://github.com/huertatipografica/Alegreya-Sans) | pirates |
+| Share Tech Mono | 2012 Carrois Type Design, Ralph du Carrois, [carrois.com](https://www.carrois.com), with Reserved Font Name "Share" | pipboy |
 
 ## Code
 
 The engine, the scripts, the themes and their line art are original work released under the MIT license in `LICENSE`. The scripts use only Node.js built-ins; nothing is downloaded at build time.
+
+## Trademarks
+
+The pipboy theme is an homage to the look of the Pip-Boy interface in the Fallout games. Fallout and Pip-Boy are trademarks of Bethesda Softworks LLC; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, fonts or text: its line art is drawn from scratch.

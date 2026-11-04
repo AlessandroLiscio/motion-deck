@@ -1,0 +1,15 @@
+{
+  "name": "pipboy",
+  "label": "Pip-Boy",
+  "mode": "dark",
+  "description": "A green phosphor terminal in the style of a wasteland wrist computer: bracketed panels, inverse-video tabs, scanlines, a rolling refresh bar and a top-to-bottom scan between slides.",
+  "fonts": [
+    { "id": "share-tech-mono", "role": ["display", "body", "mono"] }
+  ],
+  "defaultTransition": "scan",
+  "transitions": ["scan"],
+  "bg": "#030f08",
+  "text": "#6effb0",
+  "muted": "#33b06c",
+  "accents": ["#2eff85", "#ffc23d", "#3dffd6", "#ff6a4a", "#52c8ff", "#d9ff66"]
+}

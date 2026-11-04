@@ -273,5 +273,24 @@
     "source": "https://github.com/google/fonts/tree/main/ofl/alegreyasans",
     "css": "https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;700&display=swap",
     "fetched": "2026-11-03"
+  },
+  {
+    "id": "share-tech-mono",
+    "family": "Share Tech Mono",
+    "faces": [
+      {
+        "file": "share-tech-mono/share-tech-mono-normal-400.woff2",
+        "style": "normal",
+        "weight": "400",
+        "bytes": 13500,
+        "origin": "https://fonts.gstatic.com/s/sharetechmono/v16/J7aHnp1uDWRBEqV98dVQztYldFcLowEF.woff2"
+      }
+    ],
+    "license": "OFL-1.1",
+    "licenseFile": "share-tech-mono/OFL.txt",
+    "copyright": "Copyright (c) 2012, Carrois Type Design, Ralph du Carrois (post@carrois.com www.carrois.com), with Reserved Font Name 'Share'",
+    "source": "https://github.com/google/fonts/tree/main/ofl/sharetechmono",
+    "css": "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap",
+    "fetched": "2026-11-04"
   }
 ]
