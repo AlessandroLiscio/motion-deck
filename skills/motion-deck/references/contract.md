@@ -383,3 +383,63 @@ The opener sends `state` on `ready`, on `request`, and on every `deck:change` an
 ## 12. Class and variable index
 
 Classes set by the runtime: on `<html>`: `capture`, `reduced`, `map-open`, `help-open`, `blackout`, `still`, `present`; on slides: `active`, `leaving`, `entering`, `play`, `instant`; on elements: `a`, `a-fade`, `a-left`, `a-right`, `a-zoom`, `a-pop`, `on`, `off`, `art`. Attributes set by the runtime: `#stage[data-tr][data-dir]`, `.slide[data-n]` (display number), `html[data-deck-error]`. Custom properties set by the runtime: `--s` on `#stage`, `--acc` and `--i` and `--d` on slides and elements. Chrome elements created by the runtime: `#chrome` (contains `#hud` with the button `#hud-amb`, `#track`, `#map`, `#help`, `#jump`, `#blackout`, `#hint`). Every slide carries `role="group"`, `aria-roledescription="slide"` and an `aria-label`; the map items and HUD button show a focus outline with `:focus-visible`.
+
+## 13. Export
+
+### 13.1 Command
+
+`node scripts/export.mjs <built.html> [--out <file.pptx>] [--steps all|final] [--scale <n>] [--format jpeg|png] [--quality <1-100>] [--transition fade|none] [--no-notes] [--browser auto|chrome|edge] [--timeout <ms>] [--report <dir>]` writes an image-based PowerPoint file: every picture is a screenshot of the deck, nothing in it is editable and nothing animates except a slide transition. It uses Node built-ins only: the ZIP container (`node:zlib`, including `crc32`) and the OOXML parts are written by the scripts. It is for hand-over to clients who ask for a `.pptx`; an editable or natively animated PowerPoint deck is out of scope.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--out` | `<deck folder>/<slug>.pptx` | output file, must end in `.pptx`; `<slug>` is the folder name for `index.html`, else the file name. Written through `<out>.part` and renamed |
+| `--steps` | `all` | `all`: one PowerPoint slide for every step state 0..N of every deck slide; `final`: one per deck slide in its final state |
+| `--scale` | `2` | device scale factor, 1 to 4, and 1600 times it must be a whole number; the picture is 1600 x scale by 900 x scale pixels (3200 by 1800 at 2) |
+| `--format`, `--quality` | `jpeg`, `90` | picture format. Measured on `examples/showcase.src.html`, all steps, scale 2: PNG 11 to 189 MB per theme (435 MB for the six, two themes over 100 MB), JPEG at 90 5 to 26 MB (68 MB for the six). `jpeg` is the default; `png` is lossless |
+| `--transition` | `fade` | `fade` puts a short fade (`<p:transition spd="fast"><p:fade/></p:transition>`) on every slide; `none` writes no transition |
+| `--no-notes` | notes on | leaves speaker notes out |
+| `--report` | `tmp/reports/export` | folder for `<deck>/export.log` (every state, one line) and `<deck>/report.json` |
+
+Exit 0 PASS, 1 the export failed its own verification (no file is written), 2 the tool or the browser failed (a bad option, a missing file, a deck that never became ready, an output that cannot be written). Output: one status line per stage, a warning when the file passes 100 MB, and the final line `PASS export: <deck> [<browser>] <S> slides from <N> deck slides, <steps> steps, <format> <w>x<h>, <size> MB -> <file>` or `FAIL export: <deck> <count> problem(s)` with at most 5 excerpt lines.
+
+### 13.2 Rendering and the state-to-slide mapping
+
+Browser launch, throwaway profile, bounded waits and cleanup are those of section 10. The page is loaded with `?capture=1`, the viewport is 1600 by 900 with `deviceScaleFactor` equal to `--scale`, capture mode is on (5.7) and `#chrome` (HUD, track, map) is hidden, so the picture shows the slide alone. Each state is set with `Deck.go(i, { step, instant: true })`, two animation frames are awaited, `Deck.index` and `Deck.step` must equal the request, and the picture is taken with `Page.captureScreenshot`.
+
+Order: the slides that are not backup slides in deck order, then the backup slides (A, B, C) in deck order. With `--steps all` slide i contributes states 0 to `Deck.steps(i)`; with `final` only the state `Deck.steps(i)`. A state whose picture bytes equal those of the state before it on the same slide is dropped (a build step that changes nothing visible), so a slide with no visible change contributes one PowerPoint slide. Clicking once in PowerPoint therefore shows what one step shows in the deck, and the fade between two states of one slide reads as a reveal.
+
+Every PowerPoint slide has the title of its deck slide (`Deck.info().slides[i].title`) and the alt text of the picture: the title, a full stop and the text visible in that state (steps not yet shown, the notes and `script` and `style` excluded), whitespace collapsed, at most 250 characters, cut at a word with an ellipsis. Speaker notes are the text of `aside.notes` as paragraphs (block elements and `<br>` end a paragraph, list items start with a bullet) and sit in a notes slide of every kept state of that slide.
+
+### 13.3 Package
+
+A ZIP with `[Content_Types].xml` first, XML parts deflated, pictures stored, names ASCII, no ZIP64 (at most 65535 entries and 4 GiB). Parts, per ECMA-376 (part 1 PresentationML and DrawingML, part 2 Open Packaging Conventions):
+
+* `[Content_Types].xml`: a Default for `rels`, `xml` and the picture extension (`jpg` or `png`), an Override for every other part.
+* `_rels/.rels`: office document, core properties, extended properties. `docProps/core.xml` carries the deck `title`, `subtitle` (subject), `author` (creator) and `lang` (language) from the config; `docProps/app.xml` the slide and notes counts.
+* `ppt/presentation.xml` (slide size 12192000 by 6858000 EMU, `autoCompressPictures="0"` so PowerPoint keeps the full resolution), its relationships, `presProps.xml`, `viewProps.xml`, `tableStyles.xml`, `theme/theme1.xml` and `theme2.xml`.
+* One slide master with one Title Only layout, and one notes master.
+* `ppt/slides/slide<k>.xml` for k = 1..S, each with two shapes in this order: a title placeholder holding the title (it sits beneath the picture and is fully covered; outline view, the slide navigator and screen readers read it), then one `p:pic` with the alt text in `descr`, at offset 0,0 and extent 12192000 by 6858000; then the transition when asked.
+* `ppt/notesSlides/notesSlide<k>.xml` for each slide with notes, pointing to the notes master and back to the slide.
+* `ppt/media/image<k>.<ext>`, one per slide.
+
+Ids: slide ids from 256, master id 2147483648, layout id 2147483649, shape ids unique inside a slide.
+
+### 13.4 Verification
+
+The export verifies its own package before it writes it and fails (exit 1) on any error. The checks are implemented in `scripts/lib/pptx-validate.mjs`; the unit tests and the selftest run them again:
+
+1. The ZIP parses, every entry's CRC and size match, names are unique and safe (no absolute path, no `..`, no backslash), `[Content_Types].xml` is first.
+2. Every XML part and every `.rels` part is well formed, parsed with the headless browser's `DOMParser` (Node has no XML parser); root element and namespace are the expected ones.
+3. Every part has a content type (Override or Default) and it is the one its role needs; every Override names a part that exists; Defaults are not repeated.
+4. Every relationship has a unique Id, a known type and a target that exists; every part is reachable from the package relationships (no orphan).
+5. Slide, notes and picture counts equal the expected states; the presentation lists the slides in order with ids in range and unique; the slide size is right; each slide has one layout relationship, the title placeholder with the expected text, one picture covering the slide with non-empty alt text, a fade transition when asked, and a notes slide with the expected paragraphs exactly when the slide has notes, pointing back.
+6. Each picture decodes by its magic bytes as the expected format and has the expected pixel size.
+7. Document properties carry the deck title, author and language.
+
+These checks show that the package is consistent. They do not show that PowerPoint accepts it. Where PowerPoint is installed, `scripts/lib/powerpoint-open.ps1 -Path <file.pptx> [-Pdf <file.pdf>]` opens the file read-only without a window through COM and prints the slide count, the size and the title, picture, alt text, notes and transition of every slide as JSON; with `-Pdf` it exports a PDF whose page count is compared with the slide count. PowerPoint may repair some damaged files silently, so compare these facts with `report.json`; a file PowerPoint cannot read makes the call fail. LibreOffice and `python-pptx`, where they already exist, are further independent readers. The selftest does not need any of them.
+
+### 13.5 Limits
+
+The pictures are not editable and carry no animation: build steps become slides, entrance and morph animations are lost, counters show their final value. Text is not selectable except the titles in the outline. Fonts are baked into the pictures, so nothing depends on fonts installed on the viewing machine. Files are much larger than the HTML deck (13.1). Only Chrome and Edge were tested.
+
+The selftest runs the export on the first built theme in each browser, with `--steps all` and `--steps final` at scale 1 in JPEG, and checks the states walked, the slide counts, the notes slides and the validator against what `Deck` reports; it prints `ok export <browser> <theme>: ...`.

@@ -10,6 +10,7 @@ import { BROWSER_ORDER, findBrowser } from './lib/browser.mjs';
 import { listThemes } from './lib/fonts.mjs';
 import { TEMPLATE_KINDS } from './lib/templates.mjs';
 import { short } from './lib/format.mjs';
+import { probeExport } from './lib/probe-export.mjs';
 import { withBrowser } from './lib/probe-kit.mjs';
 import { runProbes } from './lib/probes.mjs';
 
@@ -119,6 +120,17 @@ export async function runSelftest(opts, print = console.log) {
         }
       }
       for (const e of errors) { totals.console++; problem(`probe pages ${browser} ${theme} console`, e); }
+    }
+
+    // 3b. the .pptx export (contract 13) on the first built theme
+    const [exportTheme] = Object.keys(builds);
+    if (exportTheme) {
+      try {
+        stage(`ok export ${browser} ${exportTheme}: ${await probeExport({ file: builds[exportTheme], browser, outDir: join(outDir, `export-${browser}`) }, log)}`);
+      } catch (err) {
+        problem(`export ${browser} ${exportTheme}`, err.message);
+        stage(`fail export ${browser} ${exportTheme}: ${short(err.message, 110)}`);
+      }
     }
 
     // 4. the check must fail on each negative fixture (four browsers at a time: each run is mostly start-up and shutdown)
