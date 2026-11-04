@@ -1,0 +1,118 @@
+<script type="application/json" id="deck-config">
+{
+  "title": "Live migrations",
+  "subtitle": "Changing a database while it serves traffic",
+  "author": "Jonas Weber",
+  "event": "Backend meetup",
+  "lang": "en",
+  "theme": "space",
+  "sections": [
+    { "id": "why", "label": "Why" },
+    { "id": "how", "label": "How" },
+    { "id": "result", "label": "Result" }
+  ],
+  "description": "A conference-style technical talk with diagrams, code and results, about migrating a live database.",
+  "duration": 20
+}
+</script>
+
+<section class="slide" data-layout="title" data-sec="why" data-title="Live migrations">
+  <p class="kicker">Backend meetup · 2026</p>
+  <h1>Live migrations</h1>
+  <p class="lead">Changing a database while it serves traffic.</p>
+  <p class="meta"><span>Jonas Weber</span><span>Platform team</span></p>
+  <div data-art="hero"></div>
+  <aside class="notes">Hello, I am Jonas from the platform team. Over the last year we changed the schema of our biggest table three times without taking the service down. Today I will show the pattern we use, the one mistake that nearly broke it, and the numbers from the third migration. You can stop me at any point.</aside>
+</section>
+
+<section class="slide" data-layout="statement" data-sec="why" data-title="The bet">
+  <p class="kicker">The problem</p>
+  <p class="big">Every migration is a bet on the order of events.</p>
+  <aside class="notes">Old code and new code run side by side during any deploy, sometimes for minutes. A migration that assumes one version at a time is a bet that nothing overlaps. Production always overlaps. So the question is not how to make the change fast. It is how to make every intermediate state safe for both versions.</aside>
+</section>
+
+<section class="slide" data-layout="cards" data-sec="why" data-title="Expand, migrate, contract">
+  <p class="kicker">The pattern</p>
+  <h2>Expand, migrate, contract</h2>
+  <div class="cards">
+    <div class="card"><span class="chip">Step 1</span><h3>Expand</h3><p>Add the new column.</p></div>
+    <div class="card"><span class="chip">Step 2</span><h3>Migrate</h3><p>Copy data, dual-write.</p></div>
+    <div class="card"><span class="chip">Step 3</span><h3>Contract</h3><p>Drop the old column.</p></div>
+  </div>
+  <aside class="notes">The pattern has three phases and each one is a separate deploy. Expand adds the new structure and changes nothing else. Migrate backfills the data and writes to both places. Contract removes the old structure only after nothing reads it. Each phase can be rolled back on its own, which is the whole point.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="how" data-title="Dual write">
+  <p class="kicker">Migrate</p>
+  <h2>Write to both, read from one</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="The application writes to the old and the new column; reads come from the old column until the backfill finishes, then switch to the new one">
+    <script type="application/json">
+    {
+      "grid": { "cols": 3, "rows": 2 },
+      "nodes": [
+        { "id": "app", "label": "Application", "sub": "old and new code", "icon": "code", "at": [0, 0], "span": [1, 2], "tone": 1 },
+        { "id": "old", "label": "Old column", "sub": "read here first", "icon": "db", "at": [1, 0], "tone": 2 },
+        { "id": "new", "label": "New column", "sub": "filled by backfill", "icon": "db", "at": [1, 1], "tone": 3, "step": 1 },
+        { "id": "flag", "label": "Read flag", "sub": "switch after backfill", "icon": "bolt", "at": [2, 1], "tone": 4, "step": 2 }
+      ],
+      "edges": [
+        { "from": "app", "to": "old", "packets": true },
+        { "from": "app", "to": "new", "packets": true, "step": 1 },
+        { "from": "flag", "to": "new", "step": 2, "style": "elbow" }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">The application writes every change to both columns. Reads still come from the old one, so nothing visible changes. A backfill job copies history into the new column. When counts and checksums match, a flag switches reads to the new column. If something looks wrong, flip the flag back; no data is lost on either side.</aside>
+</section>
+
+<section class="slide" data-layout="code" data-sec="how" data-title="The backfill">
+  <p class="kicker">Backfill</p>
+  <h2>Copy in small, boring batches</h2>
+  <pre class="code" data-lang="sql" data-hl="3-5">UPDATE orders
+SET    total_cents = ROUND(total * 100)
+WHERE  id BETWEEN :from AND :to
+  AND  total_cents IS NULL;
+-- 5,000 rows per batch, sleep 50 ms between batches</pre>
+  <p class="note">Idempotent: running a batch twice changes nothing.</p>
+  <aside class="notes">This is the whole backfill. It updates a fixed range of ids and only touches rows that are still empty, so it can be stopped and restarted at any time. We run five thousand rows per batch and pause briefly between batches to keep replication lag low. The simplicity is deliberate. Clever backfills are where outages come from.</aside>
+</section>
+
+<section class="slide" data-layout="chapter" data-sec="result" data-title="Result">
+  <p class="kicker">Part 2</p>
+  <h2>What happened</h2>
+  <p class="lead">The third migration, in numbers.</p>
+  <div data-art="chapter"></div>
+  <aside class="notes">The third migration was the biggest: a table with four hundred million rows and a column type change that touches every query. I will show what it cost, how long it took, and the one thing that went wrong. Numbers come from our own dashboards, and I will point to the source on the slide.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="result" data-title="The numbers">
+  <p class="kicker">Third migration</p>
+  <h2>Nobody noticed, which was the goal</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="0">0</span><span class="label">minutes of downtime</span></div>
+    <div class="stat"><span class="num" data-count="9">9</span><span class="label">days, start to finish</span></div>
+    <div class="stat"><span class="num" data-count="3">3</span><span class="label">rollbacks of the read flag</span></div>
+  </div>
+  <p class="source">Source: platform dashboard and incident log, migration 3 (example figures; replace with yours).</p>
+  <aside class="notes">Zero minutes of downtime, nine days from the first deploy to the last, and three times we flipped the read flag back. Those rollbacks are a feature, not a failure: each one took seconds and each one found a real bug in the new read path before customers did. The incident log is linked in the slides.</aside>
+</section>
+
+<section class="slide" data-layout="content" data-sec="result" data-title="Lessons">
+  <p class="kicker">Lessons</p>
+  <h2>What we would tell ourselves</h2>
+  <ul>
+    <li data-step="1">Ship each phase as its own deploy</li>
+    <li data-step="2">Verify with checksums, not row counts</li>
+    <li data-step="3">Keep the rollback a flag, not a deploy</li>
+  </ul>
+  <aside class="notes">Three lessons. First, never combine phases in one deploy, because the combination removes the safe intermediate states. Second, verify the backfill with checksums over sampled ranges; matching row counts hide wrong values. Third, make the rollback a runtime flag. A rollback that needs a deploy is too slow to be a safety net.</aside>
+</section>
+
+<section class="slide" data-layout="closing" data-sec="result" data-title="Thank you">
+  <h2>Questions?</h2>
+  <p class="lead">Slides, scripts and the runbook are public.</p>
+  <p class="links"><a href="https://example.com/migrations">Runbook</a><a href="https://example.com/migrations/scripts">Scripts</a></p>
+  <div data-art="closing"></div>
+  <aside class="notes">Thank you. The runbook describes each phase with the checks we run before moving on, and the scripts folder has the backfill and the checksum job. If you try this on your own system, start with a small table first and write down the rollback before you write the migration. I am happy to take questions.</aside>
+</section>

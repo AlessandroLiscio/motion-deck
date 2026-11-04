@@ -2,6 +2,7 @@
 // runProbes(ctx) runs them against one built deck in one browser. Probes that only read the deck share one motion-on page and reset it first.
 import { ProbeFailure, fail, loadDeck, reset, same, sleep, titleIndex, until } from './probe-kit.mjs';
 import { presenter } from './probe-presenter.mjs';
+import { ambientPause, liveKeys } from './probe-live.mjs';
 
 const near = (actual, expected, tol, what) => {
   if (!(Math.abs(actual - expected) <= tol)) fail(`${what}: expected about ${expected}, got ${Math.round(actual)}`);
@@ -245,6 +246,8 @@ export const PROBES = [
   { name: 'events', run: events },
   { name: 'transitions', run: transitions },
   { name: 'ambient', run: ambient },
+  { name: 'ambient-pause', feature: 'ambient-pause', run: ambientPause },
+  { name: 'live-keys', feature: 'live-keys', run: liveKeys },
   { name: 'presenter', feature: 'presenter', run: presenter, timeout: 60000 },
   { name: 'morph', feature: 'morph', run: morph },
   { name: 'diagram', run: diagram },

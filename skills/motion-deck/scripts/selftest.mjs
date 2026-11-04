@@ -8,6 +8,7 @@ import { BuildError, build } from './build.mjs';
 import { runCheck } from './check.mjs';
 import { BROWSER_ORDER, findBrowser } from './lib/browser.mjs';
 import { listThemes } from './lib/fonts.mjs';
+import { TEMPLATE_KINDS } from './lib/templates.mjs';
 import { short } from './lib/format.mjs';
 import { probeExport } from './lib/probe-export.mjs';
 import { withBrowser } from './lib/probe-kit.mjs';
@@ -17,7 +18,8 @@ const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const USAGE = 'usage: selftest.mjs [--quick] [--out <dir>] [--browser auto|chrome|edge]';
 const FIXTURES = join(SKILL, 'scripts', 'fixtures', 'check');
 const THEMES_STUB = join(SKILL, 'examples', 'fixtures', 'themes-stub');
-const FEATURE_ORDER = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'presenter', 'morph', 'pdf', 'offline'];
+const LINT_CODES = 10; // the codes the lint fixture trips, see scripts/fixtures/check/make-fixtures.mjs
+const FEATURE_ORDER = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'presenter', 'morph', 'pdf', 'offline', 'lint', 'ambient-pause', 'live-keys', 'templates'];
 
 // Each negative fixture must make the check fail with a problem of this class (and message).
 const NEGATIVES = [
@@ -29,6 +31,7 @@ const NEGATIVES = [
   { name: 'console-error', cls: 'console' },
   { name: 'remote', cls: 'offline' },
   { name: 'local-asset', cls: 'offline' },
+  { name: 'tiny-text', cls: 'legibility' },
   { name: 'bad-contrast', cls: 'tokens' },
 ];
 
@@ -100,7 +103,7 @@ export async function runSelftest(opts, print = console.log) {
       if (!report.pdf) features.delete('pdf');
       if (!report.offline || !report.offline.ready) features.delete('offline');
       for (const p of report.problems) problem(`check ${browser} ${theme} ${p.cls}`, p.message);
-      stage(`${code === 0 ? 'ok' : 'fail'} check ${browser} ${theme}: ${report.slides} slides, ${report.states.length} states, pdf ${report.pdf ? report.pdf.pages : 'none'} pages, offline ${report.offline && report.offline.ready ? 'ready' : 'no'}`);
+      stage(`${code === 0 ? 'ok' : 'fail'} check ${browser} ${theme}: ${report.slides} slides, ${report.states.length} states, pdf ${report.pdf ? report.pdf.pages : 'none'} pages, offline ${report.offline && report.offline.ready ? 'ready' : 'no'}, ${report.warnings.length} lint warnings`);
     }
 
     // 3. feature probes on every built theme
@@ -145,6 +148,40 @@ export async function runSelftest(opts, print = console.log) {
         if (!ok) problem(`negative ${browser} ${n.name}`, code === 0 ? 'the check PASSED a deck it must reject' : `exit ${code} without a ${n.cls} problem${n.match ? ` matching ${n.match}` : ''}`);
         stage(`${ok ? 'ok' : 'fail'} negative ${browser} ${n.name}: ${ok ? `rejected as ${n.cls}` : 'not rejected as expected'}`);
       }
+    }
+
+    // 5a. the starter decks (new.mjs --template) build in their own theme and pass the check with no lint warning at all
+    for (const kind of opts.quick ? TEMPLATE_KINDS.slice(2, 3) : TEMPLATE_KINDS) {
+      const file = join(outDir, `template-${kind}.html`);
+      let ok = false;
+      let detail = 'did not build';
+      try {
+        const built = await build({ src: join(SKILL, 'examples', `${kind}.src.html`), out: file, log: (l) => log(`build ${kind}: ${l}`) });
+        const dir = join(outDir, `templates-${browser}`);
+        const code = await runCheck({ file, out: dir, browser, shots: 'none', pdf: false, timeout: 20000, themes: join(SKILL, 'themes') }, log);
+        const report = JSON.parse(readFileSync(join(dir, `template-${kind}`, 'report.json'), 'utf8'));
+        totals.states += report.states.length;
+        for (const p of report.problems) problem(`template ${kind} ${browser} ${p.cls}`, p.message);
+        for (const w of report.warnings) problem(`template ${kind} ${browser} ${w.code}`, `slide ${w.slide}: ${w.message}`);
+        ok = code === 0 && report.warnings.length === 0;
+        detail = `${built.slides} slides in ${built.theme}, ${report.states.length} states, ${report.warnings.length} lint warnings`;
+      } catch (err) {
+        if (!(err instanceof BuildError)) throw err;
+        problem(`template ${kind} build`, `${err.code} ${err.message}`);
+      }
+      if (!ok) features.delete('templates');
+      stage(`${ok ? 'ok' : 'fail'} template ${browser} ${kind}: ${detail}`);
+    }
+
+    // 5. lints are warnings: the check passes the lint fixture and reports every code, and --strict makes the same fixture fail
+    for (const strict of [false, true]) {
+      const dir = join(outDir, `lint-${browser}-${strict ? 'strict' : 'default'}`);
+      const code = await runCheck({ file: join(FIXTURES, 'lint.html'), out: dir, browser, shots: 'none', pdf: false, timeout: 20000, strict, themes: THEMES_STUB }, log);
+      const report = JSON.parse(readFileSync(join(dir, 'lint', 'report.json'), 'utf8'));
+      const seen = new Set(report.warnings.map((w) => w.code));
+      const ok = code === (strict ? 1 : 0) && seen.size === LINT_CODES;
+      if (!ok) { problem(`lint ${browser} ${strict ? 'strict' : 'default'}`, `exit ${code}, ${seen.size} of ${LINT_CODES} codes seen`); features.delete('lint'); }
+      stage(`${ok ? 'ok' : 'fail'} lint ${browser} ${strict ? '--strict fails the fixture' : 'warnings are non-fatal'}: ${seen.size} codes`);
     }
   }
 

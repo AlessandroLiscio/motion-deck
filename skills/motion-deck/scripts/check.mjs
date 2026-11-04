@@ -6,25 +6,31 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { launchBrowser } from './lib/browser.mjs';
 import { openPage } from './lib/cdp.mjs';
 import { short } from './lib/format.mjs';
-import { MEASURE_FONTS, MEASURE_SLIDE, MEASURE_TOKENS, contrast, normHex } from './lib/measure.mjs';
+import { lintAccents, lintContent, lintPace, lintType, summarize } from './lib/lint.mjs';
+import { MEASURE_CONTENT, MEASURE_FONTS, MEASURE_SLIDE, MEASURE_TOKENS, MEASURE_TYPE, contrast, normHex } from './lib/measure.mjs';
 import { printPdf } from './lib/pdf.mjs';
 import { shotName, writeReport } from './lib/report.mjs';
 
 const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const USAGE = 'usage: check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--timeout <ms>] [--themes <dir>]';
+const USAGE = 'usage: check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--wpm <n>] [--timeout <ms>] [--themes <dir>]';
 
 class UsageError extends Error {}
 
-function parseArgs(argv) {
-  const o = { file: null, out: 'tmp/reports/check', browser: 'auto', shots: 'all', pdf: true, timeout: 20000, themes: join(SKILL, 'themes') };
-  const takes = new Set(['--out', '--browser', '--shots', '--timeout', '--themes']);
+export function parseArgs(argv) {
+  const o = { file: null, out: 'tmp/reports/check', browser: 'auto', shots: 'all', pdf: true, strict: false, wpm: 0, timeout: 20000, themes: join(SKILL, 'themes') };
+  const takes = new Set(['--out', '--browser', '--shots', '--timeout', '--themes', '--wpm']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--no-pdf') o.pdf = false;
+    else if (a === '--strict') o.strict = true;
     else if (takes.has(a)) {
       if (argv[i + 1] === undefined) throw new UsageError(`${a} needs a value`);
       const v = argv[++i];
       if (a === '--timeout') o.timeout = Number(v);
+      else if (a === '--wpm') {
+        o.wpm = Number(v);
+        if (!(o.wpm > 0)) throw new UsageError('--wpm must be a positive number of words per minute');
+      }
       else o[a.slice(2)] = v;
     } else if (a.startsWith('--')) throw new UsageError(`unknown option ${a}`);
     else if (o.file === null) o.file = a;
@@ -81,7 +87,9 @@ export async function runCheck(opts, out = console.log) {
   const requests = new Map();
   const remote = new Map();
   let phase = 'online';
-  const report = { deck, file, browser: null, ok: false, slides: 0, states: [], problems, fonts: null, tokens: null, pdf: null, offline: null, remote: [] };
+  const warnings = [];
+  const report = { deck, file, browser: null, ok: false, slides: 0, states: [], problems, warnings, fonts: null, tokens: null, pdf: null, offline: null, remote: [] };
+  const type = [];
   const shots = new Map();
   let pdfBuffer = null;
   let browser = null;
@@ -177,19 +185,28 @@ export async function runCheck(opts, out = console.log) {
             state.shot = shotName(i + 1, s);
             shots.set(state.shot, Buffer.from(data, 'base64'));
           }
+          if (s === info.steps[i]) for (const t of await page.evaluate(MEASURE_TYPE)) type.push({ ...t, slide: i + 1 });
           report.states.push(state);
         }
       }
       const walkBad = problems.length - mark;
       stage('walk', `${info.count} slides, ${report.states.length} states, ${walkBad} problems`, walkBad > 0);
 
+      // lints: content and legibility (contract 10, Lints)
+      mark = problems.length;
+      const content = await page.evaluate(MEASURE_CONTENT);
+      const legible = lintType(type);
+      for (const e of legible.errors) add('legibility', e.message);
+      warnings.push(...lintContent(content.slides, { lang: content.lang }), ...lintPace(content.slides, { wpm: opts.wpm, duration: content.duration }), ...legible.warnings);
+      stage('legibility', `${type.length} text styles`, problems.length > mark);
+
       // 7. tokens
       mark = problems.length;
       const tok = await page.evaluate(MEASURE_TOKENS);
       report.tokens = tok;
       const themeFile = join(resolve(opts.themes), String(tok.theme), 'theme.json');
-      if (existsSync(themeFile)) {
-        const want = JSON.parse(readFileSync(themeFile, 'utf8'));
+      const want = existsSync(themeFile) ? JSON.parse(readFileSync(themeFile, 'utf8')) : null;
+      if (want) {
         for (const name of ['bg', 'text', 'muted']) {
           if (tok.colors[name] !== normHex(want[name])) add('tokens', `--${name} is ${tok.colors[name]} but theme.json says ${want[name]}`);
         }
@@ -200,6 +217,14 @@ export async function runCheck(opts, out = console.log) {
         const c = tok.colors[name] && tok.colors.bg ? contrast(tok.colors[name], tok.colors.bg) : 0;
         if (c < 4.5) add('tokens', `contrast of --${name} (${tok.colors[name]}) on --bg (${tok.colors.bg}) is ${c.toFixed(2)}, needs 4.5`);
       }
+      // accents carry meaning in diagrams, chips and bars: 3:1 against --bg. A theme's own accent that fails is an error, one the deck set through "accent" is a warning.
+      const own = new Set();
+      const accentWant = want?.accents || [];
+      for (let k = 0; k < 6; k++) if (!accentWant[k] || tok.colors[`a${k + 1}`] === normHex(accentWant[k])) own.add(`a${k + 1}`);
+      const accents = Object.fromEntries([1, 2, 3, 4, 5, 6].map((k) => [`a${k}`, tok.colors[`a${k}`]]));
+      const ac = tok.colors.bg ? lintAccents(accents, tok.colors.bg, contrast, own) : { warnings: [], errors: [] };
+      for (const e of ac.errors) add('tokens', e.message);
+      warnings.push(...ac.warnings);
       stage('tokens', String(tok.theme), problems.length > mark);
 
       // 6. pdf
@@ -241,10 +266,12 @@ export async function runCheck(opts, out = console.log) {
     if (browser) await browser.close({ grace: 6000 }).catch((err) => out(`warn cleanup: ${err.message}`));
   }
 
+  if (opts.strict) for (const w of warnings) add('lint', `${w.code}${w.slide ? ` s${w.slide}` : ''} ${w.message}`);
   const count = (cls) => problems.filter((p) => p.cls === cls).length;
   report.ok = problems.length === 0;
   const dir = await writeReport(resolve(opts.out), { report, shots, pdf: pdfBuffer, consoleLines });
   stage('console', `${count('console')} errors`, count('console') > 0);
+  if (warnings.length) out(`${opts.strict ? 'fail' : 'warn'} lint ${warnings.length} warning(s): ${summarize(warnings)} (details in report.json${opts.strict ? '' : '; --strict makes them fail'})`);
   out(`${report.ok ? 'ok' : 'fail'} report ${dir}`);
   if (report.ok) {
     const pdf = report.pdf ? `pdf ${report.pdf.pages} pages` : 'pdf skipped';

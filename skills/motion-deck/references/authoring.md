@@ -27,9 +27,11 @@ The config comes first, then the `<style>` blocks, then the slides; anything els
 | `sections` | ordered list of `{ "id", "label", "accent" }`; `accent` is 1 to 6; the list order is the map order. A `data-sec` missing here is created with its id as label |
 | `vocabulary` | translate or rename the HUD words (below) |
 | `timer` | presenter timer target in minutes (default 20) |
+| `duration` | planned length of the talk in minutes; the presenter window shows a progress bar and whether you are ahead or behind the plan (default: `timer`, else 20) |
+| `ambient` | `"off"` starts with the moving background and the looping art paused (the audience or the presenter can resume with `.`); default `"on"` |
 | `subtitle`, `author`, `event`, `date`, `description` | free text; `description` becomes the meta description |
 
-Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and `{N}`), `backupCounter` (`{L}` is the letter), `section` (prefix before a section name in the HUD), `now`, `next`, `notes`, `timer`, `presenter` (the presenter window), `hint` (the line shown at start), `rotate`. Every theme brings flavoured defaults in English, so a deck in another language translates all of them. Example for Italian: `{ "map": "Mappa", "mapHint": "Scegli una slide. Esc chiude.", "counter": "{n} / {N}", "backupCounter": "Extra {L}", "now": "In scena", "next": "Prossima", "notes": "Note", "timer": "Tempo", "presenter": "Relatore", "hint": "Frecce per muoversi · M mappa · P relatore · F schermo intero" }`.
+Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and `{N}`), `backupCounter` (`{L}` is the letter), `section` (prefix before a section name in the HUD), `now`, `next`, `notes`, `timer`, `presenter` (the presenter window), `hint` (the line shown at start), `rotate`, `ambient` (the pause button), `help`, `helpClose`, `jump`, `keyMove`, `keyMap`, `keyPresenter`, `keyFull`, `keyBlackout`, `keyAmbient`, `keyJump`, `keyHelp` (the key help). Every theme brings flavoured defaults in English, so a deck in another language translates all of them. Example for Italian: `{ "map": "Mappa", "mapHint": "Scegli una slide. Esc chiude.", "counter": "{n} / {N}", "backupCounter": "Extra {L}", "now": "In scena", "next": "Prossima", "notes": "Note", "timer": "Tempo", "presenter": "Relatore", "hint": "Frecce per muoversi · M mappa · P relatore · F schermo intero" }`.
 
 ## A slide
 
@@ -47,6 +49,7 @@ Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and 
 | `data-layout` | one of the layouts below; default `content` |
 | `data-sec` | the section (chapter) the slide belongs to; it sets the accent color and the HUD label; default the previous slide's |
 | `data-title` | name in the map and the HUD; default the first `h1` or `h2` text |
+| `data-minutes` | planned minutes for this slide; the slides without it share the rest of `duration` equally |
 | `data-transition` | transition used when entering this slide, or `none` |
 | `data-anim` | entrance style for the children: `rise` (default), `fade`, `left`, `right`, `zoom`, `pop`, `none` |
 | `data-backup` | appendix slide, numbered A, B, C after the last normal slide |
@@ -61,7 +64,7 @@ Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and 
 | `content` | `.kicker`, `h2`, then `ul`, `ol`, `p`, `.callout`, `figure` or `.cols` | the default; keep it to one block under the title |
 | `split` | `.kicker`, `h2`, `div.cols` with two `div.col` | `.cols.wide-l` is 60/40, `.cols.wide-r` is 40/60 |
 | `diagram` | `.kicker`, `h2`, `svg[data-diagram]` with its JSON spec | see `diagrams.md` |
-| `stats` | `.kicker`, `h2`, `div.stats` with 2 to 4 `div.stat` of `span.num` and `span.label` | `.num` is short: `42`, `3.2x`, `98%` |
+| `stats` | `.kicker`, `h2`, `div.stats` with 2 to 4 `div.stat` of `span.num` and `span.label`, `p.source` | `.num` is short: `42`, `3.2x`, `98%`; the source line names where the figures come from |
 | `quote` | `blockquote > p`, `cite` | |
 | `code` | `.kicker`, `h2`, `pre.code[data-lang]`, `p.note` | 14 lines at most; `data-hl="2-4,7"` highlights lines |
 | `cards` | `.kicker`, `h2`, `div.cards` with 2 to 4 `div.card` of `h3`, `p`, optional `.chip` | |
@@ -97,6 +100,8 @@ Give the same `data-morph="key"` to one element on two consecutive slides. Movin
 
 `<div data-art="hero"></div>` is filled by the theme with its own illustration. Roles: `hero` (title slide), `chapter`, `closing`, `divider`, `mascot`. Position and size come from the layout; override in the deck `<style>` when needed. Add `data-alt="…"` to describe it for screen readers.
 
+Starter decks: `new.mjs <slug> --template <kind>` copies `examples/<kind>.src.html` (`pitch`, `quarterly-review`, `tech-talk`, `workshop`, `lesson`, `keynote`) with real sample content and the structure of that kind of talk; replace the content, keep the shape, and keep the `.source` lines honest.
+
 `<img src="assets/chart.png" alt="…">` is inlined by the build; the path is relative to the source file. Allowed: svg, png, jpg, webp, gif, avif; over 300 KB warns; over 2 MB fails. Remote images and fonts fail the build: decks work offline.
 
 `<pre class="code" data-lang="js" data-hl="3">…</pre>`: write `<` as `&lt;` and `&` as `&amp;`. Highlighting is light: comments, strings, numbers and calls in every language, plus keyword lists for js (and ts), python, sh, sql, yaml and json. The font shrinks to fit; keep it under 14 lines of 60 characters.
@@ -104,6 +109,8 @@ Give the same `data-morph="key"` to one element on two consecutive slides. Movin
 ## Notes and backup slides
 
 `<aside class="notes">…</aside>` inside a slide is never shown on the slide; the presenter window shows it. Backup slides (`data-backup`) hold answers to questions you expect; they are reachable from the map and by arrow keys after the last slide.
+
+Citations: `<p class="source">Source: Annual report 2025, p. 14.</p>` is a footnote that sits at the bottom of the slide. Put one on every slide that shows a figure, a quote or a claim taken from the user's material, and a closing slide that lists the sources when there are more than three. Never write a figure the material does not contain.
 
 ## Custom CSS
 
@@ -131,4 +138,6 @@ Slides live on a 1600 by 900 stage. Content must stay inside the margins (120 px
 - Literal colors and sizes in custom CSS. Use the tokens.
 - Editing the built `index.html`. Edit the source and rebuild.
 - Forgetting `lang` and `vocabulary` for a deck that is not in English.
+- A figure with no `.source` line, or a figure the user's material does not contain.
+- Ignoring the `warn lint` line of the check: it names too many words, long lists, a layout three times in a row, missing or off-length notes and images without `alt`.
 - Using `data-anim` on everything. The default entrance is already tuned for the theme.

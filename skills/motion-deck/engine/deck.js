@@ -12,7 +12,11 @@
   const VOCAB = {
     map: 'Map', mapHint: 'Pick a slide to jump to it. Esc closes.', counter: '{n} / {N}', backupCounter: 'Backup {L}',
     section: '', now: 'Now', notes: 'Notes', timer: 'Time', next: 'Next', presenter: 'Presenter', rotate: 'Rotate your device',
-    hint: 'Arrows move · M map · P presenter · F full screen',
+    hint: 'Arrows move · M map · P presenter · F full screen · ? keys',
+    ahead: 'Ahead', behind: 'Behind', onTime: 'On pace',
+    ambient: 'Motion', help: 'Keys', helpClose: 'Esc or ? closes.', jump: 'Go to slide',
+    keyMove: 'Next, previous', keyMap: 'Map', keyPresenter: 'Presenter', keyFull: 'Full screen', keyBlackout: 'Blackout', keyAmbient: 'Pause or resume the moving background',
+    keyJump: 'Jump to a slide: G, a number, Enter', keyHelp: 'This help',
   };
   // Elements that get the entrance cascade (contract 5.1).
   const ANIM_SEL = '.kicker,h1,h2,h3,h4,p,li,blockquote,cite,figure,pre.code,.card,.stat,.chip,.callout,.meta,.links>*,.attrib,table.data,[data-art],svg[data-diagram],img';
@@ -22,7 +26,7 @@
   const S = {
     config: null, theme: null, vocab: {}, token: '', slides: [], sections: [], secById: {}, normalCount: 0,
     index: -1, step: 0, captureOn: false, mapOpen: false, trTimer: 0, stage: null, amb: null, ambRun: false, presenter: null,
-    morphing: false, queue: [],
+    morphing: false, queue: [], ambientOn: true, blackoutOn: false, helpOpen: false, jump: null, jumpTimer: 0,
   };
   let resolveReady;
   let rejectReady;
@@ -77,6 +81,8 @@
       root.classList.toggle('reduced', reducedMQ.matches);
       if (S.config.accent) { root.style.setProperty('--a1', S.config.accent); root.style.setProperty('--glow', S.config.accent); }
       if (/[?&]capture=1\b/.test(location.search)) { S.captureOn = true; root.classList.add('capture'); }
+      S.ambientOn = !(String(S.config.ambient).toLowerCase() === 'off' || /[?&]ambient=off\b/.test(location.search));
+      root.classList.toggle('still', !S.ambientOn);
 
       collectSlides();
       fillArt();
@@ -102,6 +108,12 @@
     }
   }
 
+  // data-minutes: planned minutes for one slide; anything but a positive number is ignored.
+  function minutesOf(el) {
+    const m = parseFloat(el.dataset.minutes);
+    return m > 0 && Number.isFinite(m) ? m : null;
+  }
+
   function collectSlides() {
     const els = $$('#stage > .slide');
     if (!els.length) throw new Error('the deck has no slides');
@@ -114,7 +126,7 @@
       const s = {
         el, index, num, backup: isBackup, id: el.id || `s${index + 1}`,
         title: el.dataset.title || `Slide ${index + 1}`, sec: el.dataset.sec || 'main', layout: el.dataset.layout || 'content',
-        steps: 0, notes: notesEl ? notesEl.innerHTML.trim() : '',
+        steps: 0, notes: notesEl ? notesEl.innerHTML.trim() : '', minutes: minutesOf(el),
         morph: $$('[data-morph]', el).map((e) => e.dataset.morph),
       };
       el.id = s.id;
@@ -488,11 +500,15 @@
 
   function buildChrome() {
     const chrome = h('div', { id: 'chrome' },
-      h('div', { id: 'hud' }, h('span', { class: 'hud-sec' }), h('span', { class: 'hud-title' }), h('span', { class: 'hud-count' })),
+      h('div', { id: 'hud' }, h('span', { class: 'hud-sec' }), h('span', { class: 'hud-title' }), h('span', { class: 'hud-count' }),
+        h('button', { id: 'hud-amb', class: 'hud-btn', type: 'button', 'aria-pressed': String(S.ambientOn), title: S.vocab.keyAmbient, onclick: (e) => { ambient(!S.ambientOn); if (e.detail) e.currentTarget.blur(); } }, S.vocab.ambient)),
       h('nav', { id: 'track', 'aria-label': 'Progress' }),
       h('div', { id: 'map', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.vocab.map, hidden: true }),
       h('div', { id: 'hint', hidden: true, text: S.vocab.hint }),
       h('div', { id: 'rotate', text: S.vocab.rotate }),
+      h('div', { id: 'help', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.vocab.help, hidden: true, onclick: () => help(false) }),
+      h('div', { id: 'jump', role: 'status', hidden: true }),
+      h('div', { id: 'blackout', hidden: true, onclick: () => blackout(false) }),
       h('div', { id: 'sr', class: 'sr-only', 'aria-live': 'polite' }));
     doc.body.append(chrome);
     const nav = $('#track');
@@ -561,6 +577,20 @@
     doc.addEventListener('keydown', (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key;
+      if (S.helpOpen) {
+        if (k === 'Escape' || k === '?' || k === 'h' || k === 'H') { e.preventDefault(); help(false); }
+        return;
+      }
+      if (S.blackoutOn) {
+        if (k === 'Escape' || k === 'b' || k === 'B' || k === '.' || k === 'Enter' || k === ' ') { e.preventDefault(); blackout(false); }
+        return;
+      }
+      if (S.jump !== null) {
+        if (/^\d$/.test(k)) { e.preventDefault(); jumpDigit(k); }
+        else if (k === 'Enter') { e.preventDefault(); jumpCommit(); }
+        else { if (k === 'Escape' || k === 'g' || k === 'G') e.preventDefault(); jumpCancel(); }
+        return;
+      }
       if (S.mapOpen) {
         if (k === 'Escape' || k === 'm' || k === 'M') { e.preventDefault(); openMap(false); }
         return;
@@ -573,6 +603,10 @@
       else if (k === 'm' || k === 'M') openMap(true);
       else if (k === 'f' || k === 'F') { if (doc.fullscreenElement) doc.exitFullscreen(); else if (root.requestFullscreen) root.requestFullscreen().catch(() => {}); }
       else if (k === 'p' || k === 'P') openPresenter();
+      else if (k === 'b' || k === 'B') blackout(true);
+      else if (k === '.') ambient(!S.ambientOn);
+      else if (k === '?' || k === 'h' || k === 'H') help(true);
+      else if (k === 'g' || k === 'G') jumpStart();
     });
     let t0 = null;
     doc.addEventListener('touchstart', (e) => { t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
@@ -636,9 +670,60 @@
 
   function syncAmbient() {
     if (!S.amb) return;
-    const should = !doc.hidden && !reducedMQ.matches && !S.captureOn && !!S.theme.ambient.frame;
+    const should = S.ambientOn && !doc.hidden && !reducedMQ.matches && !S.captureOn && !!S.theme.ambient.frame;
     if (should && !S.ambRun) { S.ambRun = true; ambLast = performance.now(); ambRaf = requestAnimationFrame(ambLoop); }
     else if (!should) { S.ambRun = false; cancelAnimationFrame(ambRaf); paintAmbient(); }
+  }
+
+  // Pause, stop and hide for the moving background and the looping art (WCAG 2.2.2). Off paints one static frame and pauses the art loops through html.still.
+  function ambient(on) {
+    if (on === undefined) return S.ambientOn;
+    S.ambientOn = !!on;
+    root.classList.toggle('still', !S.ambientOn);
+    const b = $('#hud-amb');
+    if (b) b.setAttribute('aria-pressed', String(S.ambientOn));
+    syncAmbient();
+    return S.ambientOn;
+  }
+
+  /* ---------- live keys: blackout, help, jump ---------- */
+
+  function blackout(on) {
+    if (on === undefined) return S.blackoutOn;
+    S.blackoutOn = !!on;
+    root.classList.toggle('blackout', S.blackoutOn);
+    $('#blackout').hidden = !S.blackoutOn;
+    return S.blackoutOn;
+  }
+
+  function help(on) {
+    if (on === undefined) return S.helpOpen;
+    S.helpOpen = !!on;
+    root.classList.toggle('help-open', S.helpOpen);
+    const el = $('#help');
+    el.hidden = !S.helpOpen;
+    if (S.helpOpen) {
+      const v = S.vocab;
+      const rows = [['← → ↑ ↓ Space', v.keyMove], ['M', v.keyMap], ['P', v.keyPresenter], ['F', v.keyFull], ['B', v.keyBlackout], ['.', v.keyAmbient], ['G', v.keyJump], ['?', v.keyHelp]];
+      el.replaceChildren(h('div', { class: 'help-card' }, h('h2', { text: v.help }),
+        h('dl', {}, rows.flatMap(([key, label]) => [h('dt', {}, h('kbd', { text: key })), h('dd', { text: label })])),
+        h('p', { class: 'help-hint', text: v.helpClose })));
+    }
+    return S.helpOpen;
+  }
+
+  function jumpShow() {
+    const el = $('#jump');
+    el.hidden = S.jump === null;
+    if (S.jump !== null) el.textContent = `${S.vocab.jump}: ${S.jump || '…'}`;
+  }
+  function jumpStart() { S.jump = ''; jumpShow(); clearTimeout(S.jumpTimer); S.jumpTimer = setTimeout(jumpCancel, 4000); }
+  function jumpDigit(d) { S.jump = (S.jump + d).slice(0, 3); jumpShow(); clearTimeout(S.jumpTimer); S.jumpTimer = setTimeout(jumpCommit, 1500); }
+  function jumpCancel() { clearTimeout(S.jumpTimer); S.jump = null; jumpShow(); }
+  function jumpCommit() {
+    const n = parseInt(S.jump, 10);
+    jumpCancel();
+    if (n >= 1) go(clamp(n, 1, Math.max(1, S.normalCount)) - 1);
   }
 
   /* ---------- capture, print ---------- */
@@ -679,11 +764,13 @@
   const PRESENTER_HTML = (token, v) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(v.presenter)} — loading</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:#0b0d12;color:#e7eaf2;font:16px/1.4 system-ui,sans-serif;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:14px;padding:14px}
+body{background:#0b0d12;color:#e7eaf2;font:16px/1.4 system-ui,sans-serif;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);gap:14px;padding:14px}
 header{grid-column:1/3;display:flex;align-items:center;gap:14px}
 #p-title{font-weight:650;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #p-count{font:14px ui-monospace,Consolas,monospace;color:#9aa3b5}
 #p-timer{font:600 30px/1 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+#p-pace{font:600 14px/1 ui-monospace,Consolas,monospace;min-width:12ch;text-align:right;color:#9aa3b5}#p-pace[data-state=behind]{color:#ff7a7a}#p-pace[data-state=ahead]{color:#7ee0a0}
+#p-bar{grid-column:1/3;position:relative;height:8px;border-radius:99px;background:#1a1f2b}#p-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:99px;background:#3a7bd5}#p-mark{position:absolute;top:-4px;bottom:-4px;left:0;width:3px;border-radius:2px;background:#e7eaf2}#p-mark[hidden]{display:none}
 button{font:inherit;color:inherit;background:#1a1f2b;border:1px solid #2b3345;border-radius:8px;padding:8px 14px;cursor:pointer}button:hover{background:#232a3a}
 main,aside{display:flex;flex-direction:column;gap:10px;min-height:0}
 h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:#9aa3b5}
@@ -692,7 +779,8 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
 #p-notes{flex:1;min-height:0;overflow:auto;background:#10141d;border:1px solid #2b3345;border-radius:10px;padding:14px 16px;font-size:19px;line-height:1.5}
 #p-notes:empty::before{content:"—";color:#5b657a}
 </style></head><body data-md="${token}">
-<header><div id="p-title"></div><div id="p-count"></div><div id="p-timer" data-seconds="0">00:00</div><button id="p-prev" type="button">←</button><button id="p-next-btn" type="button">→</button><button id="p-reset" type="button">${esc(v.timer)} ↺</button></header>
+<header><div id="p-title"></div><div id="p-count"></div><div id="p-timer" data-seconds="0">00:00</div><div id="p-pace" data-state="" data-seconds="0"></div><button id="p-prev" type="button">←</button><button id="p-next-btn" type="button">→</button><button id="p-reset" type="button">${esc(v.timer)} ↺</button></header>
+<div id="p-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-pct="0"><i id="p-fill"></i><b id="p-mark" hidden></b></div>
 <main><h2>${esc(v.now)}</h2><div class="p-frame"><div id="p-current"></div></div><h2>${esc(v.notes)}</h2><div id="p-notes"></div></main>
 <aside><h2>${esc(v.next)}</h2><div class="p-frame"><div id="p-next"></div></div></aside>
 </body></html>`;
@@ -704,13 +792,46 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
     const pad = (n) => String(n).padStart(2, '0');
     let secs = 0;
     let cssText = '';
+    let plan = null;
+    let at = 0;
+    let words = {};
     const frames = {};
     const showTime = () => {
       const t = $('#p-timer');
       t.dataset.seconds = String(secs);
       t.textContent = pad(Math.floor(secs / 60)) + ':' + pad(secs % 60);
-      t.style.color = secs >= timerMin * 60 ? '#ff7a7a' : '';
+      t.style.color = secs >= (plan ? plan.total : timerMin * 60) ? '#ff7a7a' : '';
+      showPace();
     };
+    // Progress against the planned total and ahead or behind against the planned time of the current slide (contract 11).
+    function showPace() {
+      const total = plan ? plan.total : timerMin * 60;
+      const pct = Math.min(100, (secs / total) * 100);
+      const bar = $('#p-bar');
+      $('#p-fill').style.width = pct + '%';
+      bar.dataset.pct = String(Math.round(pct));
+      bar.setAttribute('aria-valuenow', String(Math.round(pct)));
+      const mark = $('#p-mark');
+      const pace = $('#p-pace');
+      const a = plan ? plan.starts[at] : null;
+      const b = plan ? plan.ends[at] : null;
+      if (a === null || a === undefined || b === null || b === undefined) {
+        mark.hidden = true;
+        pace.dataset.state = '';
+        pace.dataset.seconds = '0';
+        pace.textContent = '';
+        return;
+      }
+      mark.hidden = false;
+      mark.style.left = (a / total) * 100 + '%';
+      const grace = Math.min(30, Math.max(5, total * 0.02));
+      let state = 'ontime';
+      let delta = 0;
+      if (secs > b + grace) { state = 'behind'; delta = secs - b; } else if (secs < a - grace) { state = 'ahead'; delta = a - secs; }
+      pace.dataset.state = state;
+      pace.dataset.seconds = String(delta);
+      pace.textContent = state === 'ontime' ? words.onTime : words[state] + ' ' + pad(Math.floor(delta / 60)) + ':' + pad(delta % 60);
+    }
     const timer = setInterval(() => { secs += 1; showTime(); }, 1000);
     const scale = () => document.querySelectorAll('.p-frame').forEach((box) => {
       const f = box.querySelector('iframe');
@@ -732,6 +853,10 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
       if (!m || m.md !== token || e.source !== window.opener || m.type !== 'state') return;
       if (m.css && !frames.cur) { cssText = m.css; frames.cur = make('#p-current'); frames.next = make('#p-next'); }
       if (!frames.cur) { post({ type: 'request' }); return; }
+      plan = m.plan || null;
+      at = m.index;
+      words = { ahead: 'Ahead', behind: 'Behind', onTime: 'On pace', ...(m.vocabulary || {}) };
+      showPace();
       document.title = 'Presenter — ' + m.title;
       $('#p-title').textContent = m.title;
       $('#p-count').textContent = m.label + (m.steps ? ' · ' + m.step + '/' + m.steps : '');
@@ -766,9 +891,29 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
     win.document.write(PRESENTER_HTML(S.token, S.vocab));
     win.document.close();
     const script = win.document.createElement('script');
-    script.textContent = `(${presenterScript.toString()})(${JSON.stringify(S.token)}, ${+S.config.timer || 20})`;
+    script.textContent = `(${presenterScript.toString()})(${JSON.stringify(S.token)}, ${planMinutes()})`;
     win.document.body.append(script);
     return win;
+  }
+
+  // Planned time per slide in seconds (contract 11): data-minutes where set, the rest of the duration shared equally among the other normal slides; backup slides have none.
+  function planMinutes() { return +S.config.duration || +S.config.timer || 20; }
+  function plan() {
+    const dur = planMinutes() * 60;
+    const normal = S.slides.filter((s) => !s.backup);
+    const fixed = normal.reduce((n, s) => n + (s.minutes ? s.minutes * 60 : 0), 0);
+    const free = normal.filter((s) => !s.minutes).length;
+    const share = free ? Math.max(0, dur - fixed) / free : 0;
+    let t = 0;
+    const starts = [];
+    const ends = [];
+    S.slides.forEach((s) => {
+      if (s.backup) { starts.push(null); ends.push(null); return; }
+      starts.push(Math.round(t));
+      t += s.minutes ? s.minutes * 60 : share;
+      ends.push(Math.round(t));
+    });
+    return { total: Math.max(Math.round(t), dur), starts, ends };
   }
 
   function presenterState() {
@@ -796,7 +941,7 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
     return {
       type: 'state', index: S.index, step: S.step, steps: s.steps, count: S.slides.length, label: $('.hud-count').textContent, title: s.title, notes: s.notes,
       currentHtml: htmlOf(s, S.step), nextHtml: hasNext ? htmlOf(nextSlide, stepNext ? S.step + 1 : nextSlide.steps) : '',
-      nextIndex, nextTitle: nextSlide.title, theme: S.theme.name, vocabulary: S.vocab, timer: +S.config.timer || 20,
+      nextIndex, nextTitle: nextSlide.title, theme: S.theme.name, vocabulary: S.vocab, timer: planMinutes(), duration: planMinutes(), plan: plan(),
     };
   }
 
@@ -823,7 +968,7 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
   /* ---------- public surface ---------- */
 
   function computeFeatures() {
-    const f = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'capture', 'counters', 'code', 'art', 'pdf', 'presenter'];
+    const f = ['map', 'hash', 'back', 'step-out', 'reduced-motion', 'capture', 'counters', 'code', 'art', 'pdf', 'presenter', 'ambient', 'blackout', 'help', 'jump'];
     if (window.MotionDiagram) f.push('diagram');
     if (morphSupported()) f.push('morph');
     return f;
@@ -836,12 +981,15 @@ h2{margin:0;font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em
   D.setStep = setStep;
   D.capture = capture;
   D.openMap = openMap;
+  D.ambient = ambient;
+  D.blackout = blackout;
+  D.help = help;
   D.openPresenter = openPresenter;
   D.registerTheme = (t) => { S.theme = t; };
   D.info = () => ({
-    title: S.config.title, theme: S.theme.name, lang: S.config.lang || 'en',
+    title: S.config.title, theme: S.theme.name, lang: S.config.lang || 'en', duration: planMinutes(),
     sections: S.sections.map(({ id, label, accent }) => ({ id, label, accent })),
-    slides: S.slides.map((s) => ({ index: s.index, id: s.id, title: s.title, sec: s.sec, layout: s.layout, steps: s.steps, backup: s.backup, notes: s.notes, morph: s.morph.slice() })),
+    slides: S.slides.map((s) => ({ index: s.index, id: s.id, title: s.title, sec: s.sec, layout: s.layout, steps: s.steps, backup: s.backup, notes: s.notes, morph: s.morph.slice(), minutes: s.minutes })),
   });
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();

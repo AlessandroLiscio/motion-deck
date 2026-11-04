@@ -1,0 +1,128 @@
+<script type="application/json" id="deck-config">
+{
+  "title": "The water cycle",
+  "subtitle": "A drop's journey",
+  "author": "Ms. Alvarez",
+  "event": "Science, grade 6",
+  "lang": "en",
+  "theme": "fantasy",
+  "sections": [
+    { "id": "ask", "label": "Question" },
+    { "id": "learn", "label": "The journey" },
+    { "id": "check", "label": "Check" }
+  ],
+  "description": "A classroom lesson with a question, a diagram, key terms, a timeline and a comprehension check.",
+  "duration": 15
+}
+</script>
+
+<section class="slide" data-layout="title" data-sec="ask" data-title="The water cycle">
+  <p class="kicker">Science · grade 6</p>
+  <h1>The water cycle</h1>
+  <p class="lead">Follow one drop from the sea to the sky and back.</p>
+  <p class="meta"><span>Ms. Alvarez</span><span>Lesson 4</span></p>
+  <div data-art="hero"></div>
+  <aside class="notes">Good morning. Today we follow a single drop of water on a long journey. By the end of the lesson you will be able to name the four stages of the water cycle, draw them in order, and explain why the same water has been circulating for millions of years. Please keep your notebooks open for the questions.</aside>
+</section>
+
+<section class="slide" data-layout="statement" data-sec="ask" data-title="The question">
+  <p class="kicker">Start here</p>
+  <p class="big">Where does the rain come from?</p>
+  <aside class="notes">Give students one minute to talk in pairs. Collect three answers on the board without correcting them yet. Common answers are clouds, the sky and the sea. All of them contain a piece of the truth. Tell the class that by the end of the lesson they will be able to connect those pieces into a single story.</aside>
+</section>
+
+<section class="slide" data-layout="diagram" data-sec="learn" data-title="The cycle">
+  <p class="kicker">The cycle</p>
+  <h2>Four stages, no beginning</h2>
+  <svg data-diagram viewBox="0 0 1360 440" role="img" aria-label="Water evaporates from the sea, condenses into clouds, falls as rain and runs back to the sea">
+    <script type="application/json">
+    {
+      "grid": { "cols": 4, "rows": 1 },
+      "nodes": [
+        { "id": "sea", "label": "Sea", "sub": "sun warms the water", "icon": "globe", "at": [0, 0], "tone": 1 },
+        { "id": "cloud", "label": "Clouds", "sub": "vapour cools and gathers", "icon": "chat", "at": [1, 0], "tone": 2, "step": 1 },
+        { "id": "rain", "label": "Rain", "sub": "drops become heavy", "icon": "alert", "at": [2, 0], "tone": 3, "step": 2 },
+        { "id": "river", "label": "River", "sub": "flows back downhill", "icon": "search", "at": [3, 0], "tone": 4, "step": 3 }
+      ],
+      "edges": [
+        { "from": "sea", "to": "cloud" },
+        { "from": "cloud", "to": "rain" },
+        { "from": "rain", "to": "river" },
+        { "from": "river", "to": "sea", "style": "curve", "anchors": ["b", "b"], "dashed": true, "step": 3 }
+      ]
+    }
+    </script>
+  </svg>
+  <aside class="notes">Reveal the stages one at a time and ask students to predict the next one before you press. The sea warms and its water rises as vapour. High up it cools and gathers into clouds. When the drops get heavy they fall as rain, and the water runs into rivers that return to the sea. Then the cycle starts again.</aside>
+</section>
+
+<section class="slide" data-layout="cards" data-sec="learn" data-title="Three words">
+  <p class="kicker">Key terms</p>
+  <h2>Three words to remember</h2>
+  <div class="cards">
+    <div class="card"><h3>Evaporation</h3><p>Liquid becomes vapour.</p></div>
+    <div class="card"><h3>Condensation</h3><p>Vapour becomes drops.</p></div>
+    <div class="card"><h3>Precipitation</h3><p>Water falls to the ground.</p></div>
+  </div>
+  <aside class="notes">These three words appear on the quiz, so read them aloud together. Evaporation is liquid water turning into vapour. Condensation is vapour cooling into tiny drops, which is why a cold glass gets wet on a warm day. Precipitation means any water that falls: rain, snow, sleet or hail. Ask for one everyday example of each.</aside>
+</section>
+
+<section class="slide" data-layout="split" data-sec="learn" data-title="Try it at home">
+  <p class="kicker">Experiment</p>
+  <h2>A cloud in a jar</h2>
+  <div class="cols">
+    <div class="col">
+      <ol>
+        <li data-step="1">Pour hot water into a jar</li>
+        <li data-step="2">Cover it with a plate of ice</li>
+        <li data-step="3">Watch drops form underneath</li>
+      </ol>
+    </div>
+    <div class="col">
+      <div class="callout"><p>Adults handle the hot water.</p></div>
+    </div>
+  </div>
+  <aside class="notes">This experiment makes condensation visible in about two minutes. Hot water gives off vapour. The plate of ice cools the air at the top of the jar, and the vapour turns into drops that gather on the glass and run down, like rain. Students should predict what they will see before they try it, then compare.</aside>
+</section>
+
+<section class="slide" data-layout="stats" data-sec="learn" data-title="Where the water is">
+  <p class="kicker">Earth's water</p>
+  <h2>Almost all of it is in the sea</h2>
+  <div class="stats">
+    <div class="stat"><span class="num" data-count="97" data-suffix="%">97%</span><span class="label">salt water</span></div>
+    <div class="stat"><span class="num" data-count="2" data-suffix="%">2%</span><span class="label">ice and glaciers</span></div>
+    <div class="stat"><span class="num" data-count="1" data-suffix="%">1%</span><span class="label">fresh liquid water</span></div>
+  </div>
+  <p class="source">Source: USGS Water Science School, rounded to whole numbers.</p>
+  <aside class="notes">Rounded, about ninety-seven percent of the water on Earth is salty, around two percent is frozen, and only about one percent is fresh liquid water that people can drink. That is why the cycle matters: it moves a little salt water through the air and turns it into the fresh water that fills rivers and lakes.</aside>
+</section>
+
+<section class="slide" data-layout="timeline" data-sec="learn" data-title="A drop's journey">
+  <p class="kicker">One drop</p>
+  <h2>A drop's journey, step by step</h2>
+  <ol class="timeline">
+    <li><b>Day 1</b>Evaporates from the sea</li>
+    <li><b>Day 2</b>Joins a cloud</li>
+    <li><b>Day 5</b>Falls on a mountain</li>
+    <li><b>Day 40</b>Reaches the sea again</li>
+  </ol>
+  <aside class="notes">The timeline is an illustration, not a measurement: real journeys vary from hours to thousands of years, depending on where the water goes. Ask students where the drop might be slower, for example frozen in a glacier, and where it might be faster. Use this to prepare the check on the next slide.</aside>
+</section>
+
+<section class="slide" data-layout="content" data-sec="check" data-title="Check your understanding">
+  <p class="kicker">Check</p>
+  <h2>Check your understanding</h2>
+  <ol>
+    <li data-step="1">Name the four stages in order</li>
+    <li data-step="2">Which word means vapour turning into drops?</li>
+    <li data-step="3">Why is fresh water so precious?</li>
+  </ol>
+  <aside class="notes">Give students three minutes to answer in their notebooks, then reveal one question at a time. Walk around and read answers. Praise the use of the key words, not only the right answer. Take the third question as a discussion: it connects the science to everyday life and leads naturally into the homework.</aside>
+</section>
+
+<section class="slide" data-layout="closing" data-sec="check" data-title="Homework">
+  <h2>Homework</h2>
+  <p class="lead">Draw the cycle for a place you know and label the four stages.</p>
+  <div data-art="closing"></div>
+  <aside class="notes">For homework, students draw the water cycle for a real place: their town, a holiday spot or a farm. They label the four stages and add one thing from the place, such as a river or a roof. Bring the drawings next lesson. Thank the class, and remind them to try the cloud in a jar with an adult.</aside>
+</section>

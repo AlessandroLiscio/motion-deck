@@ -47,9 +47,12 @@ Use the theme's default for the whole deck. Set `data-transition="none"` on a sl
 ## Reduced motion, capture and print
 
 - With the system setting "reduce motion": no entrance, no transition, no counting, one static background frame, steps appear instantly. Everything stays readable.
+- Pause: the `.` key, the HUD button `Motion` and `?ambient=off` (or `"ambient": "off"` in the config) stop the moving background and the looping art and leave one still frame; use `"off"` for a deck shown on a weak projector laptop or to an audience that needs calm. Entrances and transitions are not affected.
 - Capture mode (`?capture=1` in the URL) freezes all motion and finishes every animation; the check uses it for screenshots.
 - Print and PDF: one slide per page, every step shown, the theme's page color, no HUD, no moving background.
 
 ## Pacing
+
+Set `"duration"` in the config and `data-minutes` on a slide that needs more or less than its share: the presenter window (`P`) then shows a progress bar and whether you are ahead of or behind the plan. `check.mjs --wpm 130` compares the speaker notes' reading time with the duration and warns when they differ by a lot.
 
 A slide earns about 45 to 60 seconds. One build every 15 to 30 seconds of speech, one counter or morph per slide at most, and a chapter slide to reset the eye every three to five slides. When a slide combines steps, a counter and a morph, remove two of them.

@@ -39,6 +39,7 @@ ${after ? `<script>${after}</script>` : ''}
 `;
 }
 
+const words = (n) => Array.from({ length: n }, (_, i) => `w${i}`).join(' ');
 const slideOf = (inner, extra = '') => `<section class="slide" data-sec="a" ${extra}>${inner}</section>`;
 
 const fixtures = {
@@ -69,6 +70,17 @@ const fixtures = {
   'remote.html': page({ slides: [slideOf('<h2>Remote</h2><img src="https://example.invalid/pixel.png" width="100" height="100" alt="">')] }),
   // The sibling file exists, so the deck loads and runs here; sending the HTML alone would break it.
   'local-asset.html': page({ slides: [slideOf('<h2>Sibling file</h2><script src="local-asset.js"></script>')] }),
+  // Text under the 20 px floor.
+  'tiny-text.html': page({ slides: [slideOf('<h2>Tiny</h2><p style="font-size:14px;margin:0">This paragraph is far too small to read from the back of a room.</p>')] }),
+  // Trips every content lint at once and nothing that fails the check: exit 0, and 1 with --strict. The lang is emptied after the page is made.
+  'lint.html': page({
+    slides: [
+      slideOf(`<h2>Twelve words in a title that goes on and on and on and on</h2><p>${words(36)}</p><ul>${'<li>short</li>'.repeat(5)}<li>${words(13)}</li></ul><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" width="10" height="10">`),
+      slideOf('<h2>Same again</h2><p>Short.</p><aside class="notes">Too short.</aside>'),
+      slideOf(`<h2>And again</h2><p>Short.</p><aside class="notes">${words(40)}</aside>`),
+      slideStats.replace('</section>', `<aside class="notes">${words(50)}</aside></section>`),
+    ],
+  }).replace('<html lang="en"', '<html lang=""'),
   'bad-contrast.html': page({ custom: `${monoFix} :root { --text: #101418; }` }),
 };
 

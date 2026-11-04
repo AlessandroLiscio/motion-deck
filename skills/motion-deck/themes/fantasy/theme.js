@@ -255,7 +255,8 @@ ${twinkle([[52, 90, 6], [340, 70, 5], [356, 220, 4], [40, 270, 4], [306, 36, 3]]
     vocabulary: {
       map: 'The atlas', mapHint: 'Choose a chapter of the tale. Esc closes.', counter: 'Folio {n} of {N}', backupCounter: 'Lore {L}',
       now: 'On the page', next: 'Next folio', notes: "Scribe's notes", timer: 'Hourglass', presenter: 'The scribe',
-      hint: '← → turn the folio · M atlas · P scribe · F full screen',
+      hint: '← → turn the folio · M atlas · P scribe · F full screen · ? spells',
+      ambient: 'Embers', help: 'Spellbook',
     },
     art: { hero, chapter, closing, divider },
     ambient: {

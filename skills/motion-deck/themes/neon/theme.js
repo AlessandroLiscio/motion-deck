@@ -223,7 +223,8 @@
     vocabulary: {
       map: 'Tracklist', mapHint: 'Pick a track. Esc closes.', counter: 'TRACK {n}/{N}', backupCounter: 'BONUS {L}',
       now: 'Now playing', next: 'Up next', notes: 'Liner notes', timer: 'Runtime', presenter: 'DJ booth',
-      hint: '← → skip · M tracklist · P DJ booth · F full screen',
+      hint: '← → skip · M tracklist · P DJ booth · F full screen · ? cheats',
+      ambient: 'Lights', help: 'Cheat sheet',
     },
     art: { hero, chapter, closing, divider },
     ambient: {

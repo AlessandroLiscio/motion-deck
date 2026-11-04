@@ -20,7 +20,7 @@ test('selftest --quick passes and leaves no browser profile behind', { skip: fin
     const res = spawnSync(process.execPath, [script, '--quick', '--out', out], { encoding: 'utf8', timeout: 540000, env: { ...process.env, MD_CHECK_PROFILE_PREFIX: PREFIX } });
     const last = res.stdout.trim().split('\n').pop();
     assert.equal(res.status, 0, res.stdout);
-    assert.match(last, /^PASS selftest: (chrome|edge), 1 theme, \d+ slides, \d+ states, features map\/hash\/back\/step-out\/reduced-motion\/presenter\/morph\/pdf\/offline, 0 overflow, 0 console errors, 0 missing fonts$/);
+    assert.match(last, /^PASS selftest: (chrome|edge), 1 theme, \d+ slides, \d+ states, features map\/hash\/back\/step-out\/reduced-motion\/presenter\/morph\/pdf\/offline\/lint\/ambient-pause\/live-keys\/templates, 0 overflow, 0 console errors, 0 missing fonts$/);
     assert.deepEqual([...profiles()].filter((n) => !before.has(n)), [], 'browser profile directory left behind');
   } finally {
     rmSync(out, { recursive: true, force: true });

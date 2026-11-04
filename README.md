@@ -39,7 +39,7 @@ node skills/motion-deck/scripts/check.mjs decks/my-talk/index.html
 
 The deck is a small HTML source: a config block and one `<section class="slide">` per slide, with layouts (`title`, `chapter`, `statement`, `content`, `split`, `diagram`, `stats`, `quote`, `code`, `cards`, `timeline`, `image`, `closing`, `blank`) and a few attributes (`data-step` for builds, `data-count` for counters, `data-morph` for elements that travel between slides). `skills/motion-deck/references/authoring.md` is the cheat sheet and `skills/motion-deck/examples/showcase.src.html` uses everything.
 
-The build joins the source with the engine, the theme, the embedded fonts and the images into one file that works offline, from a file, a web server or GitHub Pages. In the deck: arrows or Space move, `M` opens the map, `P` opens the presenter window (notes, timer, next slide), `F` is full screen, and printing to PDF gives one slide per page.
+The build joins the source with the engine, the theme, the embedded fonts and the images into one file that works offline, from a file, a web server or GitHub Pages. In the deck: arrows or Space move, `M` opens the map, `P` opens the presenter window (notes, timer, next slide), `F` is full screen, `B` blacks the screen out, `G` and a number jumps to a slide, `.` pauses the moving background, `?` lists the keys, and printing to PDF gives one slide per page.
 
 ## What the check does
 
@@ -56,7 +56,9 @@ node --test skills/motion-deck/scripts/tests/*.test.mjs
 node skills/motion-deck/scripts/selftest.mjs
 ```
 
-The selftest builds the showcase in every theme and runs it in every installed browser with probes for the map, URL hashes, going back, swaps, reduced motion, the presenter window, morph transitions, print and offline use, plus deliberately broken decks that the check must fail. `skills/motion-deck/references/contract.md` is the specification the engine, the scripts and the themes are built against. CI runs the tests on Linux and Windows and publishes the gallery to GitHub Pages after every merge to `main`.
+`node skills/motion-deck/scripts/build.mjs decks/talk/deck.src.html --watch` serves the deck on a local address and reloads it on every save (add `--check` to run the check after each build), `new.mjs --template pitch|quarterly-review|tech-talk|workshop|lesson|keynote` starts from a worked example deck, `new.mjs --list-layouts` prints the layouts, and `doctor.mjs` checks the install. After the check, the `deck-reviewer` agent can give a second opinion: it scores content, design and coherence and lists fixes per slide.
+
+The selftest builds the showcase in every theme and runs it in every installed browser with probes for the map, URL hashes, going back, swaps, reduced motion, the ambient pause, the live keys, the presenter window, morph transitions, print and offline use, plus deliberately broken decks that the check must fail. `skills/motion-deck/references/contract.md` is the specification the engine, the scripts and the themes are built against. CI runs the tests on Linux and Windows and publishes the gallery to GitHub Pages after every merge to `main`.
 
 ## License
 

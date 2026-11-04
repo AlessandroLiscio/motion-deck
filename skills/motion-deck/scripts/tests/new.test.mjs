@@ -82,3 +82,41 @@ test('usage errors exit 2 and write nothing', async () => {
   }
   assert.equal((await fs.readdir(cwd)).filter((n) => n !== 'tmp').length, 0);
 });
+
+test('--template copies a starter deck, builds, and keeps its own title, theme and language unless told otherwise', async () => {
+  const { TEMPLATE_KINDS } = await import('../lib/templates.mjs');
+  assert.ok(TEMPLATE_KINDS.length >= 6);
+  for (const kind of TEMPLATE_KINDS) {
+    const cwd = await tmp();
+    const r = run(cwd, 'x', '--template', kind);
+    assert.equal(r.status, 0, kind + ': ' + r.stdout + r.stderr);
+    assert.match(r.stdout, new RegExp(`^PASS new: x \\(template ${kind}, theme from the template, lang from the template\\)$`, 'm'));
+    const file = path.join(cwd, 'decks', 'x', 'deck.src.html');
+    const built = await build({ src: file, out: path.join(cwd, 'out.html'), log: () => {} });
+    assert.deepEqual(built.warnings, [], kind);
+    assert.ok(built.slides >= 9, kind);
+  }
+  const cwd = await tmp();
+  const r = run(cwd, 'y', '--template', 'pitch', '--theme', 'neon', '--title', 'Say "hi" <now>', '--lang', 'it');
+  assert.equal(r.status, 0, r.stdout);
+  const text = await fs.readFile(path.join(cwd, 'decks', 'y', 'deck.src.html'), 'utf8');
+  const config = JSON.parse(/<script type="application\/json" id="deck-config">([\s\S]*?)<\/script>/.exec(text)[1]);
+  assert.deepEqual([config.title, config.theme, config.lang], ['Say "hi" <now>', 'neon', 'it']);
+  assert.equal(config.author, 'Mara Okafor');
+});
+
+test('--template with an unknown kind exits 2 and lists the kinds', async () => {
+  const cwd = await tmp();
+  const r = run(cwd, 'z', '--template', 'nope');
+  assert.equal(r.status, 2);
+  assert.match(last(r), /^FAIL new: unknown template "nope"; choose one of pitch, quarterly-review, tech-talk, workshop, lesson, keynote$/);
+});
+
+test('--list-layouts prints every layout of the contract', async () => {
+  const cwd = await tmp();
+  const r = run(cwd, '--list-layouts');
+  assert.equal(r.status, 0, r.stdout);
+  const names = r.stdout.split('\n').map((l) => l.split(/\s+/)[0]).filter(Boolean);
+  assert.deepEqual(names.slice(0, 14), ['title', 'chapter', 'statement', 'content', 'split', 'diagram', 'stats', 'quote', 'code', 'cards', 'timeline', 'image', 'closing', 'blank']);
+  assert.match(last(r), /^PASS new: layouts$/);
+});
