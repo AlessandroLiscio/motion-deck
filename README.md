@@ -52,6 +52,8 @@ node --test skills/motion-deck/scripts/tests/*.test.mjs
 node skills/motion-deck/scripts/selftest.mjs
 ```
 
+`node skills/motion-deck/scripts/build.mjs decks/talk/deck.src.html --watch` serves the deck on a local address and reloads it on every save (add `--check` to run the check after each build), `new.mjs --template pitch|quarterly-review|tech-talk|workshop|lesson|keynote` starts from a worked example deck, `new.mjs --list-layouts` prints the layouts, and `doctor.mjs` checks the install. After the check, the `deck-reviewer` agent can give a second opinion: it scores content, design and coherence and lists fixes per slide.
+
 The selftest builds the showcase in every theme and runs it in every installed browser with probes for the map, URL hashes, going back, swaps, reduced motion, the ambient pause, the live keys, the presenter window, morph transitions, print and offline use, plus deliberately broken decks that the check must fail. `skills/motion-deck/references/contract.md` is the specification the engine, the scripts and the themes are built against. CI runs the tests on Linux and Windows and publishes the gallery to GitHub Pages after every merge to `main`.
 
 ## License

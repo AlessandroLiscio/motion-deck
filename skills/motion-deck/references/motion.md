@@ -53,4 +53,6 @@ Use the theme's default for the whole deck. Set `data-transition="none"` on a sl
 
 ## Pacing
 
+Set `"duration"` in the config and `data-minutes` on a slide that needs more or less than its share: the presenter window (`P`) then shows a progress bar and whether you are ahead of or behind the plan. `check.mjs --wpm 130` compares the speaker notes' reading time with the duration and warns when they differ by a lot.
+
 A slide earns about 45 to 60 seconds. One build every 15 to 30 seconds of speech, one counter or morph per slide at most, and a chapter slide to reset the eye every three to five slides. When a slide combines steps, a counter and a morph, remove two of them.

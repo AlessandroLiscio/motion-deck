@@ -27,6 +27,7 @@ The config comes first, then the `<style>` blocks, then the slides; anything els
 | `sections` | ordered list of `{ "id", "label", "accent" }`; `accent` is 1 to 6; the list order is the map order. A `data-sec` missing here is created with its id as label |
 | `vocabulary` | translate or rename the HUD words (below) |
 | `timer` | presenter timer target in minutes (default 20) |
+| `duration` | planned length of the talk in minutes; the presenter window shows a progress bar and whether you are ahead or behind the plan (default: `timer`, else 20) |
 | `ambient` | `"off"` starts with the moving background and the looping art paused (the audience or the presenter can resume with `.`); default `"on"` |
 | `subtitle`, `author`, `event`, `date`, `description` | free text; `description` becomes the meta description |
 
@@ -48,6 +49,7 @@ Vocabulary keys: `map` (map title), `mapHint`, `counter` (a template, `{n}` and 
 | `data-layout` | one of the layouts below; default `content` |
 | `data-sec` | the section (chapter) the slide belongs to; it sets the accent color and the HUD label; default the previous slide's |
 | `data-title` | name in the map and the HUD; default the first `h1` or `h2` text |
+| `data-minutes` | planned minutes for this slide; the slides without it share the rest of `duration` equally |
 | `data-transition` | transition used when entering this slide, or `none` |
 | `data-anim` | entrance style for the children: `rise` (default), `fade`, `left`, `right`, `zoom`, `pop`, `none` |
 | `data-backup` | appendix slide, numbered A, B, C after the last normal slide |
@@ -97,6 +99,8 @@ Give the same `data-morph="key"` to one element on two consecutive slides. Movin
 ## Art, images, code
 
 `<div data-art="hero"></div>` is filled by the theme with its own illustration. Roles: `hero` (title slide), `chapter`, `closing`, `divider`, `mascot`. Position and size come from the layout; override in the deck `<style>` when needed. Add `data-alt="…"` to describe it for screen readers.
+
+Starter decks: `new.mjs <slug> --template <kind>` copies `examples/<kind>.src.html` (`pitch`, `quarterly-review`, `tech-talk`, `workshop`, `lesson`, `keynote`) with real sample content and the structure of that kind of talk; replace the content, keep the shape, and keep the `.source` lines honest.
 
 `<img src="assets/chart.png" alt="…">` is inlined by the build; the path is relative to the source file. Allowed: svg, png, jpg, webp, gif, avif; over 300 KB warns; over 2 MB fails. Remote images and fonts fail the build: decks work offline.
 

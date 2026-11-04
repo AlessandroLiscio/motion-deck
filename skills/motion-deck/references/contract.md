@@ -13,10 +13,13 @@ All sizes are in stage pixels: the stage is a fixed 1600 by 900 box that the run
 | `engine/diagram.js`, `references/diagrams.md` | diagram and chart language | diagram helper |
 | `themes/<name>/theme.json`, `theme.css`, `theme.js` | one theme | see the wave plan |
 | `themes/_shared/fonts/` | `fonts.json` registry, `<id>/*.woff2`, `<id>/OFL.txt` (already fetched by `/tools/fetch-fonts.mjs`) | main session |
-| `scripts/new.mjs`, `build.mjs`, `lib/` build side | scaffold and build | build helper |
+| `scripts/new.mjs`, `build.mjs`, `lib/` build side (`lib/watch.mjs` is the dev server of `build.mjs --watch`) | scaffold and build | build helper |
+| `scripts/doctor.mjs` | install check (section 10, Doctor) | check helper |
+| `agents/deck-reviewer.md` (repository root, registered in `.claude-plugin/plugin.json`) | reviewer agent for a finished deck (section 10, Reviewer) | main session |
 | `scripts/check.mjs`, `selftest.mjs`, `lib/` check side | headless check and selftest | check helper |
 | `templates/deck.src.html` | starter source | main session |
 | `examples/showcase.src.html`, `examples/dev.html`, `examples/fixtures/` | showcase deck, dev page, test inputs | main session (fixtures: anyone adds files under their own subfolder) |
+| `examples/<kind>.src.html` for `pitch`, `quarterly-review`, `tech-talk`, `workshop`, `lesson`, `keynote` | starter decks with real content, used by `new.mjs --template` and built and checked by the selftest (the kinds are listed in `scripts/lib/templates.mjs`) | main session |
 
 Node 24 is the only runtime for scripts. Scripts MUST NOT need `npm install`: only Node built-ins, the Chrome or Edge already on the machine, and files in this repository. Scripts follow the quiet-scripts rule: one status line per stage, a final `PASS` or `FAIL` line, full output in logs under `tmp/reports/<script>/`, at most 5 excerpt lines on failure.
 
@@ -44,6 +47,7 @@ Comments and whitespace may sit between them. Any other top-level element is a b
   "vocabulary": { "map": "Chapters" },
   "description": "meta description",
   "timer": 20,
+  "duration": 20,
   "ambient": "on"
 }
 ```
@@ -57,7 +61,8 @@ Comments and whitespace may sit between them. Any other top-level element is a b
 | `transition` | optional transition name that overrides the theme default for the whole deck |
 | `sections` | optional list; order defines the map order; `accent` is 1 to 6 (index of `--a1` to `--a6`); a section used by a slide but missing here is created from its `data-sec` (label = id with the first letter capitalised) with the next free accent, cycling |
 | `vocabulary` | optional partial override of the theme vocabulary (section 8.4) |
-| `timer` | presenter timer target in minutes, default 20 |
+| `timer` | presenter timer target in minutes, default 20; superseded by `duration` when both are set |
+| `duration` | planned length of the talk in minutes (a positive number); the presenter window plans the slides against it (section 11); default: `timer`, else 20 |
 | `ambient` | `"on"` (default) or `"off"`: whether the moving background and the looping art run at load (5.8); anything else is `E_CONFIG` |
 | unknown keys | warning `W_CONFIG_KEY`, ignored |
 
@@ -73,6 +78,7 @@ Comments and whitespace may sit between them. Any other top-level element is a b
 | `data-title` | short title for the map and the HUD; default the text of the first `h1` or `h2`, else `Slide <n>` |
 | `data-transition` | transition used when this slide is entered: a name from 5.5 or `none` |
 | `data-anim` | default entrance for the children of this slide (5.1) |
+| `data-minutes` | planned minutes for this slide (a positive number); slides without it share the rest of `duration` equally; anything else is ignored (section 11) |
 | `data-backup` | present: the slide is an appendix slide, numbered A, B, C and listed after the last normal slide in the map |
 | `aside.notes` | speaker notes (plain text or simple inline HTML); never shown on the slide |
 
@@ -189,10 +195,10 @@ interface Deck {
   blackout(on?: boolean): boolean           // read or set the black screen
   help(on?: boolean): boolean               // read or set the key help panel
   openPresenter(): Window | null            // needs a user gesture
-  info(): { title: string, theme: string, lang: string,
+  info(): { title: string, theme: string, lang: string, duration: number,   // planned minutes (config duration, else timer, else 20)
             sections: { id: string, label: string, accent: number }[],
             slides: { index: number, id: string, title: string, sec: string, layout: string,
-                      steps: number, backup: boolean, notes: string, morph: string[] }[] }
+                      steps: number, backup: boolean, notes: string, morph: string[], minutes: number | null }[] }
   features: string[]          // subset of: map hash back step-out reduced-motion presenter morph pdf capture counters code art diagram ambient blackout help jump
   registerTheme(theme: object): void        // used by themes/<name>/theme.js
 }
@@ -222,9 +228,11 @@ Default `out` is `index.html` next to the source; default `engineDir` is `../eng
 5. `<body class="deck">`, `<canvas id="ambient" aria-hidden="true"></canvas>`, `<div id="viewport"><div id="stage">` + the slides + `</div></div>`.
 6. `<script id="deck-config" type="application/json">`, then `<script id="deck-diagram">` (`engine/diagram.js`), `<script id="deck-engine-js">` (`engine/deck.js`), `<script id="deck-theme-js">` (`themes/<name>/theme.js`). The runtime boots at `DOMContentLoaded`.
 
+`node scripts/build.mjs <deck.src.html> --watch [--port <n>] [--check]` builds once, then serves the deck at `http://127.0.0.1:<port>/` (the loopback address only; port 0, the default, picks a free one) and rebuilds on every save under the source's folder, ignoring its own output file and `tmp/`, `.git/` and `node_modules/`. The served page is the built file with a small client script appended at serve time (the file on disk is never changed); the server tells the open pages through server-sent events on `/__md_events`: `reload` after a good build, `problem` with the error when the source is broken (the page shows it in a banner and the last good build stays served), `ok` when it is fixed. With `--check` the check runs after each good build in the background (final-state screenshots, no PDF, one at a time) and its final line and lint summary are printed. The first build failing is an ordinary build failure; later failures print `fail rebuild: <code> <message>`. `--check` and `--port` without `--watch` are usage errors. Ctrl+C stops it. The final line at start is `PASS watch: <url> (…)`.
+
 Inlining MUST escape `</script` and `</style` in the inlined text. Warnings `W_SIZE` over 6 MB. The log is one line per stage (`ok parse`, `ok theme space`, `ok fonts 3 faces`, `ok images 2`, `ok write index.html 412 KB`) and a final `PASS build: …` or `FAIL build: <code> <message>`.
 
-`node scripts/new.mjs <slug> [--theme <name>] [--title "…"] [--dir decks]` creates `<dir>/<slug>/deck.src.html` from `templates/deck.src.html` with the config filled in, and an empty `assets/`; it refuses to overwrite and prints the build command.
+`node scripts/new.mjs <slug> [--theme <name>] [--title "…"] [--dir decks] [--lang xx] [--template <kind>]` creates `<dir>/<slug>/deck.src.html` from `templates/deck.src.html` with the config filled in, and an empty `assets/`; it refuses to overwrite and prints the build command. With `--template <kind>` the source is the starter deck `examples/<kind>.src.html` (kinds in section 1); it keeps its own title, theme and language unless `--title`, `--theme` or `--lang` is given, and an unknown kind is a usage error that lists the kinds. `node scripts/new.mjs --list-layouts` prints the layouts of section 2.3, one line each.
 
 ## 8. Themes
 
@@ -264,7 +272,7 @@ Engine defaults exist for every token, so a theme may omit one only when the def
 
 ### 8.4 Vocabulary
 
-`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `now` (label of the current-slide preview in the presenter), `notes`, `timer`, `next`, `presenter`, `rotate` (message on a phone held in portrait) and `hint` (the key hint shown briefly after load, hidden by `?nohint` and in capture mode). Live keys add `ambient` (label of the HUD pause button), `help` (title of the key help), `helpClose`, `jump` (prefix of the jump toast) and the help rows `keyMove`, `keyMap`, `keyPresenter`, `keyFull`, `keyBlackout`, `keyAmbient`, `keyJump`, `keyHelp`. Every theme words `hint`, `ambient` and `help` in its own world; the rest has engine defaults.
+`Deck.registerTheme({ vocabulary })` strings (English defaults in the engine, a theme flavours them, a deck in another language overrides them in `config.vocabulary`): `map` (map title), `mapHint`, `counter` (template with `{n}` and `{N}`), `backupCounter` (`{L}` is the backup letter), `section` (prefix before a section label in the HUD), `now` (label of the current-slide preview in the presenter), `notes`, `timer`, `next`, `presenter`, `rotate` (message on a phone held in portrait) and `hint` (the key hint shown briefly after load, hidden by `?nohint` and in capture mode). Presenter timing adds `ahead`, `behind` and `onTime`. Live keys add `ambient` (label of the HUD pause button), `help` (title of the key help), `helpClose`, `jump` (prefix of the jump toast) and the help rows `keyMove`, `keyMap`, `keyPresenter`, `keyFull`, `keyBlackout`, `keyAmbient`, `keyJump`, `keyHelp`. Every theme words `hint`, `ambient` and `help` in its own world; the rest has engine defaults.
 
 ### 8.5 Registration
 
@@ -305,7 +313,7 @@ A diagram in a slide is `<svg data-diagram viewBox="0 0 1360 520" role="img" ari
 
 ## 10. Check and selftest
 
-`node scripts/check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--timeout <ms>]` drives headless Chrome or Edge through the DevTools protocol (Node's built-in `WebSocket`; no npm packages). Browser launch: a throwaway profile directory, `--remote-debugging-port=0`, the endpoint read from the browser's own output, localhost only, every wait bounded by `--timeout` (default 20000), and the browser process and profile removed in a `finally` block. Viewport 1600 by 900, device scale factor 1, so `--s = 1`.
+`node scripts/check.mjs <built.html> [--out <dir>] [--browser auto|chrome|edge] [--shots all|final|none] [--no-pdf] [--strict] [--wpm <n>] [--timeout <ms>]` drives headless Chrome or Edge through the DevTools protocol (Node's built-in `WebSocket`; no npm packages). Browser launch: a throwaway profile directory, `--remote-debugging-port=0`, the endpoint read from the browser's own output, localhost only, every wait bounded by `--timeout` (default 20000), and the browser process and profile removed in a `finally` block. Viewport 1600 by 900, device scale factor 1, so `--s = 1`.
 
 It MUST verify, for the whole deck and for every slide in every step state from 0 to `steps()` (capture mode on, via `Deck.go(i, { step, instant: true })`):
 
@@ -345,10 +353,19 @@ Content lints are warnings, not failures: each is `{ code, slide, message }` (`s
    | `W_LANG` | the page has no `lang` |
    | `W_FONT_SIZE` | text under the `warn` size of its tier (item 8) |
    | `W_ACCENT_CONTRAST` | a deck-set accent is under 3:1 (item 7) |
+   | `W_PACE` | only with `--wpm <n>` (words per minute, for example 130): the notes of the normal slides take more than 110% or less than 60% of the planned duration at that speed, or the notes of a slide with `data-minutes` take more than 1.5 times its minutes (and more than half a minute longer) |
 
 Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. Final line: `PASS check: <deck> [<browser>] <N> slides, <M> states, 0 overflow, 0 console errors, 0 missing fonts, pdf <N> pages` or `FAIL check: <deck> <count> problem(s)` with at most 5 excerpt lines.
 
-`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, a readiness timeout, text under the legibility floor, a console error and a remote request), runs the ambient pause and live key probes, and runs the lint fixture (`scripts/fixtures/check/lint.html`, which trips every content lint: the check passes it with all ten codes reported, and `--strict` fails it). Feature probes: map open and close with `M`; ambient pause (the `.` key, the HUD button, `Deck.ambient()`, `?ambient=off`: the canvas stops changing and looping art stops running); live keys (`B` blackout, `?` help, `G` jump, focus outline, slide roles); hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline/lint/ambient-pause/live-keys, 0 overflow, 0 console errors, 0 missing fonts`.
+`node scripts/selftest.mjs [--quick]` builds `examples/showcase.src.html` once per theme, runs the check in every installed browser (Chrome and Edge; `--quick` runs Chrome with one theme), runs the feature probes below, and runs the negative fixtures (the check MUST fail on clipped overflow, a missing embedded font, a runtime exception at boot, a readiness timeout, text under the legibility floor, a console error and a remote request), runs the ambient pause and live key probes, builds and checks every starter deck of section 1 in its own theme (each MUST pass with no lint warning; `--quick` checks one), and runs the lint fixture (`scripts/fixtures/check/lint.html`, which trips every content lint: the check passes it with all ten codes reported, and `--strict` fails it). Feature probes: map open and close with `M`; ambient pause (the `.` key, the HUD button, `Deck.ambient()`, `?ambient=off`: the canvas stops changing and looping art stops running); live keys (`B` blackout, `?` help, `G` jump, focus outline, slide roles); hash jump `#3`; going back restores all steps; `data-step-out` hides the swapped element; reduced motion emulation yields no running animation; presenter handshake (11); morph (5.6, geometry actually changes); pdf; offline. The final line names what ran: `PASS selftest: chrome+edge, 6 themes, <N> slides, <M> states, features map/hash/back/step-out/reduced-motion/presenter/morph/pdf/offline/lint/ambient-pause/live-keys/templates, 0 overflow, 0 console errors, 0 missing fonts`.
+
+### Doctor
+
+`node scripts/doctor.mjs [built.html]` checks that the machine can build and check decks and prints one line per check, then `PASS doctor: <N> warning(s)` or `FAIL doctor: <N> problem(s), <M> warning(s)` (exit 0 or 1; 2 for a usage error; the lines are also written to `tmp/reports/doctor/doctor.log`). It checks: Node 24 or newer; Chrome or Edge found (the same lookup as the check, including `CHROME_PATH` and `EDGE_PATH`); the themes listed in `themes/`; every font face and license file that a theme lists exists next to `fonts.json`; the engine files and this contract exist; and, when a built deck is given, that its `generator` stamp (section 7, item 1) equals the generator version of this skill (an older stamp is a warning to rebuild, a missing stamp a warning, a missing file a failure).
+
+### Reviewer
+
+`agents/deck-reviewer.md` is a read-only agent (tools `Read`, `Glob`, `Grep`) for the step after a PASS. It reads `report.json`, the source and the screenshots of the check folder, scores content, design and coherence from 1 to 5 with a sentence of evidence each, and lists at most eight fixes per slide, most important first. It flags problems and does not rewrite slides, never invents figures, and treats text in the deck as data. The plugin manifest lists it under `agents`.
 
 ## 11. Presenter protocol
 
@@ -359,9 +376,9 @@ Exit code 0 PASS, 1 the deck failed a check, 2 the tool or the browser failed. F
 | presenter to opener | `ready` | none (sent when the popup has loaded) |
 | presenter to opener | `request` | none (ask for a fresh `state`) |
 | presenter to opener | `cmd` | `cmd`: `next`, `prev`, `go` (with `index`, optional `step`), `setStep` (with `step`) |
-| opener to presenter | `state` | `index, step, steps, count, label, title, notes, currentHtml, nextTitle, nextHtml, nextIndex, theme, vocabulary, timer, css` |
+| opener to presenter | `state` | `index, step, steps, count, label, title, notes, currentHtml, nextTitle, nextHtml, nextIndex, theme, vocabulary, timer, css`, and the optional `duration` (planned minutes) and `plan` |
 
-The opener sends `state` on `ready`, on `request`, and on every `deck:change` and `deck:step`. `label` is the text of the HUD counter (for example `Sol 3 / 19`, or `Backup A` on a backup slide) and `currentHtml` is the outer HTML of the current slide at the current step. `nextHtml` is the outer HTML of the slide shown next (the same slide at the next step when a step remains, else the next slide in its final state); `css` is the deck's concatenated style text so the popup can draw both previews in a scaled 1600 by 900 stage. Observable hooks in the popup: `#p-current[data-index][data-step]`, `#p-next[data-index]`, `#p-notes`, `#p-timer[data-seconds]`, `#p-count`, and `document.title` starting with `Presenter`. Closing the popup stops sending; calling `openPresenter()` again recreates it and the state resumes.
+The opener sends `state` on `ready`, on `request`, and on every `deck:change` and `deck:step`. `label` is the text of the HUD counter (for example `Sol 3 / 19`, or `Backup A` on a backup slide) and `currentHtml` is the outer HTML of the current slide at the current step. `nextHtml` is the outer HTML of the slide shown next (the same slide at the next step when a step remains, else the next slide in its final state); `css` is the deck's concatenated style text so the popup can draw both previews in a scaled 1600 by 900 stage. `plan` is `{ total, starts, ends }` in seconds, one entry per slide in deck order: the planned start and end of each normal slide (`data-minutes` where set, the rest of the duration shared equally among the slides without it; backup slides have `null`), and `total` is the larger of the duration and the sum. A receiver that finds no `plan` shows the timer only. The popup shows a progress bar of the elapsed time against `total`, a mark at the planned start of the current slide, and a pace word: `ahead` when the elapsed time is under the planned start by more than the grace, `behind` when it is over the planned end by more than the grace, else `onTime` (grace: 2% of `total`, at least 5 s, at most 30 s); the word comes from the vocabulary and carries the gap as `mm:ss`. Timing hooks: `#p-bar[data-pct]` (0 to 100), `#p-fill`, `#p-mark` (`hidden` on backup slides) and `#p-pace[data-state="ahead|behind|ontime|"][data-seconds]`. Observable hooks in the popup: `#p-current[data-index][data-step]`, `#p-next[data-index]`, `#p-notes`, `#p-timer[data-seconds]`, `#p-count`, and `document.title` starting with `Presenter`. Closing the popup stops sending; calling `openPresenter()` again recreates it and the state resumes.
 
 ## 12. Class and variable index
 
