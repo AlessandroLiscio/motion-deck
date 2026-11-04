@@ -1,5 +1,6 @@
 // Content and legibility lints of the check (contract section 10, "Lints"). Pure functions over data the page measured, so they run in unit tests without a browser.
 // Every lint is a warning { code, slide, message }; slide is 1-based or null for the whole deck. `check.mjs --strict` turns warnings into failures.
+import { short } from './format.mjs';
 
 export const LIMITS = {
   words: 30, listItems: 5, itemWords: 12, titleWords: 10, layoutRun: 3, notesMin: 40, notesMax: 90,
@@ -21,7 +22,7 @@ export function lintContent(slides, { lang = '' } = {}) {
       if (l.items > LIMITS.listItems) warn('W_LIST_LEN', n, `a list of ${l.items} items, keep it to ${LIMITS.listItems}; use steps, cards or another slide`);
       if (l.maxWords > LIMITS.itemWords) warn('W_LIST_ITEM', n, `a list item of ${l.maxWords} words, keep items to ${LIMITS.itemWords}`);
     }
-    if (s.titleWords > LIMITS.titleWords) warn('W_TITLE_LEN', n, `the title "${clip(s.title)}" has ${s.titleWords} words, keep it to ${LIMITS.titleWords}`);
+    if (s.titleWords > LIMITS.titleWords) warn('W_TITLE_LEN', n, `the title "${short(s.title, 40)}" has ${s.titleWords} words, keep it to ${LIMITS.titleWords}`);
     if (s.imgsNoAlt) warn('W_IMG_ALT', n, `${s.imgsNoAlt} image(s) without an alt attribute (use alt="" for decoration)`);
     if (s.layout === 'stats' && !s.hasSource) warn('W_STAT_SOURCE', n, 'a stats slide with no <p class="source"> naming where the figures come from');
     if (!s.hasNotes) warn('W_NOTES_MISSING', n, 'no speaker notes (aside.notes)');
@@ -88,7 +89,6 @@ export function lintAccents(accents, bg, contrast, own) {
   return { warnings, errors };
 }
 
-const clip = (s, n = 40) => (String(s).length > n ? String(s).slice(0, n - 3) + '...' : String(s));
 
 export function summarize(warnings) {
   const by = new Map();

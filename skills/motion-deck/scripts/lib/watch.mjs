@@ -21,12 +21,13 @@ const CLIENT = `<script>(function () {
 export const inject = (html) => (html.includes('</body>') ? html.replace('</body>', () => CLIENT + '</body>') : html + CLIENT);
 
 // opts: { src, out, build(): Promise<{ out, slides, ... }>, check?(): Promise<string>, log, port = 0, debounce = 250 }
-// Returns { url, port, close(), rebuilds() }. build() rejects with the reason (a BuildError message) when the source is broken; the last good page stays served.
+// Returns { url, close(), rebuilds() }. build() rejects with the reason (a BuildError message) when the source is broken; the last good page stays served.
 export async function startWatch({ src, out, build, check = null, log = () => {}, port = 0, debounce = 250 }) {
   const srcPath = path.resolve(src);
-  const outPath = path.resolve(out);
   const root = realpathSync.native(path.dirname(srcPath)); // libuv asserts on a Windows 8.3 short path
-  let html = '';
+  const realOut = path.join(root, path.basename(out)); // compared with the long path of the folder
+  let served = ''; // the built page with the reload client
+  let firstError = '';
   let rebuilds = 0;
   let running = false;
   let again = false;
@@ -45,15 +46,17 @@ export async function startWatch({ src, out, build, check = null, log = () => {}
         again = false;
         try {
           const r = await build();
-          html = await readFile(r.out, 'utf8');
+          served = inject(await readFile(r.out, 'utf8')); // once per build, not per request: a built deck is megabytes
           rebuilds++;
           log(`ok rebuild ${r.slides} slides in ${Date.now() - t0} ms`);
           send('ok');
           send('reload');
           if (check) check().then((line) => log(line), (err) => log(`fail check: ${err.message}`));
         } catch (err) {
-          log(`fail rebuild: ${err.code ? err.code + ' ' : ''}${err.message}`);
-          send('problem', `${err.code ? err.code + ' ' : ''}${err.message}`);
+          const why = `${err.code ? err.code + ' ' : ''}${err.message}`;
+          if (!served) firstError = why;
+          log(`fail rebuild: ${why}`);
+          send('problem', why);
         }
       } while (again);
     } finally {
@@ -62,7 +65,7 @@ export async function startWatch({ src, out, build, check = null, log = () => {}
   };
 
   await rebuild();
-  if (!html) throw new Error('the first build failed; fix the source and start again');
+  if (!served) throw new Error(`the first build failed: ${firstError}`);
 
   const server = http.createServer((req, res) => {
     const url = (req.url || '/').split('?')[0];
@@ -75,7 +78,7 @@ export async function startWatch({ src, out, build, check = null, log = () => {}
     }
     if (url === '/' || url === '/index.html') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
-      res.end(inject(html));
+      res.end(served);
       return;
     }
     res.writeHead(404, { 'content-type': 'text/plain' });
@@ -92,13 +95,12 @@ export async function startWatch({ src, out, build, check = null, log = () => {}
     clearTimeout(timer);
     timer = setTimeout(rebuild, debounce);
   };
-  const realOut = path.join(root, path.basename(outPath)); // compared with the long path of the folder
   const watcher = fsWatch(root, { recursive: true }, onChange);
+  watcher.on('error', (err) => log(`fail watch: ${err.message}`)); // a deleted or unreadable folder must not crash the server
 
   const address = server.address();
   return {
     url: `http://127.0.0.1:${address.port}/`,
-    port: address.port,
     rebuilds: () => rebuilds,
     async close() {
       clearTimeout(timer);

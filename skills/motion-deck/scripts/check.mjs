@@ -16,7 +16,7 @@ const USAGE = 'usage: check.mjs <built.html> [--out <dir>] [--browser auto|chrom
 
 class UsageError extends Error {}
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const o = { file: null, out: 'tmp/reports/check', browser: 'auto', shots: 'all', pdf: true, strict: false, wpm: 0, timeout: 20000, themes: join(SKILL, 'themes') };
   const takes = new Set(['--out', '--browser', '--shots', '--timeout', '--themes', '--wpm']);
   for (let i = 0; i < argv.length; i++) {
@@ -27,7 +27,10 @@ function parseArgs(argv) {
       if (argv[i + 1] === undefined) throw new UsageError(`${a} needs a value`);
       const v = argv[++i];
       if (a === '--timeout') o.timeout = Number(v);
-      else if (a === '--wpm') o.wpm = Number(v);
+      else if (a === '--wpm') {
+        o.wpm = Number(v);
+        if (!(o.wpm > 0)) throw new UsageError('--wpm must be a positive number of words per minute');
+      }
       else o[a.slice(2)] = v;
     } else if (a.startsWith('--')) throw new UsageError(`unknown option ${a}`);
     else if (o.file === null) o.file = a;
@@ -36,7 +39,6 @@ function parseArgs(argv) {
   if (!o.file) throw new UsageError('missing <built.html>');
   if (!['auto', 'chrome', 'edge'].includes(o.browser)) throw new UsageError('--browser must be auto, chrome or edge');
   if (!['all', 'final', 'none'].includes(o.shots)) throw new UsageError('--shots must be all, final or none');
-  if (o.wpm !== 0 && !(o.wpm > 0)) throw new UsageError('--wpm must be a positive number of words per minute');
   if (!(o.timeout > 0)) throw new UsageError('--timeout must be a positive number of milliseconds');
   return o;
 }
@@ -203,8 +205,8 @@ export async function runCheck(opts, out = console.log) {
       const tok = await page.evaluate(MEASURE_TOKENS);
       report.tokens = tok;
       const themeFile = join(resolve(opts.themes), String(tok.theme), 'theme.json');
-      if (existsSync(themeFile)) {
-        const want = JSON.parse(readFileSync(themeFile, 'utf8'));
+      const want = existsSync(themeFile) ? JSON.parse(readFileSync(themeFile, 'utf8')) : null;
+      if (want) {
         for (const name of ['bg', 'text', 'muted']) {
           if (tok.colors[name] !== normHex(want[name])) add('tokens', `--${name} is ${tok.colors[name]} but theme.json says ${want[name]}`);
         }
@@ -217,7 +219,7 @@ export async function runCheck(opts, out = console.log) {
       }
       // accents carry meaning in diagrams, chips and bars: 3:1 against --bg. A theme's own accent that fails is an error, one the deck set through "accent" is a warning.
       const own = new Set();
-      const accentWant = existsSync(themeFile) ? JSON.parse(readFileSync(themeFile, 'utf8')).accents || [] : [];
+      const accentWant = want?.accents || [];
       for (let k = 0; k < 6; k++) if (!accentWant[k] || tok.colors[`a${k + 1}`] === normHex(accentWant[k])) own.add(`a${k + 1}`);
       const accents = Object.fromEntries([1, 2, 3, 4, 5, 6].map((k) => [`a${k}`, tok.colors[`a${k}`]]));
       const ac = tok.colors.bg ? lintAccents(accents, tok.colors.bg, contrast, own) : { warnings: [], errors: [] };

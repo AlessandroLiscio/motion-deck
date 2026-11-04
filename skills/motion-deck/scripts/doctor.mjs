@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Checks that this machine can build and check decks: Node, a browser, the embedded fonts, the theme files, and (with a built deck as argument) that the deck was built by this version.
 // usage: doctor.mjs [built.html]. Exit 0 PASS (warnings allowed), 1 a check failed, 2 usage error.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBrowser } from './lib/browser.mjs';
@@ -71,7 +71,10 @@ export async function diagnose({ deck = null, skill = SKILL, nodeVersion = proce
   if (deck) {
     if (!existsSync(deck)) fail('deck', `${deck} not found`);
     else {
-      const head = readFileSync(deck, 'utf8').slice(0, 4000);
+      const fd = openSync(deck, 'r'); // the stamp is in the head; a built deck is megabytes of embedded fonts
+      const buf = Buffer.alloc(4096);
+      const head = buf.toString('utf8', 0, readSync(fd, buf, 0, 4096, 0));
+      closeSync(fd);
       const gen = /<meta name="generator" content="motion-deck ([^"]+)">/.exec(head)?.[1];
       if (!gen) warn('deck', `${deck} has no motion-deck generator stamp; was it built by this skill?`);
       else if (gen !== GENERATOR_VERSION) warn('deck', `built by generator ${gen}, this skill is ${GENERATOR_VERSION}; rebuild the deck`);

@@ -117,9 +117,9 @@ async function watchMain(opts) {
     if (checking) return 'ok check skipped, the previous one is still running';
     checking = true;
     try {
-      const { runCheck } = await import('./check.mjs');
+      const { parseArgs, runCheck } = await import('./check.mjs');
       const lines = [];
-      const code = await runCheck({ file: out, out: path.resolve('tmp', 'reports', 'check'), browser: 'auto', shots: 'final', pdf: false, strict: false, wpm: 0, timeout: 20000, themes: path.join(DEFAULT_ROOT, 'themes') }, (l) => lines.push(l));
+      const code = await runCheck(parseArgs([out, '--shots', 'final', '--no-pdf', '--out', path.resolve('tmp', 'reports', 'check')]), (l) => lines.push(l));
       const warn = lines.find((l) => /^warn lint/.test(l));
       return `${lines.at(-1)}${warn ? `; ${warn.replace(/ \(details.*$/, '')}` : ''}${code === 0 ? '' : ' (see tmp/reports/check)'}`;
     } finally {
