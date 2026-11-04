@@ -85,21 +85,55 @@ export async function build({ src, out, themeOverride, engineDir, themesDir, fon
   return { out: outPath, bytes, slides: slides.length, theme: config.theme, fonts: theme.fonts.map((f) => f.id), warnings };
 }
 
-const OPTIONS = { '--out': 'out', '--theme': 'themeOverride', '--engine': 'engineDir', '--themes': 'themesDir', '--fonts': 'fontsDir' };
+const OPTIONS = { '--out': 'out', '--theme': 'themeOverride', '--engine': 'engineDir', '--themes': 'themesDir', '--fonts': 'fontsDir', '--port': 'port' };
+const SWITCHES = { '--watch': 'watch', '--check': 'check' };
 
 function parseArgs(argv) {
   const opts = {};
   for (let i = 0; i < argv.length; i++) {
     const [flag, inline] = argv[i].startsWith('--') ? argv[i].split(/=(.*)/s) : [argv[i]];
-    if (OPTIONS[flag]) {
+    if (SWITCHES[flag] && inline === undefined) opts[SWITCHES[flag]] = true;
+    else if (OPTIONS[flag]) {
       const value = inline ?? argv[++i];
       if (value === undefined) throw new Error(`${flag} needs a value`);
       opts[OPTIONS[flag]] = value;
     } else if (flag.startsWith('--') || opts.src) throw new Error(`unexpected argument ${argv[i]}`);
     else opts.src = flag;
   }
-  if (!opts.src) throw new Error('usage: node build.mjs <deck.src.html> [--out <file>] [--theme <name>] [--engine <dir>] [--themes <dir>] [--fonts <dir>]');
+  if (!opts.src) throw new Error('usage: node build.mjs <deck.src.html> [--out <file>] [--theme <name>] [--engine <dir>] [--themes <dir>] [--fonts <dir>] [--watch [--port <n>] [--check]]');
+  if ((opts.check || opts.port !== undefined) && !opts.watch) throw new Error('--check and --port only go with --watch');
+  if (opts.port !== undefined && !(/^\d+$/.test(opts.port) && Number(opts.port) <= 65535)) throw new Error('--port must be a number from 0 to 65535');
   return opts;
+}
+
+// build.mjs --watch: build, serve on 127.0.0.1 with live reload, rebuild on every save, optionally run the check after each good build. Runs until Ctrl+C.
+async function watchMain(opts) {
+  const { startWatch } = await import('./lib/watch.mjs');
+  const { port, watch, check, ...buildOpts } = opts;
+  const out = path.resolve(buildOpts.out || path.join(path.dirname(path.resolve(buildOpts.src)), 'index.html'));
+  const say = (line) => console.log(line);
+  let checking = false;
+  const runChecks = !check ? null : async () => {
+    if (checking) return 'ok check skipped, the previous one is still running';
+    checking = true;
+    try {
+      const { runCheck } = await import('./check.mjs');
+      const lines = [];
+      const code = await runCheck({ file: out, out: path.resolve('tmp', 'reports', 'check'), browser: 'auto', shots: 'final', pdf: false, strict: false, wpm: 0, timeout: 20000, themes: path.join(DEFAULT_ROOT, 'themes') }, (l) => lines.push(l));
+      const warn = lines.find((l) => /^warn lint/.test(l));
+      return `${lines.at(-1)}${warn ? `; ${warn.replace(/ \(details.*$/, '')}` : ''}${code === 0 ? '' : ' (see tmp/reports/check)'}`;
+    } finally {
+      checking = false;
+    }
+  };
+  const w = await startWatch({ src: buildOpts.src, out, build: () => build({ ...buildOpts, out, log: () => {} }), check: runChecks, log: say, port: port === undefined ? 0 : Number(port) });
+  say(`PASS watch: ${w.url} (Ctrl+C stops; open the address in Chrome or Edge, it reloads on every save${check ? ', the check runs after each build' : ''})`);
+  await new Promise((resolve) => {
+    process.once('SIGINT', resolve);
+    process.once('SIGTERM', resolve);
+  });
+  await w.close();
+  say('ok watch stopped');
 }
 
 async function main() {
@@ -111,7 +145,12 @@ async function main() {
   let code = 0;
   let final;
   try {
-    const result = await build({ ...parseArgs(process.argv.slice(2)), log });
+    const opts = parseArgs(process.argv.slice(2));
+    if (opts.watch) {
+      await watchMain(opts);
+      process.exit(0);
+    }
+    const result = await build({ ...opts, log });
     const shown = result.warnings.slice(0, 5).map((w) => `warn ${w.code}`);
     final = `PASS build: ${path.relative(process.cwd(), result.out) || result.out} ${KB(result.bytes)}, ${result.slides} slides, theme ${result.theme}, ${result.warnings.length} warnings${shown.length ? ` (${shown.join(', ')})` : ''}`;
   } catch (e) {

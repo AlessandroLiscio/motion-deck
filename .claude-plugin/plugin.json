@@ -5,5 +5,6 @@
   "homepage": "https://github.com/AlessandroLiscio/motion-deck",
   "repository": "https://github.com/AlessandroLiscio/motion-deck",
   "license": "MIT",
-  "keywords": ["presentation", "slides", "html", "animation", "deck"]
+  "keywords": ["presentation", "slides", "html", "animation", "deck"],
+  "agents": ["./agents/deck-reviewer.md"]
 }
