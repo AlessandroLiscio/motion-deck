@@ -243,53 +243,97 @@
   // ---------- art: original line drawings ----------
   const f1 = (v) => Math.round(v * 10) / 10;
   const spark = (x, y, s, cls = 'twinkle') => `<path class="${cls}" d="M${x} ${y - s}L${x + s * 0.18} ${y - s * 0.18}L${x + s} ${y}L${x + s * 0.18} ${y + s * 0.18}L${x} ${y + s}L${x - s * 0.18} ${y + s * 0.18}L${x - s} ${y}L${x - s * 0.18} ${y - s * 0.18}Z" style="fill:currentColor;stroke:none"/>`;
+  const dust = (x, y, r = 1.6) => `<circle class="twinkle" cx="${x}" cy="${y}" r="${r}" style="fill:currentColor;stroke:none"/>`;
+  const mirror = ([x, y]) => [400 - x, y];
 
-  const hero = `<svg viewBox="0 0 400 400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
-<defs><linearGradient id="sk-h-au" x1="0" x2="1" y1="0" y2="0"><stop offset="0" style="stop-color:var(--acc);stop-opacity:0"/><stop offset=".5" style="stop-color:var(--acc);stop-opacity:.9"/><stop offset="1" style="stop-color:var(--acc);stop-opacity:0"/></linearGradient></defs>
-<g class="spin"><circle cx="292" cy="110" r="68" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="2 9" opacity=".7"/></g>
-<g class="spin-r"><circle cx="292" cy="110" r="88" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="1 14" opacity=".5"/></g>
-<circle cx="292" cy="110" r="42" stroke-width="2.5"/>
-<path d="M270 84C288 78 308 88 316 108C322 126 312 144 296 150C316 130 308 98 270 84Z" style="fill:currentColor;stroke:none" opacity=".85"/>
-<path class="wave" d="M20 74C70 50 120 94 176 66S262 40 332 62" stroke="url(#sk-h-au)" stroke-width="10" opacity=".8"/>
-<path class="wave2" d="M10 98C74 78 124 118 190 92S284 74 330 86" stroke="url(#sk-h-au)" stroke-width="5" opacity=".6"/>
-${spark(70, 150, 7)}${spark(190, 40, 5)}${spark(350, 200, 5)}${spark(36, 36, 4)}${spark(140, 118, 3.5)}
-<path d="M24 316L112 170L146 218L190 140L282 316L282 352L24 352Z" style="fill:var(--bg);stroke:none"/>
-<path d="M24 316L112 170L146 218L190 140L282 316" stroke-width="3"/>
-<path d="M90 206L100 218L112 204L124 220L138 206M172 172L181 184L190 170L199 188L207 172" style="stroke:var(--acc)" stroke-width="2.4"/>
-<path d="M0 346L70 268L104 304L150 254L210 322L268 272L316 326L360 290L400 346L400 372L0 372Z" style="fill:var(--bg);stroke:none"/>
-<path d="M0 346L70 268L104 304L150 254L210 322L268 272L316 326L360 290L400 346" stroke-width="3"/>
-<path d="M62 280L70 292L78 282M138 270L150 282L160 270M258 288L268 298L280 288" style="stroke:var(--acc)" stroke-width="2"/>
-<path d="M0 366H400" opacity=".5"/>
-<path d="M84 380H170M214 380H316M120 392H196M236 392H284" style="stroke:var(--acc)" stroke-width="1.5" opacity=".5"/>
-<path d="M30 366L40 342L34 342L44 318L38 318L48 292L58 318L52 318L62 342L56 342L66 366ZM356 366L364 346L359 346L367 326L363 326L371 304L379 326L375 326L383 346L378 346L386 366Z" style="fill:var(--bg)" stroke-width="2.4"/>
+  // ----- runes: an angular script of 12 letters of my own, each a few straight strokes on a 12 by 20 grid; a word is a cluster of runes with its transliteration under it -----
+  const RUNE = {
+    F: 'M3 19V1L10 6M3 9L9 12', R: 'M3 19V1H9L11 4L9 8H3M7 8L11 19', O: 'M6 1L11 10L6 19L1 10ZM6 7V13', S: 'M10 2L3 6L9 10L3 14L10 18',
+    T: 'M1 4H11M6 4V19M2 13L6 19L10 13', E: 'M9 1L3 5V15L9 19M3 10H9', M: 'M1 19V3L6 11L11 3V19', B: 'M3 1V19M3 3L9 6L3 10L10 14L3 18',
+    D: 'M10 1V19M10 4L3 10L10 16', A: 'M1 19L6 1L11 19M6 9V19', W: 'M1 2L3 18L6 8L9 18L11 2', N: 'M2 19V2L10 18V2',
+  };
+  const runeWord = (word, cx, top, k) => {
+    const adv = 16 * k;
+    const x0 = cx - ((word.length - 1) * adv + 12 * k) / 2;
+    const glyphs = [...word].map((ch, i) => `<path d="${RUNE[ch]}" transform="translate(${f1(x0 + i * adv)} ${top}) scale(${k})"/>`).join('');
+    return `<g stroke-width="${f1(2.2 / k)}" stroke-linecap="square" stroke-linejoin="miter">${glyphs}</g><text x="${cx}" y="${f1(top + 20 * k + 17)}" text-anchor="middle" style="font:500 10.5px var(--f-body);letter-spacing:.3em;fill:currentColor;stroke:none" opacity=".8">${word}</text>`;
+  };
+  const WORDS = ['FROST', 'EMBER', 'DAWN'];
+  const runeRow = (cx, top, k, gap) => {
+    const wd = WORDS.map((w) => ((w.length - 1) * 16 + 12) * k);
+    let x = cx - (wd.reduce((a, b) => a + b, 0) + gap * (WORDS.length - 1)) / 2;
+    return WORDS.map((w, i) => { const c = x + wd[i] / 2; x += wd[i] + gap; return runeWord(w, f1(c), top, k); }).join('');
+  };
+
+  // ----- the horned iron helmet as a constellation: stars joined by thin lines, drawn from the left half and mirrored -----
+  const helmet = (() => {
+    const N = {
+      top: [200, 56], d1: [156, 68], d2: [122, 100], bi: [114, 132], d3: [109, 152], bo: [108, 172], d4: [107, 194], cr1: [200, 106], cr2: [200, 156],
+      ho1: [72, 164], ho2: [44, 138], ho3: [34, 100], ho4: [44, 62], tip: [64, 30], hi1: [92, 132], hi2: [68, 112], hi3: [60, 84], hi4: [64, 54],
+      b1: [152, 201], b2: [200, 206], n1: [194, 240], nt: [200, 266], e1: [140, 216], e2: [180, 220], e3: [172, 236], e4: [145, 232],
+      c1: [115, 232], c2: [128, 270], c3: [156, 296], ch: [200, 310], j1: [174, 284],
+    };
+    const E = [['top', 'd1'], ['top', 'cr1'], ['cr1', 'cr2'], ['cr2', 'b2'], ['d1', 'd2'], ['d2', 'bi'], ['bi', 'd3'], ['d3', 'bo'], ['bo', 'd4'],
+      ['bo', 'ho1'], ['ho1', 'ho2'], ['ho2', 'ho3'], ['ho3', 'ho4'], ['ho4', 'tip'], ['bi', 'hi1'], ['hi1', 'hi2'], ['hi2', 'hi3'], ['hi3', 'hi4'], ['hi4', 'tip'],
+      ['d4', 'b1'], ['b1', 'b2'], ['d4', 'c1'], ['c1', 'c2'], ['c2', 'c3'], ['c3', 'ch'], ['e1', 'e2'], ['e2', 'e3'], ['e3', 'e4'], ['e4', 'e1'],
+      ['b2', 'n1'], ['n1', 'nt'], ['nt', 'j1'], ['j1', 'ch']];
+    const mid = new Set(['top', 'cr1', 'cr2', 'b2', 'nt', 'ch']);
+    const at = (k, side) => (side && !mid.has(k) ? mirror(N[k]) : N[k]);
+    const lines = [0, 1].flatMap((side) => E.map(([a, b]) => `M${at(a, side).join(' ')}L${at(b, side).join(' ')}`)).join('');
+    const big = new Set(['top', 'tip', 'ch', 'nt', 'd4', 'ho3']);
+    const stars = Object.keys(N).flatMap((k) => [0, 1].map((side) => [k, side]).filter(([kk, s]) => !(s && mid.has(kk)))
+      .map(([kk, s]) => { const [x, y] = at(kk, s); return big.has(kk) ? spark(x, y, kk === 'top' || kk === 'ch' ? 8 : 6.5) : dust(x, y, 2.1); })).join('');
+    return `<path d="${lines}" stroke="currentColor" stroke-width="1.3" opacity=".85"/>${stars}`;
+  })();
+  const hero = `<svg viewBox="0 0 400 450" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
+<g class="spin"><circle cx="200" cy="190" r="178" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="1 11" opacity=".55"/></g>
+${helmet}
+${dust(30, 214)}${dust(372, 238)}${dust(76, 326, 1.4)}${dust(326, 332, 1.4)}${dust(200, 24, 1.4)}${dust(122, 38, 1.4)}${dust(284, 36, 1.4)}${dust(352, 120)}${dust(18, 166, 1.4)}${dust(380, 176, 1.4)}${spark(368, 300, 4)}${spark(36, 280, 3.5)}
+<path d="M70 366H330" stroke-width="1" style="stroke:var(--frame-2)"/>
+${runeRow(200, 380, 1.15, 34)}
 </svg>`;
 
-  // an interlace ring: two closed strands that cross over and under each other
-  const ringPath = (cx, cy, R, a, n, sign, from, to) => {
-    let d = '';
-    for (let th = from; th <= to + 0.0001; th += 0.02) {
-      const r = R + sign * a * Math.sin(n * th);
-      d += `${d ? 'L' : 'M'}${f1(cx + r * Math.cos(th))} ${f1(cy + r * Math.sin(th))}`;
-    }
-    return d;
-  };
-  const knot = () => {
+  // ----- the compass star: long thin needles with a knot in the middle -----
+  const knotParts = (() => {
+    const ring = (cx, cy, R, a, n, sign, from, to) => {
+      let d = '';
+      for (let th = from; th <= to + 0.0001; th += 0.02) {
+        const r = R + sign * a * Math.sin(n * th);
+        d += `${d ? 'L' : 'M'}${f1(cx + r * Math.cos(th))} ${f1(cy + r * Math.sin(th))}`;
+      }
+      return d;
+    };
     const n = 6, R = 62, a = 15;
-    const A = ringPath(100, 100, R, a, n, 1, 0, TAU);
-    const B = ringPath(100, 100, R, a, n, -1, 0, TAU);
     let seg = '';
-    for (let k = 1; k < 2 * n; k += 2) seg += `<path d="${ringPath(100, 100, R, a, n, 1, (k * Math.PI) / n - 0.17, (k * Math.PI) / n + 0.17)}"/>`;
-    return { A, B, seg };
+    for (let k = 1; k < 2 * n; k += 2) seg += `<path d="${ring(100, 100, R, a, n, 1, (k * Math.PI) / n - 0.17, (k * Math.PI) / n + 0.17)}"/>`;
+    return { A: ring(100, 100, R, a, n, 1, 0, TAU), B: ring(100, 100, R, a, n, -1, 0, TAU), seg };
+  })();
+  // two closed strands that cross over and under each other, drawn at the origin, size s (radius of the ring in px)
+  const knot = (s, sw) => {
+    const k = s / 77, w = f1(sw / k);
+    return `<g transform="scale(${f1(k * 1000) / 1000}) translate(-100 -100)"><path d="${knotParts.A}" stroke="currentColor" stroke-width="${w}"/>
+<path d="${knotParts.B}" style="stroke:var(--bg)" stroke-width="${f1(w * 2)}"/><path d="${knotParts.B}" stroke="currentColor" stroke-width="${w}"/>
+<g style="stroke:var(--bg)" stroke-width="${f1(w * 2)}">${knotParts.seg}</g><g stroke="currentColor" stroke-width="${w}">${knotParts.seg}</g></g>`;
   };
-  const kn = knot();
-  const chapter = `<svg viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
-<g class="spin"><circle cx="100" cy="100" r="95" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="1 7" opacity=".75"/></g>
-<circle cx="100" cy="100" r="88" stroke="currentColor" stroke-width="1" opacity=".55"/>
-<circle cx="100" cy="100" r="40" stroke="currentColor" stroke-width="1" opacity=".55"/>
-<g class="spin-r"><path d="${kn.A}" stroke="currentColor" stroke-width="5"/>
-<path d="${kn.B}" style="stroke:var(--bg)" stroke-width="10"/><path d="${kn.B}" style="stroke:var(--acc)" stroke-width="5"/>
-<g style="stroke:var(--bg)" stroke-width="10">${kn.seg}</g><g stroke="currentColor" stroke-width="5">${kn.seg}</g></g>
-<path d="M100 4L106 12L100 20L94 12ZM100 180L106 188L100 196L94 188ZM4 100L12 94L20 100L12 106ZM180 100L188 94L196 100L188 106Z" style="fill:var(--a2);stroke:none"/>
+  const compass = (W, H, ax, ay, waist, ring, cls) => {
+    const cx = W / 2, cy = H / 2;
+    const star = (k) => `M${cx} ${cy - ay * k}L${cx + waist * k} ${cy - waist * k}L${cx + ax * k} ${cy}L${cx + waist * k} ${cy + waist * k}L${cx} ${cy + ay * k}L${cx - waist * k} ${cy + waist * k}L${cx - ax * k} ${cy}L${cx - waist * k} ${cy - waist * k}Z`;
+    return `<svg class="${cls}" viewBox="0 0 ${W} ${H}" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
+<path d="${star(1)}" stroke-width="1.3"/><path d="${star(0.8)}" stroke-width="1" opacity=".5"/>
+<circle cx="${cx}" cy="${cy}" r="${f1(ring * 1.5)}" style="fill:var(--bg)" stroke-width="1"/>
+<g transform="translate(${cx} ${cy})">${knot(ring, Math.max(1, ring / 11))}</g>
+${[[0, -ay], [ax, 0], [0, ay], [-ax, 0]].map(([x, y]) => `<circle cx="${cx + x}" cy="${cy + y}" r="2.6" style="fill:currentColor;stroke:none"/>`).join('')}
+</svg>`;
+  };
+  const compassMap = compass(520, 130, 250, 58, 7, 19, 'compass');
+  const chapter = `<svg viewBox="0 0 400 400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
+<g class="spin"><circle cx="200" cy="200" r="150" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="1 10" opacity=".55"/></g>
+<circle cx="200" cy="200" r="104" stroke-width="1" opacity=".35"/>
+<path d="M200 6L214 186L394 200L214 214L200 394L186 214L6 200L186 186Z" stroke-width="1.5"/>
+<path d="M200 56L210 190L344 200L210 210L200 344L190 210L56 200L190 190Z" stroke-width="1" opacity=".5"/>
+<circle cx="200" cy="200" r="52" style="fill:var(--bg)" stroke-width="1"/>
+<g class="spin-r"><g transform="translate(200 200)">${knot(36, 3)}</g></g>
+${spark(200, 6, 7)}${spark(394, 200, 7)}${spark(200, 394, 7)}${spark(6, 200, 7)}${dust(112, 112)}${dust(288, 112)}${dust(112, 288)}${dust(288, 288)}${spark(330, 70, 4)}${spark(70, 330, 4)}
 </svg>`;
 
   // standing stones in a ring, seen from the side, under an aurora
@@ -308,54 +352,74 @@ ${spark(70, 150, 7)}${spark(190, 40, 5)}${spark(350, 200, 5)}${spark(36, 36, 4)}
       const { x, y, hh, w, s, k } = p;
       const lean = ((k % 3) - 1) * 2 * s;
       const d = `M${f1(x - w / 2)} ${f1(y)}L${f1(x - w * 0.42 + lean)} ${f1(y - hh)}L${f1(x - w * 0.1 + lean)} ${f1(y - hh - 6 * s)}L${f1(x + w * 0.32 + lean)} ${f1(y - hh - 2 * s)}L${f1(x + w * 0.44 + lean)} ${f1(y - hh + 3 * s)}L${f1(x + w / 2)} ${f1(y)}Z`;
-      return `<path d="${d}" style="fill:var(--bg)" stroke="currentColor" stroke-width="${f1(2.4 * s)}"/>`;
+      return `<path d="${d}" style="fill:var(--bg)" stroke="currentColor" stroke-width="${f1(1.8 * s)}"/>`;
     }).join('');
   })();
+  // an aurora curtain: thin rays of different lengths along a wave
+  const rays = (() => {
+    let d = '';
+    for (let x = 36; x <= 364; x += 7) {
+      const y0 = 78 + 26 * Math.sin(x / 38) + 10 * Math.sin(x / 15);
+      d += `M${x} ${f1(y0)}V${f1(y0 + 46 + 30 * Math.sin(x / 21 + 1))}`;
+    }
+    return `<path class="wave" d="${d}" style="stroke:var(--acc)" stroke-width="1.3" opacity=".55"/><path class="wave2" d="${d.replace(/M(\d+)/g, (m, x) => `M${+x + 3}`)}" style="stroke:var(--acc)" stroke-width="1" opacity=".3"/>`;
+  })();
   const closing = `<svg viewBox="0 0 400 400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
-<defs><linearGradient id="sk-c-au" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style="stop-color:var(--acc);stop-opacity:0"/><stop offset=".5" style="stop-color:var(--acc);stop-opacity:.55"/><stop offset="1" style="stop-color:var(--acc);stop-opacity:0"/></linearGradient></defs>
-<path class="wave" d="M30 168C70 70 130 44 186 78C236 108 276 36 340 70C362 82 372 100 380 128C340 112 320 150 270 136C220 122 190 190 130 160C90 140 60 190 30 168Z" style="fill:url(#sk-c-au);stroke:none"/>
-<path class="wave2" d="M60 120C110 40 170 52 214 28C256 6 310 38 360 76C320 62 280 66 224 78C170 90 110 78 60 120Z" style="fill:url(#sk-c-au);stroke:none" opacity=".75"/>
-<path class="wave" d="M34 166C74 84 124 66 176 96C226 124 270 50 336 84C358 96 370 110 378 128" style="stroke:var(--acc)" stroke-width="2" opacity=".9"/>
+${rays}
 ${spark(48, 40, 6)}${spark(330, 28, 5)}${spark(220, 14, 3.5)}${spark(372, 150, 4)}${spark(110, 12, 3)}
-<ellipse cx="200" cy="302" rx="168" ry="48" opacity=".35"/>
-<ellipse cx="200" cy="302" rx="120" ry="32" opacity=".2"/>
+<ellipse cx="200" cy="302" rx="168" ry="48" opacity=".3"/>
+<ellipse cx="200" cy="302" rx="120" ry="32" opacity=".18"/>
 ${stones}
-<path class="flame" d="M200 318C186 306 190 290 200 276C204 288 216 292 214 306C212 314 206 318 200 318Z" style="fill:var(--a2);stroke:var(--a2)" stroke-width="1.5"/>
-<path d="M0 372H400" opacity=".4"/>
+<path class="flame" d="M200 318C186 306 190 290 200 276C204 288 216 292 214 306C212 314 206 318 200 318Z" style="fill:var(--a2);stroke:var(--a2)" stroke-width="1.2"/>
+<path d="M0 372H400" opacity=".35"/>
 </svg>`;
 
-  const braid = () => {
-    let a = '', b = '';
-    for (let x = 250; x <= 350.01; x += 2) {
-      const y = 8 * Math.sin(((x - 250) / 100) * TAU * 2);
-      a += `${a ? 'L' : 'M'}${x} ${f1(20 + y)}`;
-      b += `${b ? 'L' : 'M'}${x} ${f1(20 - y)}`;
-    }
-    const over = [275, 325].map((cx) => { let s = ''; for (let x = cx - 9; x <= cx + 9.01; x += 2) s += `${s ? 'L' : 'M'}${x} ${f1(20 + 8 * Math.sin(((x - 250) / 100) * TAU * 2))}`; return s; });
-    return { a, b, over };
-  };
-  const br = braid();
-  const divider = `<svg viewBox="0 0 600 40" fill="none" stroke-linecap="round" stroke-linejoin="round">
-<defs><linearGradient id="sk-d-fade" x1="0" x2="1" y1="0" y2="0"><stop offset="0" style="stop-color:var(--acc);stop-opacity:0"/><stop offset=".3" style="stop-color:var(--acc)"/><stop offset=".7" style="stop-color:var(--acc)"/><stop offset="1" style="stop-color:var(--acc);stop-opacity:0"/></linearGradient></defs>
-<path d="M0 20H238M362 20H600" stroke="url(#sk-d-fade)" stroke-width="1.5"/>
-<path d="M238 20L246 14L254 20L246 26ZM346 20L354 14L362 20L354 26Z" style="fill:var(--a2);stroke:none"/>
-<path d="${br.a}" stroke="currentColor" stroke-width="3"/>
-<path d="${br.b}" style="stroke:var(--bg)" stroke-width="7"/><path d="${br.b}" style="stroke:var(--acc)" stroke-width="3"/>
-${br.over.map((d) => `<path d="${d}" style="stroke:var(--bg)" stroke-width="7"/><path d="${d}" stroke="currentColor" stroke-width="3"/>`).join('')}
+  // divider: a hairline, a diamond at each end, and a row of runes with their transliteration
+  const divider = `<svg viewBox="0 0 640 76" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
+<path d="M0 19H118M522 19H640" style="stroke:var(--frame)" stroke-width="1"/>
+<path d="M118 19L126 13L134 19L126 25ZM506 19L514 13L522 19L514 25Z" stroke-width="1"/>
+${runeRow(320, 8, 1.1, 38)}
 </svg>`;
+
+  // the button hints at the bottom left and the compass in the map are built after boot, from the vocabulary
+  const vocabulary = {
+    map: 'Map', mapHint: 'Choose a place to travel to. Esc closes the map.', counter: 'Stop {n} of {N}', backupCounter: 'Side road {L}', section: 'Region:',
+    now: 'Reading now', next: 'Next stop', notes: 'Marginalia', timer: 'Time on the road', presenter: 'The skald’s lectern',
+    rotate: 'Turn your device sideways to read the map.',
+    hint: '← → Turn · M Map · P Lectern · F Full screen · ? Keys',
+    ambient: 'Snowfall', help: 'A traveller’s keys', helpClose: 'Esc or ? closes.', jump: 'Fast travel to',
+    keyMove: 'Travel on, travel back', keyMap: 'Open the map', keyPresenter: 'The skald’s lectern', keyFull: 'Full screen', keyBlackout: 'Sleep (blackout)',
+    keyAmbient: 'Pause or resume the snowfall and the aurora', keyJump: 'Fast travel: G, a number, Enter', keyHelp: 'This list',
+    btnMove: 'Turn', btnMap: 'Map', btnHelp: 'Keys',
+  };
+  Deck.ready.then(() => {
+    const V = Object.assign({}, vocabulary, Deck.config && Deck.config.vocabulary);
+    const chrome = document.getElementById('chrome');
+    const map = document.getElementById('map');
+    if (chrome && !document.getElementById('keys')) {
+      const keys = document.createElement('div');
+      keys.id = 'keys';
+      [['←→', V.btnMove], ['M', V.btnMap], ['?', V.btnHelp]].forEach(([k, word]) => {
+        const s = document.createElement('span');
+        s.className = 'key';
+        s.dataset.k = k;
+        s.textContent = word;
+        keys.append(s);
+      });
+      chrome.append(keys);
+    }
+    if (map) {
+      // the map is rebuilt on every open: put the compass star back above its title
+      const star = () => { const head = map.querySelector('.map-head'); if (head && !head.querySelector('.compass')) head.insertAdjacentHTML('afterbegin', compassMap); };
+      new MutationObserver(star).observe(map, { childList: true });
+      star();
+    }
+  }, () => {}); // a boot error is reported by the engine
 
   Deck.registerTheme({
     name: 'skyrim',
     defaultTransition: 'frost',
-    vocabulary: {
-      map: 'The journal', mapHint: 'Choose an entry to read it. Esc closes the journal.', counter: 'Entry {n} of {N}', backupCounter: 'Appendix {L}', section: 'Region:',
-      now: 'Reading now', next: 'Next entry', notes: 'Marginalia', timer: 'Time on the road', presenter: 'The skald’s lectern',
-      rotate: 'Turn your device sideways to read the journal.',
-      hint: '← → travel · M journal · P lectern · F full screen · ? keys',
-      ambient: 'Snowfall', help: 'A traveller’s keys', helpClose: 'Esc or ? closes.', jump: 'Fast travel to',
-      keyMove: 'Travel on, travel back', keyMap: 'Open the journal', keyPresenter: 'The skald’s lectern', keyFull: 'Full screen', keyBlackout: 'Sleep (blackout)',
-      keyAmbient: 'Pause or resume the snowfall and the aurora', keyJump: 'Fast travel: G, a number, Enter', keyHelp: 'This list',
-    },
+    vocabulary,
     art: { hero, chapter, closing, divider },
     ambient: {
       init(api) { tint = rgb(api.accent(), tint); build(api); },

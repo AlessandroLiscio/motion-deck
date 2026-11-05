@@ -33,7 +33,7 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 | `fantasy` | storytelling, tabletop games, training with a narrative | candlelit dark, gold and burgundy, fireflies and fog, magic dissolve |
 | `pirates` | kids, playful workshops, team events | treasure-map parchment, sea blue, rolling waves, sailing slide |
 | `pipboy` | games, retro-futurist tech, dev tools, terminal-style talks | green phosphor terminal in capitals, bracketed panels, scanlines, top-to-bottom scan |
-| `skyrim` | fantasy, games, adventure, travel, calm and serious storytelling | cold Nordic night, thin capitals, aurora and snow, compass bar, frost |
+| `skyrim` | fantasy, games, adventure, travel, calm and serious storytelling | the menus of a northern fantasy game: grey-white capitals, double-line frames, compass-star map, constellation helmet and runes, aurora and snow, frost |
 
 `references/themes.md` has the details of each theme (accents, fonts, vocabulary, what it does best).
 

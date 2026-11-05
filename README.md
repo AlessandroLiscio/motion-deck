@@ -13,7 +13,7 @@ Animated presentations that are one HTML file. A Claude Code plugin with a skill
 | `fantasy` | candlelit dark, gold and burgundy | fireflies, embers, low fog | magic dissolve |
 | `pirates` | treasure-map parchment and sea blue | rolling waves and clouds | sailing sway |
 | `pipboy` | green phosphor terminal, bracketed panels, inverse-video tabs | scanlines, a rolling refresh bar | top-to-bottom scan |
-| `skyrim` | night slate, thin snow-white capitals, dark-glass panels with corner ticks, a compass bar | aurora, falling snow, shifting mountain ridges | frost |
+| `skyrim` | night slate, light grey-white capitals, double-line frames with corner diamonds, a compass-star map, a header like a skill screen | aurora, falling snow, shifting mountain ridges, a constellation helmet and runes | frost |
 
 Changing the theme is one word in the deck's config. Slides name their illustrations by role (hero, chapter, closing), and each theme draws its own.
 
