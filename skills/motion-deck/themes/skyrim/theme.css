@@ -116,17 +116,17 @@ table.data th, table.data td { border-bottom: 1px solid var(--frame-2); }
 #track { top: 30px; bottom: auto; width: var(--cw); height: 36px; gap: 0; align-items: stretch; overflow: hidden; scroll-behavior: smooth; border-block: 1px solid var(--hi);
   background: linear-gradient(var(--frame-2), var(--frame-2)) 0 3px / 100% 1px no-repeat, linear-gradient(var(--frame-2), var(--frame-2)) 0 calc(100% - 3px) / 100% 1px no-repeat,
     linear-gradient(var(--frame), var(--frame)) 50% 0 / 1px 100% no-repeat, color-mix(in srgb, var(--bg) 82%, transparent); }
-.seg { position: relative; gap: 0; }
+.seg { position: relative; gap: 0; align-items: stretch; }
 .seg:first-child { margin-left: calc(50% - var(--tick) / 2); }
 .seg:last-child { margin-right: calc(50% - var(--tick) / 2); }
 .seg::before { content: attr(data-l); position: absolute; left: calc(var(--tick) / 2); top: 4px; transform: translateX(-50%); font: 600 13px/1 var(--f-body); text-transform: uppercase; color: var(--acc); }
-.dot { position: relative; flex: 0 0 var(--tick); width: var(--tick); min-width: var(--tick); height: auto; border-radius: 0; background: none; transition: none; }
+.dot { position: relative; flex: 0 0 var(--tick); width: var(--tick); min-width: var(--tick); height: auto; border-radius: 0; transition: none; }
+.dot, .dot.seen, .dot:hover, .dot.cur { background: none; }
 .dot::before { content: ""; position: absolute; left: 50%; bottom: 5px; width: 1px; height: 9px; margin-left: -.5px; background: var(--frame-2); }
 .dot.seen::before { background: color-mix(in srgb, var(--acc) 75%, transparent); }
 .seg > .dot:first-child::before { height: 13px; background: var(--acc); }
-.dot:hover { background: none; }
 .dot:hover::before { height: 13px; background: var(--text); }
-.dot.cur { transform: none; box-shadow: none; background: none; }
+.dot.cur { transform: none; box-shadow: none; }
 .dot.cur::before { width: 2px; margin-left: -1px; height: 13px; background: var(--text); }
 
 /* the plate above the compass: region and count between two small diamonds; the slide title is left to the slide */
