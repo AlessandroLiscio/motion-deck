@@ -385,7 +385,7 @@
       sg.addColorStop(1, str(tintC, 0));
       ctx.globalAlpha = alpha;
       ctx.fillStyle = sg;
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillRect(sx - r * 4.2, sy - r * 4.2, r * 8.4, r * 8.4); // the glow ends at 4.2 radii: no need to fill the rest of the screen
       ctx.strokeStyle = str(mix(tintC, [255, 220, 170], 0.5));
       ctx.lineWidth = 1.2;
       [[r, 0.55], [r * 1.55, 0.26]].forEach(([rr, a]) => { ctx.globalAlpha = alpha * a; ctx.beginPath(); ctx.arc(sx, sy, rr, 0, TAU); ctx.stroke(); });
