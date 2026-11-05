@@ -381,7 +381,7 @@ ${stones}
 ${runeRow(320, 8, 1.1, 38)}
 </svg>`;
 
-  // the button hints at the bottom left and the compass in the map are built after boot, from the vocabulary
+  // the button hints at the bottom left, the compass letters and the compass in the map are built after boot, from the vocabulary
   const vocabulary = {
     map: 'Map', mapHint: 'Choose a place to travel to. Esc closes the map.', counter: 'Stop {n} of {N}', backupCounter: 'Side road {L}', section: 'Region:',
     now: 'Reading now', next: 'Next stop', notes: 'Marginalia', timer: 'Time on the road', presenter: 'The skald’s lectern',
@@ -407,6 +407,27 @@ ${runeRow(320, 8, 1.1, 38)}
         keys.append(s);
       });
       chrome.append(keys);
+    }
+    // the compass: a letter at the start of every section, and the strip slides so that the current slide is under the middle
+    const track = document.getElementById('track');
+    if (track) {
+      const info = Deck.info();
+      const names = new Map(info.sections.map((sec) => [sec.id, sec.label]));
+      track.querySelectorAll('.seg').forEach((seg) => {
+        const first = info.slides[+seg.querySelector('.dot').dataset.i];
+        seg.dataset.l = Array.from((first.backup ? 'Backup' : names.get(first.sec)) || '')[0] || '';
+      });
+      const center = (index, instant) => {
+        const dot = track.querySelector(`.dot[data-i="${index}"]`);
+        if (!dot) return;
+        const d = dot.getBoundingClientRect(), t = track.getBoundingClientRect();
+        if (instant) track.style.scrollBehavior = 'auto';
+        track.scrollLeft += d.left + d.width / 2 - (t.left + t.width / 2);
+        track.style.scrollBehavior = '';
+      };
+      center(Deck.index, true);
+      document.addEventListener('deck:change', (e) => center(e.detail.index, e.detail.transition === 'none'));
+      addEventListener('resize', () => center(Deck.index, true));
     }
     if (map) {
       // the map is rebuilt on every open: put the compass star back above its title

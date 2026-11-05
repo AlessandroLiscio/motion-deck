@@ -2,7 +2,7 @@
   "name": "skyrim",
   "label": "Skyrim",
   "mode": "dark",
-  "description": "The menus of a northern fantasy game on a cold Nordic night: light grey-white capitals, thin double-line frames with a diamond at each corner, a compass star for the map, a constellation helmet and angular runes, over an aurora, snow and two shifting mountain ridges, with a frost between slides.",
+  "description": "The menus of a northern fantasy game on a cold Nordic night: light grey-white capitals, thin double-line frames with a diamond at each corner, a compass bar at the top, a compass star for the map, a constellation helmet and angular runes, over an aurora, snow and two shifting mountain ridges, with a frost between slides.",
   "fonts": [
     { "id": "manrope", "role": "display" },
     { "id": "atkinson-hyperlegible-next", "role": "body" },
