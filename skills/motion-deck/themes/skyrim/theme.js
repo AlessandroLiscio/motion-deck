@@ -28,17 +28,18 @@
   };
 
   let cBg = [11, 16, 22], cBg2 = [19, 29, 41], cText = [238, 243, 248], cIce = [126, 200, 240];
-  let tint = [126, 200, 240], tintKey = '';
+  let tint = [126, 200, 240], tintKey = '', starStyle = '#fff';
   let auroraA = null, auroraB = null, fade = 1; // the old and the new tinted aurora; fade 0 to 1 crossfades them
   let sky = null, mist = null, ridgeFar = null, ridgeNear = null, flake = [];
   let stars = new Float32Array(0);
   let flakes = null; // x, y, size, speed, phase, sway, depth per flake, in one typed array
   let nFlakes = 0;
-  let aur = [0, 0, 0], aurSpeed = [0.006, -0.0045, 0.0034];
+  const aur = [0, 0, 0], aurSpeed = [0.006, -0.0045, 0.0034];
   let farX = 0, farT = 0, nearX = 0, nearT = 0, stepSign = 1;
   let gust = 0, boost = 0;
   let ready = false;
   const MARGIN = 160;
+  const BAND_SCALE = [1, 0.78, 1.18], BAND_LIFT = [0, 0.1, -0.12], BAND_ALPHA = [0.8, 0.55, 0.45];
 
   // ---------- sprites, built once (the aurora again on each slide change) ----------
   const paintAurora = (c, col) => {
@@ -117,6 +118,7 @@
     cBg2 = rgb(api.css('--bg-2'), cBg2);
     cText = rgb(api.css('--text'), cText);
     cIce = rgb(api.css('--a1'), cIce);
+    starStyle = str(cText);
     sky = null;
     mist = null;
     // aurora: half resolution, one sprite wide enough to wrap
@@ -182,7 +184,7 @@
     ctx.fillRect(0, 0, w, h);
 
     // stars
-    ctx.fillStyle = str(cText);
+    ctx.fillStyle = starStyle;
     for (let i = 0; i < 90; i++) {
       const o = i * 4;
       ctx.globalAlpha = stars[o + 2] * (still ? 0.7 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.0009 + stars[o + 3])));
@@ -197,9 +199,9 @@
     for (let b = 0; b < 3; b++) {
       const breathe = still ? 0.8 : 0.72 + 0.28 * Math.sin(t * 0.00035 + b * 2.1);
       const x = ((aur[b] % aw) + aw) % aw;
-      const sc = [1, 0.78, 1.18][b];
-      const y = [0, ah * 0.1, -ah * 0.12][b];
-      const a = [0.8, 0.55, 0.45][b] * breathe * lift;
+      const sc = BAND_SCALE[b];
+      const y = BAND_LIFT[b] * ah;
+      const a = BAND_ALPHA[b] * breathe * lift;
       if (fade < 1 && auroraA !== auroraB) {
         ctx.globalAlpha = a * (1 - fade);
         ctx.drawImage(auroraA, x - aw, y, aw, ah * sc);

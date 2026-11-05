@@ -22,9 +22,8 @@ body { background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--b
 .slide { --ay: 14px; --ab: 8px; }
 
 /* headings: thin condensed capitals with wide tracking, a hairline rule with a diamond underneath */
+.slide h1, .slide h2 { position: relative; }
 .slide h1, .slide h2, .slide .big { font-weight: var(--w-display); text-shadow: 0 0 44px color-mix(in srgb, var(--acc) 26%, transparent); }
-.slide h1 { position: relative; }
-.slide h2 { position: relative; }
 .slide[data-layout="title"] h1 { font-size: var(--t-hero); line-height: .98; letter-spacing: .08em; }
 .slide[data-layout="chapter"] h2, .slide[data-layout="closing"] h1, .slide[data-layout="closing"] h2 { font-size: var(--t-h1); line-height: 1; }
 .slide h3 { font-weight: 360; letter-spacing: .14em; }
