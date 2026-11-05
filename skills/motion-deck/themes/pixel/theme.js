@@ -1099,8 +1099,7 @@ let burstOpts = null;
 let bursts = [];
 let slide = 0; // parallax: the hills slide by one step on every slide change
 let slideTo = 0;
-let acc = 0;
-let pend = 0;
+let acc = 0; // ms since the last drawn frame
 
 const refresh = (api) => {
   cBg = num(api.css('--bg'), cBg);
@@ -1319,11 +1318,9 @@ Deck.registerTheme({
     init(api) { refresh(api); setBurst(api); },
     resize(api) { refresh(api); setBurst(api); },
     frame(api, t, dt) {
-      pend += dt;
       acc += dt;
       if (acc < 1000 / FPS) return;
-      step(Math.min(pend, 100));
-      pend = 0;
+      step(Math.min(acc, 100));
       acc = 0;
       draw(api, t, false);
     },
