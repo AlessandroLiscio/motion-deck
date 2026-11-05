@@ -12,9 +12,9 @@ All fonts are licensed under the [SIL Open Font License 1.1](https://openfontlic
 
 | Family | Copyright | Used by |
 |---|---|---|
-| Big Shoulders Display | 2019 The Big Shoulders Project Authors, [xotypeco/big_shoulders](https://github.com/xotypeco/big_shoulders) | space |
-| Atkinson Hyperlegible Next | 2020-2024 The Atkinson Hyperlegible Next Project Authors, [googlefonts/atkinson-hyperlegible-next](https://github.com/googlefonts/atkinson-hyperlegible-next) | space |
-| Atkinson Hyperlegible Mono | 2020-2024 The Atkinson Hyperlegible Mono Project Authors, [googlefonts/atkinson-hyperlegible-next-mono](https://github.com/googlefonts/atkinson-hyperlegible-next-mono) | space |
+| Big Shoulders Display | 2019 The Big Shoulders Project Authors, [xotypeco/big_shoulders](https://github.com/xotypeco/big_shoulders) | space, skyrim |
+| Atkinson Hyperlegible Next | 2020-2024 The Atkinson Hyperlegible Next Project Authors, [googlefonts/atkinson-hyperlegible-next](https://github.com/googlefonts/atkinson-hyperlegible-next) | space, skyrim |
+| Atkinson Hyperlegible Mono | 2020-2024 The Atkinson Hyperlegible Mono Project Authors, [googlefonts/atkinson-hyperlegible-next-mono](https://github.com/googlefonts/atkinson-hyperlegible-next-mono) | space, skyrim |
 | Fraunces | 2018 The Fraunces Project Authors, [undercasetype/Fraunces](https://github.com/undercasetype/Fraunces) | editorial |
 | Source Serif 4 | 2014 The Source Serif 4 Project Authors, [adobe-fonts/source-serif](https://github.com/adobe-fonts/source-serif) | editorial |
 | JetBrains Mono | 2020 The JetBrains Mono Project Authors, [JetBrains/JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) | editorial, corporate, neon, fantasy, pirates |
@@ -34,3 +34,5 @@ The engine, the scripts, the themes and their line art are original work release
 ## Trademarks
 
 The pipboy theme is an homage to the look of the Pip-Boy interface in the Fallout games. Fallout and Pip-Boy are trademarks of Bethesda Softworks LLC; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, fonts or text: its line art is drawn from scratch.
+
+The skyrim theme is an unofficial homage to the cold Nordic look of the Skyrim interface. Skyrim and The Elder Scrolls are trademarks of Bethesda Softworks LLC and ZeniMax Media Inc.; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, lettering or text: its line art is drawn from scratch.
