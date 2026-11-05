@@ -292,5 +292,69 @@
     "source": "https://github.com/google/fonts/tree/main/ofl/sharetechmono",
     "css": "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap",
     "fetched": "2026-11-04"
+  },
+  {
+    "id": "pixelify-sans",
+    "family": "Pixelify Sans",
+    "faces": [
+      {
+        "file": "pixelify-sans/pixelify-sans-normal-400-700.woff2",
+        "style": "normal",
+        "weight": "400 700",
+        "bytes": 12016,
+        "origin": "https://fonts.gstatic.com/s/pixelifysans/v3/CHylV-3HFUT7aC4iv1TxGDR9Jn0Eiw.woff2"
+      }
+    ],
+    "license": "OFL-1.1",
+    "licenseFile": "pixelify-sans/OFL.txt",
+    "copyright": "Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)",
+    "source": "https://github.com/google/fonts/tree/main/ofl/pixelifysans",
+    "css": "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap",
+    "fetched": "2026-11-05"
+  },
+  {
+    "id": "vt323",
+    "family": "VT323",
+    "faces": [
+      {
+        "file": "vt323/vt323-normal-400.woff2",
+        "style": "normal",
+        "weight": "400",
+        "bytes": 17936,
+        "origin": "https://fonts.gstatic.com/s/vt323/v18/pxiKyp0ihIEF2isfFJU.woff2"
+      }
+    ],
+    "license": "OFL-1.1",
+    "licenseFile": "vt323/OFL.txt",
+    "copyright": "Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com)",
+    "source": "https://github.com/google/fonts/tree/main/ofl/vt323",
+    "css": "https://fonts.googleapis.com/css2?family=VT323&display=swap",
+    "fetched": "2026-11-05"
+  },
+  {
+    "id": "silkscreen",
+    "family": "Silkscreen",
+    "faces": [
+      {
+        "file": "silkscreen/silkscreen-normal-400.woff2",
+        "style": "normal",
+        "weight": "400",
+        "bytes": 8404,
+        "origin": "https://fonts.gstatic.com/s/silkscreen/v6/m8JXjfVPf62XiF7kO-i9YLNlaw.woff2"
+      },
+      {
+        "file": "silkscreen/silkscreen-normal-700.woff2",
+        "style": "normal",
+        "weight": "700",
+        "bytes": 7524,
+        "origin": "https://fonts.gstatic.com/s/silkscreen/v6/m8JUjfVPf62XiF7kO-i9aAhAfmyi2A.woff2"
+      }
+    ],
+    "license": "OFL-1.1",
+    "licenseFile": "silkscreen/OFL.txt",
+    "copyright": "Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)",
+    "source": "https://github.com/google/fonts/tree/main/ofl/silkscreen",
+    "css": "https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap",
+    "fetched": "2026-11-05"
   }
 ]

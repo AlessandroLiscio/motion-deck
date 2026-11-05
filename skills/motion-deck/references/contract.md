@@ -323,7 +323,7 @@ It MUST verify, for the whole deck and for every slide in every step state from 
 4. Console: any `console.error`, uncaught exception, unhandled rejection, or failed resource load fails.
 5. Offline: with the network disabled (`Network.emulateNetworkConditions` offline) the deck still reaches ready, and no request other than `data:` or the file itself was attempted.
 6. PDF: `Page.printToPDF` with `preferCSSPageSize` and `printBackground`; the page count equals `Deck.count` and the page size is 1600 by 900 CSS pixels (1200 by 675 points).
-7. Tokens: the computed `--bg`, `--text`, `--muted` equal the values in `theme.json` and the contrast of `--text` and `--muted` against `--bg` is at least 4.5. The six accents `--a1` to `--a6` reach 3:1 against `--bg` (WCAG 1.4.11, non-text contrast: they colour diagram strokes, chips and bars). A theme's own accent under 3:1 is a failure (class `tokens`), because all eight themes reach at least 3.88 today and a theme author can fix it; an accent the deck changed through config `accent` is only the warning `W_ACCENT_CONTRAST`, since a brand colour is the author's choice.
+7. Tokens: the computed `--bg`, `--text`, `--muted` equal the values in `theme.json` and the contrast of `--text` and `--muted` against `--bg` is at least 4.5. The six accents `--a1` to `--a6` reach 3:1 against `--bg` (WCAG 1.4.11, non-text contrast: they colour diagram strokes, chips and bars). A theme's own accent under 3:1 is a failure (class `tokens`), because all nine themes reach at least 3.88 today and a theme author can fix it; an accent the deck changed through config `accent` is only the warning `W_ACCENT_CONTRAST`, since a brand colour is the author's choice.
 8. Legibility: the computed font size of every visible text run on every slide in its final step state, measured in stage pixels (text in an `svg` is scaled by the svg's transform). The runs fall in three tiers: `label` (`.kicker`, `.label`, `th`, `cite`, `.attrib`, `.meta`, `figcaption`, `.chip`, `.note`, `.source`, `.small`, `code`, `pre`, `.links`, text inside `svg`), `compact` (inside `.card`, `.timeline`, `table.data`, `.stat`) and `body` (everything else). At 1600 by 900 the stage is about 120 px per inch, so 30 px is 18 pt. Under the `warn` size the lint `W_FONT_SIZE` is raised (one entry per selector and size, with the slides it appears on); under the `error` size the check fails with class `legibility`.
 
    | Tier | warn under | fail under |
@@ -332,7 +332,7 @@ It MUST verify, for the whole deck and for every slide in every step state from 
    | compact | 24 px | 20 px |
    | label | 16 px | 14 px |
 
-   The floors were tuned on the showcase in all eight themes: its smallest body text is 24 px and its smallest label text 17 px, so the showcase passes, with warnings for the few body and compact runs under the warn size, and a deck that shrinks text by hand fails.
+   The floors were tuned on the showcase in all nine themes: its smallest body text is 24 px and its smallest label text 17 px, so the showcase passes, with warnings for the few body and compact runs under the warn size, and a deck that shrinks text by hand fails.
 9. Screenshots of every state go to `<out>/<deck>/shots/s<NN>-<step>.png`, plus `report.json`, a `console.log`, `deck.pdf` and an `index.html` contact sheet that lists the shots.
 
 ### Lints

@@ -1,4 +1,4 @@
-# The eight themes
+# The nine themes
 
 Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`), or build the same deck in another theme with `build.mjs --theme <name>`. After any change of theme rebuild and run the check again: other fonts move line breaks, and the text length that fits a Big Shoulders title does not always fit Unbounded. Every theme supports the same layouts, steps, diagrams, charts, morph, map, presenter view, reduced motion and print.
 
@@ -14,6 +14,7 @@ Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`)
 | `pirates` | light | kids, playful workshops, team events, onboarding with a treasure-hunt feel | anything that must look serious |
 | `pipboy` | dark | games, retro-futurist tech, developer tools, terminal-style talks, anything that should feel like a console | long prose, formal reports, wide tables |
 | `skyrim` | dark | fantasy and games, adventure and travel stories, calm and serious storytelling, long-form talks with an atmosphere | dense dashboards, bright rooms, party-style events |
+| `pixel` | dark | games and retro tech, developer tools, playful talks, workshops for makers, anything that should feel like an arcade | long prose, formal reports, dense tables |
 
 Light themes project well in a bright room and print well; dark themes suit a dim room and a big screen. When the user gives no theme, pick from this table by audience and tone, say which and why in one line, and say that changing it is one word.
 
@@ -31,6 +32,7 @@ Each theme words the chrome in its own world through `vocabulary`; a deck in ano
 | `pirates` | The treasure map | `Port 3 of 18` | Captain's quarters |
 | `pipboy` | Data | `LVL 3/18` | Overseer's terminal |
 | `skyrim` | Map | `Stop 3 of 18` | The skald’s lectern |
+| `pixel` | Stage select | `STAGE 3/18` | Game master |
 
 For a deck that tells its own story (a journey, a lab, a kitchen), name the sections in the same world and override `map` and `counter` to match: one metaphor from the title to the map.
 
@@ -52,9 +54,11 @@ For a deck that tells its own story (a journey, a lab, a kitchen), name the sect
 
 **skyrim.** The menus of a northern fantasy game on a cold Nordic night; the screens of the game's own interface are the model (a shout list, a skill screen, an item card, the compass-star menu, a book list). Light grey-white capitals in Manrope at a thin weight, tracked wide, over Atkinson Hyperlegible Next text and Atkinson Hyperlegible Mono code; no glow anywhere. Under each heading a hairline rule fades out; panels (`.card`, `.callout`, `.stats`, `pre.code`, `blockquote`, the key help) are thin double-line frames with a small diamond at each corner (drawn with a mask, so they take the grey of the text); a card is an item card (centered title over a hairline, quiet text) and the `stats` layout is its stat row (small caps label over a large light number, hairlines between). List bullets are hollow diamonds, `strong` is the selected entry, chips and links are menu entries with a diamond-arrow selector. The HUD is the header of a skill screen (region at the left, a thin framed progress bar in the middle with the section accent in the segments already seen, the count and the Snowfall button at the right), and `theme.js` adds small round-key button hints at the bottom left (the words `btnMove`, `btnMap` and `btnHelp` of the vocabulary). The map is the compass-star menu: a thin four-point star with a knot in the middle above the title, the sections as hairline-ruled groups and the current entry marked with the selector. The ambient layer is unchanged from the first version: aurora bands that take the section accent, three depths of falling snow that a gust sweeps on every slide change, and two mountain ridges that shift a little with each slide. The accents are ice blue, firelight gold, aurora green, blood red, frost violet and steel grey; green is the `ok` tone and red the `danger` tone. Slides change with a frost: the leaving slide is blown away in a gust while it blurs and whitens, and the new one clears out of the frost (the other way when going back). Headings are set in capitals and the face is wide, so keep them short (about 40 characters at one line). Art: a horned iron helmet drawn as a constellation, stars joined by thin lines, above a row of runes with their transliteration (hero), a compass star with a knot (chapter), a standing-stone circle under aurora rays (closing), and a rune divider, a hairline with two diamonds around the rune row, which is 640 by 76 px unless the deck sets another size (divider). The runes are an angular script of the theme's own with twelve letters (F R O S T E M B D A W N), so the rune words FROST, EMBER and DAWN are the only ones the art can spell. An homage drawn from scratch; `CREDITS.md` carries the affiliation note.
 
+**pixel.** Pixel art on night navy, in the colors of the 16-color Sweetie 16 palette. Silkscreen draws the capitals of headings, Pixelify Sans the text and VT323 the labels, the status line and code, so every letter sits on a pixel grid. Panels, cards and buttons have stepped borders and hard offset shadows in a dark tint of the section color, with no blur anywhere; the status line shows a heart and a coin drawn with pixels, the progress bar is a row of segments, and the label above a title blinks (it stops with the background). Stars twinkle over stepped hills, a shooting star crosses the sky now and then and a burst of light plays on every slide change, all drawn on the background canvas with effects adapted from pixelfx. The four drawings (a castle under a moon for the title, a key for chapters, a trophy for the closing slide and a row of bricks with a shining coin as divider) are original. Slides change with a stair-step wipe that runs in both directions. Silkscreen is wide, so keep headings short.
+
 ## Art roles
 
-`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the eight does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
+`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the nine does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
 
 ## Limits
 
