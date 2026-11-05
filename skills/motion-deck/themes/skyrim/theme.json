@@ -1,0 +1,17 @@
+{
+  "name": "skyrim",
+  "label": "Skyrim",
+  "mode": "dark",
+  "description": "A cold Nordic night: thin snow-white capitals on slate, an aurora over two shifting mountain ridges, falling snow, a compass bar and a journal for a map, and a frost between slides.",
+  "fonts": [
+    { "id": "big-shoulders-display", "role": "display" },
+    { "id": "atkinson-hyperlegible-next", "role": "body" },
+    { "id": "atkinson-hyperlegible-mono", "role": "mono" }
+  ],
+  "defaultTransition": "frost",
+  "transitions": ["frost"],
+  "bg": "#0b1016",
+  "text": "#eef3f8",
+  "muted": "#9db0c4",
+  "accents": ["#7ec8f0", "#e3ab4c", "#52d6a0", "#e5544b", "#a99cf2", "#8499ad"]
+}

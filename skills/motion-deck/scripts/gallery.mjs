@@ -10,7 +10,7 @@ import { listThemes } from './lib/fonts.mjs';
 import { KB } from './lib/format.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ORDER = ['space', 'editorial', 'neon', 'corporate', 'fantasy', 'pirates', 'pipboy'];
+const ORDER = ['space', 'editorial', 'neon', 'corporate', 'fantasy', 'pirates', 'pipboy', 'skyrim'];
 const REPO = 'https://github.com/AlessandroLiscio/motion-deck';
 const readJson = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 

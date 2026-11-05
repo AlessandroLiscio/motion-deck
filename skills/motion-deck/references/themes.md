@@ -1,4 +1,4 @@
-# The seven themes
+# The eight themes
 
 Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`), or build the same deck in another theme with `build.mjs --theme <name>`. After any change of theme rebuild and run the check again: other fonts move line breaks, and the text length that fits a Big Shoulders title does not always fit Unbounded. Every theme supports the same layouts, steps, diagrams, charts, morph, map, presenter view, reduced motion and print.
 
@@ -13,6 +13,7 @@ Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`)
 | `fantasy` | dark | storytelling, tabletop games, training told as a narrative, workshops with a quest | plain status updates |
 | `pirates` | light | kids, playful workshops, team events, onboarding with a treasure-hunt feel | anything that must look serious |
 | `pipboy` | dark | games, retro-futurist tech, developer tools, terminal-style talks, anything that should feel like a console | long prose, formal reports, wide tables |
+| `skyrim` | dark | fantasy and games, adventure and travel stories, calm and serious storytelling, long-form talks with an atmosphere | dense dashboards, bright rooms, party-style events |
 
 Light themes project well in a bright room and print well; dark themes suit a dim room and a big screen. When the user gives no theme, pick from this table by audience and tone, say which and why in one line, and say that changing it is one word.
 
@@ -29,6 +30,7 @@ Each theme words the chrome in its own world through `vocabulary`; a deck in ano
 | `fantasy` | The atlas | `Folio 3 of 18` | The scribe |
 | `pirates` | The treasure map | `Port 3 of 18` | Captain's quarters |
 | `pipboy` | Data | `LVL 3/18` | Overseer's terminal |
+| `skyrim` | The journal | `Entry 3 of 18` | The skald’s lectern |
 
 For a deck that tells its own story (a journey, a lab, a kitchen), name the sections in the same world and override `map` and `counter` to match: one metaphor from the title to the map.
 
@@ -48,9 +50,11 @@ For a deck that tells its own story (a journey, a lab, a kitchen), name the sect
 
 **pipboy.** A green phosphor terminal in the spirit of a wasteland wrist computer. Share Tech Mono serves display, text and code in one weight: headings are capitals and emphasis is inverse video instead of bold or italic (the label above a title is a tab, a `<strong>` is a highlighted menu row, an `<em>` turns amber). Panels get corner brackets, callouts carry hazard stripes, quotes start with a prompt and table headers are inverse bars. Scanlines and a vignette sit over everything, a refresh bar rolls down the background (it is absent while the background is paused) and the glow takes the section accent. The accents are green, amber, mint, red-orange, sky blue and lime; red-orange is the `danger` tone. Slides change with a scan: a bright line sweeps down the screen with the new slide above it (up when going back) and the text prints in from the left in steps. The header bar shows the section tab, the slide title and `LVL 3/18`. The type is wide and set in capitals, so keep titles shorter than in other themes; the font has no arrows or box symbols, which fall back to the system font. Art: a wrist computer (hero), a radiation gauge (chapter), a vault door (closing). An homage drawn from scratch; `CREDITS.md` carries the affiliation note.
 
+**skyrim.** A cold Nordic night in the spirit of a northern fantasy game. Thin condensed capitals with wide tracking (Big Shoulders Display at a light weight) over Atkinson Hyperlegible Next text and Atkinson Hyperlegible Mono labels. Under each heading a hairline rule carries a gold diamond; panels are dark glass with a hairline border and corner ticks, quotes are framed book pages, timeline stops are diamond quest markers and stat numbers are large and light. Soft aurora bands at the top take the section accent, snow falls in three depths and a gust sweeps it on every slide change, and two mountain ridges at the bottom shift a little with each slide. The HUD and progress track become a compass bar across the top (letters mark sections, ticks mark slides, the current slide is a gold diamond) and the map reads as a journal. The accents are ice blue, firelight gold, aurora green, blood red, frost violet and steel grey; green is the `ok` tone and red the `danger` tone. Slides change with a frost: the leaving slide is blown away in a gust while it blurs and whitens, and the new one clears out of the frost (the other way when going back). Headings are set in capitals, so keep them short. Art: snowy peaks under a moon (hero), an interlace knot ring (chapter), a standing-stone circle under an aurora (closing), a knot rule (divider). An homage drawn from scratch; `CREDITS.md` carries the affiliation note.
+
 ## Art roles
 
-`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the seven does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
+`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the eight does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
 
 ## Limits
 
