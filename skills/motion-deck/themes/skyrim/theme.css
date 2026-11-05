@@ -106,26 +106,44 @@ table.data th, table.data td { border-bottom: 1px solid var(--frame-2); }
 
 /* ---------- chrome ---------- */
 
-/* the header, as in a skill screen: the region at the left, a thin framed bar for the progress in the middle, the count at the right, one hairline under all of it */
-#chrome { font-family: var(--f-body); }
-#hud { top: 0; bottom: auto; height: 58px; align-items: center; gap: 22px; padding: 0 44px; font-size: 13px; letter-spacing: .24em; color: var(--muted);
-  background: linear-gradient(90deg, transparent, var(--frame-2) 14%, var(--frame-2) 86%, transparent) bottom / 100% 1px no-repeat, linear-gradient(180deg, color-mix(in srgb, var(--bg) 70%, transparent), transparent); }
-.hud-sec { color: var(--text); }
-.hud-sec:empty { display: none; }
-.hud-title { max-width: 24vw; color: var(--muted); }
-.hud-count { color: var(--text); }
-.hud-btn { margin-left: 8px; padding: 0; border: 0; border-radius: 0; letter-spacing: .2em; color: var(--muted); }
+/* the top bar is the game's compass: a dark band with an ornate cap at each end, a strip of ticks that slides under the middle as you travel (theme.js centers the current slide), a letter at the start of every section, and a small plate above it with the region and the count */
+#chrome { --cw: min(620px, calc(100vw - 320px)); --tick: 26px; --hi: color-mix(in srgb, var(--text) 78%, transparent); --cap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'%3E%3Cg fill='none' stroke='currentColor' stroke-width='1.3' stroke-linejoin='miter'%3E%3Cpath d='M64 6H44L30 1 5 22 30 43 44 38H64'/%3E%3Cpath d='M64 10H46L31 5.5 11 22 31 38.5 46 34H64'/%3E%3Cpath d='M33 12V5.8M33 32V38.2M23 22H11M43 22H64' stroke-width='1'/%3E%3C/g%3E%3Cpath fill-rule='evenodd' d='M33 12 43 22 33 32 23 22ZM33 15.6 39.4 22 33 28.4 26.6 22Z'/%3E%3Cpath d='M33 18.6 36.4 22 33 25.4 29.6 22Z'/%3E%3Ccircle cx='2.6' cy='22' r='1.8'/%3E%3C/svg%3E"); font-family: var(--f-body); }
+#chrome::before, #chrome::after { content: ""; position: fixed; top: 23px; width: 73px; height: 50px; pointer-events: none; background: var(--hi);
+  -webkit-mask: var(--cap) center / 100% 100% no-repeat; mask: var(--cap) center / 100% 100% no-repeat; }
+#chrome::before { left: calc(50% - var(--cw) / 2 - 73px); }
+#chrome::after { left: calc(50% + var(--cw) / 2); transform: scaleX(-1); }
+
+#track { top: 30px; bottom: auto; width: var(--cw); height: 36px; gap: 0; align-items: stretch; overflow: hidden; scroll-behavior: smooth; border-block: 1px solid var(--hi);
+  background: linear-gradient(var(--frame-2), var(--frame-2)) 0 3px / 100% 1px no-repeat, linear-gradient(var(--frame-2), var(--frame-2)) 0 calc(100% - 3px) / 100% 1px no-repeat,
+    linear-gradient(var(--frame), var(--frame)) 50% 0 / 1px 100% no-repeat, color-mix(in srgb, var(--bg) 82%, transparent); }
+.seg { position: relative; gap: 0; }
+.seg:first-child { margin-left: calc(50% - var(--tick) / 2); }
+.seg:last-child { margin-right: calc(50% - var(--tick) / 2); }
+.seg::before { content: attr(data-l); position: absolute; left: calc(var(--tick) / 2); top: 4px; transform: translateX(-50%); font: 600 13px/1 var(--f-body); text-transform: uppercase; color: var(--acc); }
+.dot { position: relative; flex: 0 0 var(--tick); width: var(--tick); min-width: var(--tick); height: auto; border-radius: 0; background: none; transition: none; }
+.dot::before { content: ""; position: absolute; left: 50%; bottom: 5px; width: 1px; height: 9px; margin-left: -.5px; background: var(--frame-2); }
+.dot.seen::before { background: color-mix(in srgb, var(--acc) 75%, transparent); }
+.seg > .dot:first-child::before { height: 13px; background: var(--acc); }
+.dot:hover { background: none; }
+.dot:hover::before { height: 13px; background: var(--text); }
+.dot.cur { transform: none; box-shadow: none; background: none; }
+.dot.cur::before { width: 2px; margin-left: -1px; height: 13px; background: var(--text); }
+
+/* the plate above the compass: region and count between two small diamonds; the slide title is left to the slide */
+#hud { top: 3px; bottom: auto; left: 0; right: 0; width: fit-content; height: 22px; margin-inline: auto; padding: 0 34px; align-items: center; justify-content: center; gap: 0; font-size: 12px; letter-spacing: .24em; color: var(--text);
+  border-block: 1px solid var(--frame-2); background: color-mix(in srgb, var(--bg) 78%, transparent); }
+#hud::before, #hud::after { content: ""; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; background: var(--hi); -webkit-mask: var(--knot) center / contain no-repeat; mask: var(--knot) center / contain no-repeat; }
+#hud::before { left: -6px; }
+#hud::after { right: -6px; }
+.hud-title { display: none; }
+.hud-count { margin-left: 18px; padding-left: 18px; border-left: 1px solid var(--frame-2); }
+.hud-btn { position: fixed; top: 22px; right: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; letter-spacing: .2em; color: var(--muted); }
 .hud-btn::before, .key::before { content: attr(data-k); display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; margin-right: 10px; padding: 0 5px; border: 1px solid var(--frame); border-radius: 12px; font: 500 11px var(--f-body); letter-spacing: 0; color: var(--text); text-transform: none; }
 .hud-btn::before { content: "."; }
 .hud-btn:hover, .hud-btn:focus-visible { color: var(--text); }
 .hud-btn[aria-pressed="false"] { text-decoration: none; opacity: .6; }
-
-#track { top: 17px; bottom: auto; gap: 14px; padding: 4px 5px; border: 1px solid var(--frame); }
-.seg { gap: 1px; }
-.dot { flex: 0 1 8px; width: 8px; min-width: 2px; height: 10px; border-radius: 0; background: var(--frame-2); transition: none; }
-.dot.seen { background: color-mix(in srgb, var(--acc) 78%, transparent); }
-.dot:hover { background: var(--text); }
-.dot.cur { transform: none; box-shadow: none; background: var(--text); }
+.capture #track { scroll-behavior: auto; }
+@media (prefers-reduced-motion: reduce) { #track { scroll-behavior: auto; } }
 
 /* button hints at the bottom left, a round key and a word each; built by theme.js from the vocabulary */
 #keys { position: fixed; left: 0; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px 30px; padding: 0 44px 22px; font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
@@ -161,8 +179,9 @@ table.data th, table.data td { border-bottom: 1px solid var(--frame-2); }
 .help-card kbd { border-radius: 15px; min-width: 30px; height: 30px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--f-body); font-weight: 500; color: var(--text); border-color: var(--frame); background: none; }
 .help-hint { text-align: center; letter-spacing: .14em; }
 
-/* a narrow window: the progress bar drops to the bottom and the hints and the slide title give way */
-@media (max-width: 900px) { #track { top: auto; bottom: 14px; } #keys, .hud-title { display: none; } }
+/* a narrow window: the snowfall button moves down to the bottom right before it can meet the right cap of the compass, and below 700px the compass shortens and the hints go */
+@media (max-width: 1100px) { .hud-btn { top: auto; bottom: 14px; right: 16px; } }
+@media (max-width: 700px) { #chrome { --cw: calc(100vw - 170px); } #keys { display: none; } }
 
 /* diagrams: nothing to add; tones follow --a3 (ok) and --a4 (danger) */
 
