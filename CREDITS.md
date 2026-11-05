@@ -12,7 +12,7 @@ All fonts are licensed under the [SIL Open Font License 1.1](https://openfontlic
 
 | Family | Copyright | Used by |
 |---|---|---|
-| Big Shoulders Display | 2019 The Big Shoulders Project Authors, [xotypeco/big_shoulders](https://github.com/xotypeco/big_shoulders) | space, skyrim |
+| Big Shoulders Display | 2019 The Big Shoulders Project Authors, [xotypeco/big_shoulders](https://github.com/xotypeco/big_shoulders) | space |
 | Atkinson Hyperlegible Next | 2020-2024 The Atkinson Hyperlegible Next Project Authors, [googlefonts/atkinson-hyperlegible-next](https://github.com/googlefonts/atkinson-hyperlegible-next) | space, skyrim |
 | Atkinson Hyperlegible Mono | 2020-2024 The Atkinson Hyperlegible Mono Project Authors, [googlefonts/atkinson-hyperlegible-next-mono](https://github.com/googlefonts/atkinson-hyperlegible-next-mono) | space, skyrim |
 | Fraunces | 2018 The Fraunces Project Authors, [undercasetype/Fraunces](https://github.com/undercasetype/Fraunces) | editorial |
@@ -20,7 +20,7 @@ All fonts are licensed under the [SIL Open Font License 1.1](https://openfontlic
 | JetBrains Mono | 2020 The JetBrains Mono Project Authors, [JetBrains/JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) | editorial, corporate, neon, fantasy, pirates |
 | Unbounded | 2022 The Unbounded Project Authors, [googlefonts/unbounded](https://github.com/googlefonts/unbounded) | neon |
 | Chakra Petch | 2018 The Chakra Petch Project Authors, [m4rc1e/Chakra-Petch](https://github.com/m4rc1e/Chakra-Petch) | neon |
-| Manrope | 2018 The Manrope Project Authors, [googlefonts/manrope](https://github.com/googlefonts/manrope) | corporate |
+| Manrope | 2018 The Manrope Project Authors, [googlefonts/manrope](https://github.com/googlefonts/manrope) | corporate, skyrim |
 | Cinzel | 2020 The Cinzel Project Authors, [NDISCOVER/Cinzel](https://github.com/NDISCOVER/Cinzel) | fantasy |
 | EB Garamond | 2017 The EB Garamond Project Authors, [octaviopardo/EBGaramond12](https://github.com/octaviopardo/EBGaramond12) | fantasy |
 | Pirata One | 2012 Rodrigo Fuenzalida and Nicolas Massi, [taip.com.ar](https://www.taip.com.ar), with Reserved Font Name "Pirata" | pirates |
@@ -44,6 +44,6 @@ Nothing else of pixelfx is included: not its bitmap font, which it does not rele
 
 The pipboy theme is an homage to the look of the Pip-Boy interface in the Fallout games. Fallout and Pip-Boy are trademarks of Bethesda Softworks LLC; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, fonts or text: its line art is drawn from scratch.
 
-The skyrim theme is an unofficial homage to the cold Nordic look of the Skyrim interface. Skyrim and The Elder Scrolls are trademarks of Bethesda Softworks LLC and ZeniMax Media Inc.; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, lettering or text: its line art is drawn from scratch.
+The skyrim theme is an unofficial homage to the menu interface of Skyrim. Skyrim and The Elder Scrolls are trademarks of Bethesda Softworks LLC and ZeniMax Media Inc.; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, fonts, lettering or text: its frames, compass star, helmet constellation and line art are drawn from scratch, and its runes are an angular script of its own design (twelve letters, drawn as SVG strokes), not the game's dragon alphabet.
 
 The pixel theme is a generic pixel-art arcade look and imitates no game or brand. pixelfx, Sprite Fusion, Hollow Crown and Sweetie 16 are named only to credit their authors; motion-deck is not affiliated with or endorsed by them.
