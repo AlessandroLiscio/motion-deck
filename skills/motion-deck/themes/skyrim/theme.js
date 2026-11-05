@@ -1,7 +1,8 @@
-/* Skyrim theme: aurora bands that take the section accent, three depths of falling snow that a gust sweeps on every slide change, two mountain ridges that shift a little, and original line art. An unofficial homage; nothing here comes from the game. */
+/* Skyrim theme: an adventurer's road. The regions of a deck walk from snowy mountains (blue) through a misty rain forest (green) to a burning canyon (red). Each region has its own sky, land drawn in plain lines and weather, and the compass, the kickers and the ticks take its color. A gust sweeps the weather on every slide change. Original line art; an unofficial homage, nothing here comes from the game. */
 (() => {
   const TAU = Math.PI * 2;
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+  const sstep = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const px = document.createElement('canvas');
   px.width = px.height = 1;
   const pctx = px.getContext('2d', { willReadFrequently: true });
@@ -19,7 +20,7 @@
   const mix = (a, b, k) => [Math.round(a[0] + (b[0] - a[0]) * k), Math.round(a[1] + (b[1] - a[1]) * k), Math.round(a[2] + (b[2] - a[2]) * k)];
   const str = (c, a) => (a === undefined ? `rgb(${c[0]},${c[1]},${c[2]})` : `rgba(${c[0]},${c[1]},${c[2]},${a})`);
   const cv = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(2, Math.ceil(w)); c.height = Math.max(2, Math.ceil(h)); return c; };
-  // a small deterministic generator, so the ridges keep their shape on every resize
+  // a small deterministic generator, so the land keeps its shape on every resize
   const prng = (seed) => () => {
     seed = (seed + 0x6d2b79f5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -27,32 +28,65 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 
-  let cBg = [11, 16, 22], cBg2 = [19, 29, 41], cText = [238, 243, 248], cIce = [126, 200, 240];
-  let tint = [126, 200, 240], tintKey = '', starStyle = '#fff';
-  let auroraA = null, auroraB = null, fade = 1; // the old and the new tinted aurora; fade 0 to 1 crossfades them
-  let sky = null, mist = null, ridgeFar = null, ridgeNear = null, flake = [];
+  // ---------- the road: the first region is in the snow, the last in the canyon, the ones between in the rain forest ----------
+  const STOPS = [[126, 200, 240], [82, 214, 160], [229, 84, 75]]; // sky blue, jade, ember red
+  const toHsl = ([r, g, b]) => {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d) return [0, 0, l];
+    const h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [h * 60, d / (1 - Math.abs(2 * l - 1)), l];
+  };
+  const fromHsl = ([h, s, l]) => {
+    const a = s * Math.min(l, 1 - l);
+    const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
+    return [f(0), f(8), f(4)];
+  };
+  const HSL = STOPS.map(toHsl);
+  // the color at a place p (0 to 1) of the road: the hue walks from blue through green and yellow to red
+  const journeyColor = (p) => {
+    const k = clamp(p, 0, 1) * 2, i = Math.min(1, Math.floor(k)), t = k - i, a = HSL[i], b = HSL[i + 1];
+    return fromHsl([0, 1, 2].map((j) => a[j] + (b[j] - a[j]) * t));
+  };
+  const biomeAt = (p) => (p < 0.25 ? 0 : p <= 0.75 ? 1 : 2); // 0 snow, 1 rain forest, 2 canyon
+  const road = { of: [], color: [], biome: [] }; // of[slide index] = region index
+  const mapRoad = () => {
+    const info = Deck.info();
+    const ids = info.sections.map((s) => s.id).filter((id) => info.slides.some((s) => s.sec === id && !s.backup));
+    const place = (i) => (ids.length > 1 ? i / (ids.length - 1) : 0);
+    road.color = ids.map((_, i) => journeyColor(place(i)));
+    road.biome = ids.map((_, i) => biomeAt(place(i)));
+    road.of = [];
+    info.slides.forEach((s, i) => { const k = ids.indexOf(s.sec); road.of.push(k < 0 ? road.of[i - 1] || 0 : k); }); // a slide that belongs to no region (a backup slide) stays where the road already is
+    return road;
+  };
+
+  // ---------- state ----------
+  let cBg = [11, 16, 22], cBg2 = [19, 29, 41], cText = [238, 243, 248];
+  let tint = STOPS[0], tintC = STOPS[0].slice(), tintKey = ''; // the color of the region, and the color the sky has eased to
+  let scene = 0, blend = 1; // the biome on show, and how far it has faded in over the picture of the one that left
+  let snap = null, hasSnap = false;
+  let W = 0, H = 0, starStyle = '#fff';
   let stars = new Float32Array(0);
-  let flakes = null; // x, y, size, speed, phase, sway, depth per flake, in one typed array
-  let nFlakes = 0;
   const aur = [0, 0, 0], aurSpeed = [0.006, -0.0045, 0.0034];
   let farX = 0, farT = 0, nearX = 0, nearT = 0, stepSign = 1;
   let gust = 0, boost = 0;
   let ready = false;
   const MARGIN = 160;
-  const BAND_SCALE = [1, 0.78, 1.18], BAND_LIFT = [0, 0.1, -0.12], BAND_ALPHA = [0.8, 0.55, 0.45];
+  const SC = [{}, {}, {}]; // per biome: built, feat {a, b, fade}, layers, weather
 
-  // ---------- sprites, built once (the aurora again on each slide change) ----------
+  // ---------- sprites ----------
   const paintAurora = (c, col) => {
     const g = c.getContext('2d');
-    const W = c.width, H = c.height;
-    g.clearRect(0, 0, W, H);
-    for (let x = 0; x < W; x++) {
-      const u = (x / W) * TAU;
+    const w = c.width, h = c.height;
+    g.clearRect(0, 0, w, h);
+    for (let x = 0; x < w; x++) {
+      const u = (x / w) * TAU;
       const body = 0.52 + 0.3 * Math.sin(u * 2 + 0.7) + 0.2 * Math.sin(u * 5 + 2.1) + 0.1 * Math.sin(u * 9 + 4.2) - 0.08;
       const ray = 0.8 + 0.2 * Math.sin(u * 41 + 1.3) * Math.sin(u * 23 + 0.4);
       const a = clamp(body, 0, 1) * ray;
       if (a < 0.04) continue;
-      const hh = H * (0.5 + 0.46 * (0.5 + 0.5 * Math.sin(u * 3 + 1.9)));
+      const hh = h * (0.5 + 0.46 * (0.5 + 0.5 * Math.sin(u * 3 + 1.9)));
       const grd = g.createLinearGradient(0, 0, 0, hh);
       grd.addColorStop(0, str(col, 0));
       grd.addColorStop(0.3, str(col, 0.4 * a));
@@ -63,19 +97,43 @@
     }
   };
 
-  const makeRidge = (w, h, seed, scale, floor, top, bot, edge) => {
+  // value noise that wraps along x, so a sprite of clouds can drift sideways for ever
+  const lat = (G, x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    const x0 = ((xi % G.nx) + G.nx) % G.nx, x1 = (x0 + 1) % G.nx, y0 = clamp(yi, 0, G.ny - 1), y1 = clamp(yi + 1, 0, G.ny - 1);
+    const a = G.d[y0 * G.nx + x0], b = G.d[y0 * G.nx + x1], c = G.d[y1 * G.nx + x0], d = G.d[y1 * G.nx + x1];
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+  const paintClouds = (c, col, o) => {
+    const g = c.getContext('2d'), w = c.width, h = c.height, rnd = prng(o.seed);
+    const grids = [0, 1, 2, 3].map((k) => { const nx = o.cells * 2 ** k, ny = o.rows * 2 ** k; return { nx, ny, d: Float32Array.from({ length: nx * ny }, rnd) }; });
+    const img = g.createImageData(w, h);
+    for (let y = 0; y < h; y++) {
+      const fy = y / h, env = o.shape(fy);
+      for (let x = 0; x < w; x++) {
+        let v = 0, amp = 1, sum = 0;
+        for (let k = 0; k < 4; k++) { v += lat(grids[k], (x / w) * grids[k].nx, fy * grids[k].ny) * amp; sum += amp; amp *= 0.5; }
+        const i = (y * w + x) * 4;
+        img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2];
+        img.data[i + 3] = Math.round(255 * sstep(o.lo, o.hi, v / sum) * env * o.alpha);
+      }
+    }
+    g.putImageData(img, 0, 0);
+  };
+
+  // ---------- land: one silhouette per layer on a sprite a little wider than the screen, a pale thin line along its edge ----------
+  const noise1 = (seed, scale, ridged) => {
     const rnd = prng(seed);
     const tbl = Float32Array.from({ length: 256 }, rnd);
-    const noise = (x) => { const i = Math.floor(x), f = x - i, s = f * f * (3 - 2 * f); return tbl[i & 255] + (tbl[(i + 1) & 255] - tbl[i & 255]) * s; };
-    const height = (x) => {
+    const at = (x) => { const i = Math.floor(x), f = x - i, s = f * f * (3 - 2 * f); return tbl[i & 255] + (tbl[(i + 1) & 255] - tbl[i & 255]) * s; };
+    return (x) => {
       let v = 0, amp = 1, sum = 0, fr = 1 / scale;
-      for (let o = 0; o < 3; o++) { v += (1 - Math.abs(noise(x * fr + o * 17.3) * 2 - 1)) * amp; sum += amp; amp *= 0.42; fr *= 2.3; }
+      for (let o = 0; o < 3; o++) { const n = at(x * fr + o * 17.3); v += (ridged ? 1 - Math.abs(n * 2 - 1) : n) * amp; sum += amp; amp *= 0.42; fr *= 2.3; }
       return v / sum;
     };
-    const c = cv(w, h);
+  };
+  const fillLand = (c, pts, top, bot, edgeA) => {
     const g = c.getContext('2d');
-    const pts = [];
-    for (let x = 0; x <= c.width + 8; x += 8) pts.push([x, c.height * (1 - (floor + (1 - floor) * Math.pow(height(x), 1.5)))]);
     const grd = g.createLinearGradient(0, 0, 0, c.height);
     grd.addColorStop(0, str(top));
     grd.addColorStop(1, str(bot));
@@ -88,163 +146,411 @@
     g.fill();
     g.beginPath();
     pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])));
-    g.strokeStyle = str(edge, 0.22);
+    g.strokeStyle = str(cText, edgeA);
     g.lineWidth = 1.5;
     g.stroke();
+    return g;
+  };
+  // peaks (snow) and rolling hills
+  const makeRidge = (w, h, seed, scale, floor, top, bot, ridged = true, edgeA = 0.22) => {
+    const height = noise1(seed, scale, ridged);
+    const c = cv(w, h);
+    const pts = [];
+    for (let x = 0; x <= c.width + 8; x += 8) pts.push([x, c.height * (1 - (floor + (1 - floor) * Math.pow(height(x), ridged ? 1.5 : 1.15)))]);
+    fillLand(c, pts, top, bot, edgeA);
+    return c;
+  };
+  // a canopy: a ridge of round crowns, and a few tall trees that stand out of it
+  const makeCanopy = (w, h, seed, floor, rad, fill, trees) => {
+    const rnd = prng(seed), height = noise1(seed + 3, 420, false);
+    const c = cv(w, h), g = c.getContext('2d');
+    const base = (x) => c.height * (1 - (floor + (1 - floor) * 0.7 * height(x)));
+    const crowns = [];
+    for (let x = -rad[1]; x < c.width + rad[1]; x += 7 + rnd() * 13) { const r = rad[0] + rnd() * (rad[1] - rad[0]); crowns.push([x, base(x) + rnd() * 8 - 2, r]); }
+    const tall = [];
+    for (let x = 60 + rnd() * 120; x < c.width - 40; x += 150 + rnd() * 260) if (rnd() < trees) tall.push([x, base(x), 0.3 + rnd() * 0.5, 34 + rnd() * 30]);
+    g.lineWidth = 3;
+    g.strokeStyle = str(cText, 0.2);
+    g.fillStyle = str(fill[1]);
+    const grd = g.createLinearGradient(0, 0, 0, c.height);
+    grd.addColorStop(0, str(fill[0]));
+    grd.addColorStop(1, str(fill[1]));
+    const trunk = (x, y0, hh, k) => { g.beginPath(); g.moveTo(x - 5 * k, y0 + 6); g.lineTo(x - 2 * k, y0 - hh); g.lineTo(x + 2 * k, y0 - hh); g.lineTo(x + 5 * k, y0 + 6); g.closePath(); };
+    const crownOf = (x, y, rx) => { g.beginPath(); [[-0.74, 0.06, 0.3], [-0.4, 0.16, 0.3], [-0.38, -0.12, 0.4], [0, -0.2, 0.46], [0.4, -0.1, 0.4], [0.44, 0.18, 0.3], [0.78, 0.04, 0.3], [-0.2, -0.5, 0.32], [0.22, -0.46, 0.34]].forEach(([dx, dy, r]) => { g.moveTo(x + (dx + r) * rx, y + dy * rx); g.arc(x + dx * rx, y + dy * rx, r * rx, 0, TAU); }); };
+    // the edge first (a thick line), the fill over it leaves a thin line on the outside only
+    crowns.forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r, 0, TAU); g.stroke(); });
+    const limbs = (x, y, rx) => { g.beginPath(); g.moveTo(x, y + rx * 0.05); g.lineTo(x - rx * 0.5, y - rx * 0.02); g.moveTo(x, y + rx * 0.05); g.lineTo(x + rx * 0.5, y - rx * 0.02); };
+    const grow = ([x, y, k, rx]) => Math.max(0, Math.min(c.height * k, y - rx * 0.75 - 4));
+    tall.forEach((t) => { const hh = grow(t); trunk(t[0], t[1], hh, 1.6); g.stroke(); crownOf(t[0], t[1] - hh, t[3]); g.stroke(); });
+    g.fillStyle = grd;
+    g.beginPath();
+    g.moveTo(0, c.height);
+    for (let x = 0; x <= c.width + 8; x += 8) g.lineTo(x, base(x));
+    g.lineTo(c.width, c.height);
+    g.closePath();
+    g.fill();
+    crowns.forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); });
+    g.strokeStyle = g.fillStyle;
+    g.lineWidth = 4.5;
+    tall.forEach((t) => { const hh = grow(t); trunk(t[0], t[1], hh, 1.6); g.fill(); crownOf(t[0], t[1] - hh, t[3]); g.fill(); limbs(t[0], t[1] - hh, t[3]); g.stroke(); });
+    return c;
+  };
+  // flat-topped mesas with steep stepped sides, and the same strata across all of them
+  const makeMesas = (w, h, seed, lo, hi, top, bot, strata, jag) => {
+    const rnd = prng(seed);
+    const c = cv(w, h);
+    const pts = [];
+    let x = -50, y = c.height * (1 - (lo + rnd() * (hi - lo)));
+    pts.push([x, y]);
+    while (x < c.width + 60) {
+      const pw = jag ? 14 + rnd() * 60 : 60 + rnd() * 200;
+      pts.push([x + pw * 0.45, y - rnd() * (jag ? 10 : 3)], [x + pw, y + (rnd() - 0.5) * (jag ? 8 : 3)]);
+      x += pw;
+      const ny = c.height * (1 - (lo + rnd() * (hi - lo))), run = (jag ? 6 : 10) + rnd() * 20;
+      pts.push([x + run * 0.2, y + (ny - y) * 0.3], [x + run * 0.55, y + (ny - y) * 0.62], [x + run, ny]);
+      x += run;
+      y = ny;
+    }
+    const g = fillLand(c, pts, top, bot, 0.26);
+    g.save();
+    g.beginPath();
+    g.moveTo(0, c.height);
+    pts.forEach((p) => g.lineTo(p[0], p[1]));
+    g.lineTo(c.width, c.height);
+    g.closePath();
+    g.clip();
+    g.strokeStyle = str(cText, 0.1);
+    g.lineWidth = 1;
+    for (let k = 1; k <= strata; k++) { const yy = Math.round(c.height * (k / (strata + 1)) * 1.1 + 4) + 0.5; g.beginPath(); g.moveTo(0, yy); g.lineTo(c.width, yy); g.stroke(); }
+    g.restore();
     return c;
   };
 
-  const softDot = (size, core) => {
+  const glow = (size, col, core) => {
     const c = cv(size, size);
     const g = c.getContext('2d');
     const r = size / 2;
     const gr = g.createRadialGradient(r, r, 0, r, r, r);
-    gr.addColorStop(0, str(cText, 1));
-    gr.addColorStop(core, str(cText, 0.85));
-    gr.addColorStop(1, str(cText, 0));
+    gr.addColorStop(0, str(col, 1));
+    gr.addColorStop(core, str(col, 0.85));
+    gr.addColorStop(1, str(col, 0));
     g.fillStyle = gr;
     g.fillRect(0, 0, size, size);
     return c;
   };
+
+  // ---------- the three biomes ----------
+  // each has: sky(t) stops of the sky for a color t; stars; feat (the moving stuff in the sky); make(w, h) the land layers; weather
   const DEPTH = [
     { sprite: null, core: 0.45, size: [2.5, 5], speed: [0.016, 0.028], wind: 0.35, alpha: 0.7, share: 0.58 },
     { sprite: null, core: 0.3, size: [6, 11], speed: [0.03, 0.05], wind: 0.75, alpha: 0.55, share: 0.30 },
     { sprite: null, core: 0.1, size: [18, 34], speed: [0.06, 0.09], wind: 1.5, alpha: 0.15, share: 0.12 },
   ];
+  const BANDS = [{ s: 1, lift: 0, a: 0.8 }, { s: 0.78, lift: 0.1, a: 0.55 }, { s: 1.18, lift: -0.12, a: 0.45 }];
+  const CLOUD_BANDS = [{ s: 1, lift: 0, a: 0.65 }, { s: 0.8, lift: 0.14, a: 0.5 }];
+  const BIOME = [
+    { // snow: aurora over two ridges and falling snow
+      sky: () => [[0, cBg], [0.55, mix(cBg, cBg2, 0.8)], [1, mix(cBg2, cBg, 0.4)]],
+      stars: [90, 0.5, 1],
+      feat: { w: (w) => Math.ceil(w / 2), h: (h) => Math.ceil(h * 0.22), scale: 2, bands: BANDS, paint: paintAurora },
+      make: (w, h) => [
+        { c: makeRidge(w + MARGIN * 2, h * 0.4, 7, 380, 0.2, mix(cBg2, STOPS[0], 0.09), mix(cBg, cBg2, 0.4)), par: 0, mist: [0.62, 0.86, 0.22, 0] },
+        { c: makeRidge(w + MARGIN * 2, h * 0.26, 31, 260, 0.14, mix(cBg, cBg2, 0.55), cBg.map((v) => Math.round(v * 0.6))), par: 2 },
+      ],
+    },
+    { // rain forest: green clouds, rolling hills, two canopies under a drifting mist, fireflies and a light rain
+      sky: (t) => [[0, mix(cBg, t, 0.1)], [0.5, mix(cBg2, t, 0.15)], [1, mix(cBg2, t, 0.27)]],
+      stars: [40, 0.36, 0.55],
+      feat: { w: () => 288, h: () => 112, scale: 0, bands: CLOUD_BANDS, paint: (c, t) => paintClouds(c, mix(t, [230, 255, 235], 0.25), { seed: 5, cells: 5, rows: 3, lo: 0.46, hi: 0.8, alpha: 0.4, shape: (f) => Math.sin(Math.PI * f) ** 1.4 }) },
+      make: (w, h) => [
+        { c: makeRidge(w + MARGIN * 2, h * 0.4, 13, 460, 0.3, [46, 100, 88], [14, 34, 32], false, 0.24), par: 0, mist: [0.42, 0.74, 0.5, 1] },
+        { c: makeCanopy(w + MARGIN * 2, h * 0.3, 29, 0.36, [14, 30], [[20, 56, 50], [9, 24, 24]], 0), par: 1, mist: [0.58, 0.88, 0.5, -1] },
+        { c: makeCanopy(w + MARGIN * 2, h * 0.36, 53, 0.3, [20, 40], [[9, 30, 27], [5, 14, 15]], 0.9), par: 2, mist: [0.8, 1, 0.3, -1] },
+      ],
+    },
+    { // canyon: smoke, a low sun, three depths of mesas, heat and embers
+      sky: (t) => [[0, mix(cBg, t, 0.12)], [0.5, mix(cBg2, t, 0.34)], [1, mix(mix(cBg2, t, 0.75), [255, 140, 60], 0.42)]],
+      stars: [34, 0.3, 0.5],
+      feat: { w: () => 288, h: () => 112, scale: 0, bands: CLOUD_BANDS, paint: (c, t) => paintClouds(c, mix(t, [255, 170, 90], 0.35), { seed: 9, cells: 4, rows: 3, lo: 0.42, hi: 0.78, alpha: 0.5, shape: (f) => Math.sin(Math.PI * f) ** 1.2 }) },
+      make: (w, h) => [
+        { c: makeMesas(w + MARGIN * 2, h * 0.4, 17, 0.22, 0.66, [160, 74, 50], [64, 26, 24], 5, false), par: 0, mist: [0.5, 0.78, 0.42, 2] },
+        { c: makeMesas(w + MARGIN * 2, h * 0.3, 41, 0.18, 0.7, [100, 42, 34], [38, 15, 17], 4, false), par: 1 },
+        { c: makeMesas(w + MARGIN * 2, h * 0.2, 67, 0.2, 0.82, [44, 17, 17], [16, 7, 9], 2, true), par: 2 },
+      ],
+    },
+  ];
+
+  // the weather of each biome: arrays of particles in typed arrays, x y size speed phase sway depth
+  const sprites = { fly: null, ember: null };
+  const paintSprites = () => {
+    DEPTH.forEach((D) => { D.sprite = glow(D.core < 0.2 ? 64 : 32, cText, D.core); });
+    sprites.fly = glow(32, mix(tint, [235, 255, 150], 0.55), 0.25);
+    sprites.ember = glow(32, mix(tint, [255, 190, 90], 0.6), 0.2);
+  };
+  const seedWeather = (i, api) => {
+    const area = W * H, n = (v) => clamp(Math.round(area / v), 1, 400);
+    const S = SC[i];
+    const make = (count, fn) => { const a = new Float32Array(count * 7); for (let k = 0; k < count; k++) fn(a, k * 7); return a; };
+    if (i === 0) {
+      S.n = clamp(Math.round(area / 5200), 60, 300);
+      let d = 0, left = Math.round(S.n * DEPTH[0].share);
+      S.p = make(S.n, (a, o) => {
+        if (o / 7 >= left && d < 2) { d++; left += Math.round(S.n * DEPTH[d].share); }
+        const D = DEPTH[d];
+        a[o] = api.rand() * W; a[o + 1] = api.rand() * H; a[o + 2] = D.size[0] + api.rand() * (D.size[1] - D.size[0]);
+        a[o + 3] = D.speed[0] + api.rand() * (D.speed[1] - D.speed[0]); a[o + 4] = api.rand() * TAU; a[o + 5] = 6 + api.rand() * 22; a[o + 6] = d;
+      });
+    } else if (i === 1) {
+      S.n = clamp(n(36000), 12, 34);
+      S.p = make(S.n, (a, o) => { a[o] = api.rand() * W; a[o + 1] = H * (0.4 + api.rand() * 0.6); a[o + 2] = 5 + api.rand() * 9; a[o + 3] = 0.004 + api.rand() * 0.012; a[o + 4] = api.rand() * TAU; a[o + 5] = 10 + api.rand() * 26; });
+      S.rn = clamp(n(22000), 24, 70);
+      S.r = make(S.rn, (a, o) => { a[o] = api.rand() * W; a[o + 1] = api.rand() * H; a[o + 2] = 10 + api.rand() * 16; a[o + 3] = 0.5 + api.rand() * 0.45; });
+    } else {
+      S.n = clamp(n(15000), 26, 90);
+      S.p = make(S.n, (a, o) => { a[o] = api.rand() * W; a[o + 1] = H * (0.25 + api.rand() * 0.8); a[o + 2] = (api.rand() < 0.8 ? 4 : 9) + api.rand() * 5; a[o + 3] = 0.02 + api.rand() * 0.05; a[o + 4] = api.rand() * TAU; a[o + 5] = 8 + api.rand() * 34; });
+    }
+  };
+
+  // build what a biome needs, when it first comes on show (and again after a resize)
+  const ensure = (i, api) => {
+    const S = SC[i];
+    if (S.built) return;
+    const B = BIOME[i];
+    S.layers = B.make(W, H);
+    const fw = B.feat.w(W), fh = B.feat.h(H);
+    S.feat = { a: cv(fw, fh), b: cv(fw, fh), fade: 1, key: null };
+    S.pos = [0, 0, 0];
+    S.mistC = i === 1 ? cv(288, 112) : null;
+    seedWeather(i, api);
+    S.built = true;
+    tintFeature(i, true);
+  };
+  // the sky stuff takes the color of the region: the finished picture fades out while the new one fades in
+  const tintFeature = (i, instant) => {
+    const S = SC[i];
+    if (!S.built || S.feat.key === tintKey) return;
+    const f = S.feat;
+    [f.a, f.b] = [f.b, f.a];
+    BIOME[i].feat.paint(f.b, tint);
+    if (i === 1) paintClouds(S.mistC, mix(tint, [235, 250, 240], 0.45), { seed: 21, cells: 3, rows: 6, lo: 0.3, hi: 0.62, alpha: 0.85, shape: (v) => Math.sin(Math.PI * v) ** 1.6 });
+    f.fade = instant ? 1 : 0;
+    f.key = tintKey;
+  };
 
   const build = (api) => {
-    const { w, h } = api;
+    W = api.w; H = api.h;
     cBg = rgb(api.css('--bg'), cBg);
     cBg2 = rgb(api.css('--bg-2'), cBg2);
     cText = rgb(api.css('--text'), cText);
-    cIce = rgb(api.css('--a1'), cIce);
     starStyle = str(cText);
-    sky = null;
-    mist = null;
-    // aurora: half resolution, one sprite wide enough to wrap
-    const sw = Math.ceil(w / 2);
-    const sh = Math.ceil(h * 0.22);
-    if (!auroraA || auroraA.width !== sw || auroraA.height !== sh) { auroraA = cv(sw, sh); auroraB = cv(sw, sh); }
-    paintAurora(auroraB, tint);
-    fade = 1;
-    tintKey = tint.join(',');
-    // ridges: the far one pale and cold, the near one a dark silhouette
-    ridgeFar = makeRidge(w + MARGIN * 2, h * 0.4, 7, 380, 0.2, mix(cBg2, cIce, 0.09), mix(cBg, cBg2, 0.4), cText);
-    ridgeNear = makeRidge(w + MARGIN * 2, h * 0.26, 31, 260, 0.14, mix(cBg, cBg2, 0.55), cBg.map((v) => Math.round(v * 0.6)), cText);
-    // snow: three depths in one typed array
-    const area = w * h;
-    nFlakes = clamp(Math.round(area / 5200), 60, 300);
-    flakes = new Float32Array(nFlakes * 7);
-    let d = 0, left = Math.round(nFlakes * DEPTH[0].share);
-    for (let i = 0; i < nFlakes; i++) {
-      if (i >= left && d < 2) { d++; left += Math.round(nFlakes * DEPTH[d].share); }
-      const D = DEPTH[d];
-      const o = i * 7;
-      flakes[o] = api.rand() * w; flakes[o + 1] = api.rand() * h;
-      flakes[o + 2] = D.size[0] + api.rand() * (D.size[1] - D.size[0]);
-      flakes[o + 3] = D.speed[0] + api.rand() * (D.speed[1] - D.speed[0]);
-      flakes[o + 4] = api.rand() * TAU; flakes[o + 5] = 6 + api.rand() * 22; flakes[o + 6] = d;
-    }
-    DEPTH.forEach((D) => { D.sprite = softDot(D.core < 0.2 ? 64 : 32, D.core); });
-    // stars
+    SC.forEach((S) => { S.built = false; S.layers = null; S.feat = null; S.mistC = null; });
     stars = new Float32Array(90 * 4);
-    for (let i = 0; i < 90; i++) { stars[i * 4] = api.rand() * w; stars[i * 4 + 1] = Math.pow(api.rand(), 1.4) * h * 0.5; stars[i * 4 + 2] = 0.25 + api.rand() * 0.6; stars[i * 4 + 3] = api.rand() * TAU; }
+    for (let i = 0; i < 90; i++) { stars[i * 4] = api.rand() * W; stars[i * 4 + 1] = Math.pow(api.rand(), 1.4); stars[i * 4 + 2] = 0.25 + api.rand() * 0.6; stars[i * 4 + 3] = api.rand() * TAU; }
+    paintSprites();
+    snap = null; hasSnap = false;
+    ensure(scene, api);
     ready = true;
   };
 
-  // gradients belong to the context, so they are made on the first frame after a build
-  const makeGradients = (ctx, h) => {
-    sky = ctx.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, str(cBg));
-    sky.addColorStop(0.55, str(mix(cBg, cBg2, 0.8)));
-    sky.addColorStop(1, str(mix(cBg2, cBg, 0.4)));
-    mist = ctx.createLinearGradient(0, h * 0.62, 0, h * 0.86);
-    mist.addColorStop(0, str(cIce, 0));
-    mist.addColorStop(0.7, str(mix(cBg2, cIce, 0.18), 0.22));
-    mist.addColorStop(1, str(cBg, 0));
+  // ---------- drawing ----------
+  const drift = (ctx, spr, x0, y, dw, dh, a) => {
+    const x = ((x0 % dw) + dw) % dw;
+    ctx.globalAlpha = a;
+    ctx.drawImage(spr, x - dw, y, dw, dh);
+    ctx.drawImage(spr, x, y, dw, dh);
+  };
+  const paintScene = (api, i, t, dt, still, alpha) => {
+    const { ctx } = api;
+    ensure(i, api);
+    const S = SC[i], B = BIOME[i];
+    // sky
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    B.sky(tintC).forEach(([p, c]) => g.addColorStop(p, str(c)));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // stars
+    ctx.fillStyle = starStyle;
+    for (let k = 0; k < B.stars[0]; k++) {
+      const o = k * 4;
+      ctx.globalAlpha = alpha * B.stars[2] * stars[o + 2] * (still ? 0.7 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.0009 + stars[o + 3])));
+      ctx.fillRect(stars[o], stars[o + 1] * H * B.stars[1], 1.4, 1.4);
+    }
+    // the sun of the canyon: a soft glow and two thin rings
+    if (i === 2) {
+      const sx = W * 0.62, sy = H * 0.74, r = H * 0.11;
+      const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 4.2);
+      sg.addColorStop(0, str(mix(tintC, [255, 200, 120], 0.5), 0.55));
+      sg.addColorStop(0.25, str(mix(tintC, [255, 150, 70], 0.3), 0.26));
+      sg.addColorStop(1, str(tintC, 0));
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = sg;
+      ctx.fillRect(sx - r * 4.2, sy - r * 4.2, r * 8.4, r * 8.4); // the glow ends at 4.2 radii: no need to fill the rest of the screen
+      ctx.strokeStyle = str(mix(tintC, [255, 220, 170], 0.5));
+      ctx.lineWidth = 1.2;
+      [[r, 0.55], [r * 1.55, 0.26]].forEach(([rr, a]) => { ctx.globalAlpha = alpha * a; ctx.beginPath(); ctx.arc(sx, sy, rr, 0, TAU); ctx.stroke(); });
+    }
+    // the moving stuff of the sky: three drifting copies of one curtain, the old color crossing over to the new one
+    const F = B.feat, f = S.feat;
+    if (!still) { f.fade = Math.min(1, f.fade + dt / 900); for (let b = 0; b < 3; b++) S.pos[b] += aurSpeed[b] * dt; }
+    else f.fade = 1;
+    const dw = F.scale ? f.b.width * F.scale : W, dh = F.scale ? f.b.height * F.scale : H * 0.52;
+    const lift = 1 + boost * 0.35;
+    ctx.globalCompositeOperation = 'lighter';
+    F.bands.forEach((bd, b) => {
+      const breathe = still ? 0.8 : 0.72 + 0.28 * Math.sin(t * 0.00035 + b * 2.1);
+      const a = alpha * bd.a * breathe * lift, y = bd.lift * dh * (F.scale ? 1 : 0.5);
+      if (f.fade < 1) drift(ctx, f.a, S.pos[b], y, dw, dh * bd.s, a * (1 - f.fade));
+      drift(ctx, f.b, S.pos[b], y, dw, dh * bd.s, a * f.fade);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+    // the land, far to near, with the mist or the haze after the layers that have it
+    S.layers.forEach((L) => {
+      const x = L.par === 0 ? farX : L.par === 2 ? nearX : (farX + nearX) / 2;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(L.c, -MARGIN - x, H - L.c.height);
+      if (L.mist) mist(ctx, i, S, L.mist, t, still, alpha);
+    });
+    if (i === 2) { // the floor of the canyon glows and flickers
+      const fl = still ? 0.8 : 0.72 + 0.28 * Math.sin(t * 0.0021) * Math.sin(t * 0.0013 + 1);
+      const gg = ctx.createLinearGradient(0, H * 0.8, 0, H);
+      gg.addColorStop(0, str(tintC, 0));
+      gg.addColorStop(1, str(mix(tintC, [255, 150, 60], 0.5), 0.32 * fl));
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = gg;
+      ctx.fillRect(0, H * 0.8, W, H * 0.2);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.globalAlpha = alpha;
+    weather(api, i, t, dt, still, alpha);
+  };
+  // the mist between layers: a band of the region's color; in the forest it also drifts, in the canyon the air shimmers
+  const mist = (ctx, i, S, [y0, y1, a, kind], t, still, alpha) => {
+    const g = ctx.createLinearGradient(0, H * y0, 0, H * y1);
+    const col = i === 2 ? mix(tintC, [255, 150, 80], 0.4) : tintC;
+    g.addColorStop(0, str(col, 0));
+    g.addColorStop(0.7, str(mix(cBg2, col, 0.18), a));
+    g.addColorStop(1, str(cBg, 0));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = g;
+    ctx.fillRect(0, H * y0, W, H * (y1 - y0));
+    if (kind === 1 || kind === -1) {
+      const off = still ? 0 : t * 0.006;
+      drift(ctx, S.mistC, kind === 1 ? off + 200 : 500 - off * 0.7, H * y0, W * 1.2, H * (y1 - y0) * 1.1, alpha * (kind === 1 ? 0.7 : 0.55));
+    }
+    if (kind === 2) { // the air over the canyon shimmers: a few thin lines that wave
+      ctx.strokeStyle = str(mix(tintC, [255, 200, 130], 0.5));
+      ctx.lineWidth = 1;
+      for (let k = 0; k < 4; k++) {
+        ctx.globalAlpha = alpha * (0.12 - k * 0.02);
+        ctx.beginPath();
+        const y = H * (y0 + (y1 - y0) * (0.2 + k * 0.17));
+        for (let x = 0; x <= W; x += 24) { const yy = y + Math.sin(x * 0.012 + (still ? 0 : t * 0.0011) + k * 1.7) * 2.2; if (x) ctx.lineTo(x, yy); else ctx.moveTo(x, yy); }
+        ctx.stroke();
+      }
+    }
+  };
+  const weather = (api, i, t, dt, still, alpha) => {
+    const { ctx } = api;
+    const S = SC[i], p = S.p, o2 = still ? 0 : t;
+    if (i === 0) { // snow, far to near
+      for (let k = 0; k < S.n; k++) {
+        const o = k * 7, D = DEPTH[p[o + 6]];
+        if (!still) {
+          p[o + 1] += p[o + 3] * dt * (1 + Math.abs(gust) * 0.5);
+          p[o] += (gust * D.wind - 0.012 * D.wind) * dt;
+          const s = p[o + 2];
+          if (p[o + 1] > H + s) { p[o + 1] = -s; p[o] = api.rand() * W; }
+          if (p[o] > W + s) p[o] -= W + 2 * s;
+          else if (p[o] < -s) p[o] += W + 2 * s;
+        }
+        const s = p[o + 2];
+        ctx.globalAlpha = alpha * D.alpha;
+        ctx.drawImage(D.sprite, p[o] + Math.sin(o2 * 0.0006 + p[o + 4]) * p[o + 5] - s / 2, p[o + 1] - s / 2, s, s);
+      }
+      return;
+    }
+    if (i === 1) { // rain, thin and slanted
+      ctx.strokeStyle = str(mix(tintC, [220, 245, 240], 0.5));
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = alpha * 0.16;
+      ctx.beginPath();
+      for (let k = 0; k < S.rn; k++) {
+        const o = k * 7, r = S.r;
+        if (!still) {
+          r[o + 1] += r[o + 3] * dt * 1.3; r[o] -= (0.12 + gust * 0.5) * dt * 0.6;
+          if (r[o + 1] > H + 30) { r[o + 1] = -30; r[o] = api.rand() * W; }
+          if (r[o] < -30) r[o] += W + 60; else if (r[o] > W + 30) r[o] -= W + 60;
+        }
+        ctx.moveTo(r[o], r[o + 1]);
+        ctx.lineTo(r[o] - r[o + 2] * 0.25, r[o + 1] + r[o + 2]);
+      }
+      ctx.stroke();
+    }
+    // fireflies drift and blink; embers rise and flicker
+    const spr = i === 1 ? sprites.fly : sprites.ember;
+    ctx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < S.n; k++) {
+      const o = k * 7;
+      if (!still) {
+        if (i === 1) { p[o + 1] -= p[o + 3] * dt * 0.5; p[o] += (gust * 0.6 + Math.sin(t * 0.0004 + p[o + 4]) * 0.01) * dt; if (p[o + 1] < H * 0.3) p[o + 1] = H + 10; }
+        else { p[o + 1] -= p[o + 3] * dt * (1 + boost); p[o] += (gust * 1.4 + 0.012) * dt; if (p[o + 1] < -10) { p[o + 1] = H + 10; p[o] = api.rand() * W; } }
+        if (p[o] > W + 20) p[o] -= W + 40; else if (p[o] < -20) p[o] += W + 40;
+      }
+      const s = p[o + 2], fl = still ? 0.8 : i === 1 ? 0.25 + 0.75 * Math.pow(0.5 + 0.5 * Math.sin(t * 0.0013 + p[o + 4] * 3), 2) : 0.55 + 0.45 * Math.sin(t * 0.004 + p[o + 4] * 5);
+      ctx.globalAlpha = alpha * fl * (i === 1 ? 0.85 : 0.9);
+      ctx.drawImage(spr, p[o] + Math.sin(o2 * 0.0007 + p[o + 4]) * p[o + 5] - s / 2, p[o + 1] - s / 2, s, s);
+    }
+    ctx.globalCompositeOperation = 'source-over';
   };
 
   const draw = (api, t, dt, still) => {
-    const { ctx, w, h } = api;
     if (!ready) return; // the engine paints once on resize, before init has built the layers
-    if (!sky) makeGradients(ctx, h);
-    if (still) { fade = 1; gust = 0; boost = 0.2; farX = farT; nearX = nearT; }
+    if (still) { blend = 1; gust = 0; boost = 0.2; tintC = tint.slice(); farX = farT; nearX = nearT; }
     else {
-      fade = Math.min(1, fade + dt / 900);
+      blend = Math.min(1, blend + dt / 1400);
+      const k = Math.min(1, dt / 650), e = 1 - Math.exp(-dt / 500);
       gust *= Math.exp(-dt / 800);
       boost = Math.max(0, boost - dt / 1400);
-      const k = Math.min(1, dt / 650);
       farX += (farT - farX) * k;
       nearX += (nearT - nearX) * k;
-      for (let i = 0; i < 3; i++) { aur[i] += aurSpeed[i] * dt; }
+      tintC = tintC.map((v, j) => v + (tint[j] - v) * e);
     }
-
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, w, h);
-
-    // stars
-    ctx.fillStyle = starStyle;
-    for (let i = 0; i < 90; i++) {
-      const o = i * 4;
-      ctx.globalAlpha = stars[o + 2] * (still ? 0.7 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.0009 + stars[o + 3])));
-      ctx.fillRect(stars[o], stars[o + 1], 1.4, 1.4);
+    if (blend >= 1 && hasSnap) { hasSnap = false; snap = null; } // the old picture is done with: give its memory back
+    if (hasSnap) { api.ctx.save(); api.ctx.setTransform(1, 0, 0, 1, 0, 0); api.ctx.globalAlpha = 1; api.ctx.drawImage(snap, 0, 0); api.ctx.restore(); }
+    paintScene(api, scene, t, dt, still, blend);
+    api.ctx.globalAlpha = 1;
+  };
+  const setTint = (next, instant) => {
+    const key = next.join(',');
+    if (key === tintKey) return;
+    tint = next;
+    tintKey = key;
+    if (instant) tintC = next.slice();
+    paintSprites();
+    SC.forEach((S, i) => tintFeature(i, instant));
+  };
+  // a new biome fades in over the last picture of the old one
+  const setScene = (next, instant, api) => {
+    if (next === scene) return;
+    hasSnap = !instant;
+    if (hasSnap) {
+      const c = api.canvas;
+      if (!snap || snap.width !== c.width || snap.height !== c.height) snap = cv(c.width, c.height);
+      const g = snap.getContext('2d');
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.clearRect(0, 0, snap.width, snap.height);
+      g.drawImage(c, 0, 0);
     }
-
-    // aurora: three drifting copies of one curtain, old tint crossing over to the new one
-    const aw = auroraB.width * 2;
-    const ah = auroraB.height * 2;
-    const lift = 1 + boost * 0.35;
-    ctx.globalCompositeOperation = 'lighter';
-    for (let b = 0; b < 3; b++) {
-      const breathe = still ? 0.8 : 0.72 + 0.28 * Math.sin(t * 0.00035 + b * 2.1);
-      const x = ((aur[b] % aw) + aw) % aw;
-      const sc = BAND_SCALE[b];
-      const y = BAND_LIFT[b] * ah;
-      const a = BAND_ALPHA[b] * breathe * lift;
-      if (fade < 1 && auroraA !== auroraB) {
-        ctx.globalAlpha = a * (1 - fade);
-        ctx.drawImage(auroraA, x - aw, y, aw, ah * sc);
-        ctx.drawImage(auroraA, x, y, aw, ah * sc);
-      }
-      ctx.globalAlpha = a * fade;
-      ctx.drawImage(auroraB, x - aw, y, aw, ah * sc);
-      ctx.drawImage(auroraB, x, y, aw, ah * sc);
-    }
-    ctx.globalCompositeOperation = 'source-over';
-
-    // ridges and the mist between them
-    ctx.globalAlpha = 1;
-    ctx.drawImage(ridgeFar, -MARGIN - farX, h - ridgeFar.height);
-    ctx.fillStyle = mist;
-    ctx.fillRect(0, h * 0.62, w, h * 0.24);
-    ctx.drawImage(ridgeNear, -MARGIN - nearX, h - ridgeNear.height);
-
-    // snow, far to near
-    const o2 = still ? 0 : t;
-    for (let i = 0; i < nFlakes; i++) {
-      const o = i * 7;
-      const D = DEPTH[flakes[o + 6]];
-      if (!still) {
-        flakes[o + 1] += flakes[o + 3] * dt * (1 + Math.abs(gust) * 0.5);
-        flakes[o] += (gust * D.wind - 0.012 * D.wind) * dt;
-        const s = flakes[o + 2];
-        if (flakes[o + 1] > h + s) { flakes[o + 1] = -s; flakes[o] = api.rand() * w; }
-        if (flakes[o] > w + s) flakes[o] -= w + 2 * s;
-        else if (flakes[o] < -s) flakes[o] += w + 2 * s;
-      }
-      const s = flakes[o + 2];
-      ctx.globalAlpha = D.alpha;
-      ctx.drawImage(D.sprite, flakes[o] + Math.sin(o2 * 0.0006 + flakes[o + 4]) * flakes[o + 5] - s / 2, flakes[o + 1] - s / 2, s, s);
-    }
-    ctx.globalAlpha = 1;
+    scene = next;
+    blend = instant ? 1 : 0;
   };
 
   // ---------- art: original line drawings ----------
   const f1 = (v) => Math.round(v * 10) / 10;
   const spark = (x, y, s, cls = 'twinkle') => `<path class="${cls}" d="M${x} ${y - s}L${x + s * 0.18} ${y - s * 0.18}L${x + s} ${y}L${x + s * 0.18} ${y + s * 0.18}L${x} ${y + s}L${x - s * 0.18} ${y + s * 0.18}L${x - s} ${y}L${x - s * 0.18} ${y - s * 0.18}Z" style="fill:currentColor;stroke:none"/>`;
   const dust = (x, y, r = 1.6) => `<circle class="twinkle" cx="${x}" cy="${y}" r="${r}" style="fill:currentColor;stroke:none"/>`;
-  const mirror = ([x, y]) => [400 - x, y];
 
   // ----- runes: an angular script of 12 letters of my own, each a few straight strokes on a 12 by 20 grid; a word is a cluster of runes with its transliteration under it -----
   const RUNE = {
@@ -265,32 +571,53 @@
     return WORDS.map((w, i) => { const c = x + wd[i] / 2; x += wd[i] + gap; return runeWord(w, f1(c), top, k); }).join('');
   };
 
-  // ----- the horned iron helmet as a constellation: stars joined by thin lines, drawn from the left half and mirrored -----
+  // ----- the horned helmet as a star sign, in the manner of the game's constellations: a pale glowing drawing of the thing itself, a few stars joined by thin lines, dust around -----
+  const flipPath = (d) => d.replace(/(\d+(?:\.\d+)?) (\d+(?:\.\d+)?)/g, (m, x, y) => `${f1(400 - x)} ${y}`);
   const helmet = (() => {
+    // the left half of the drawing; the right half is its mirror image (paths use plain "x y" pairs, so they can be flipped)
+    const half = [
+      'M110 214C106 150 140 90 200 80', // the dome
+      'M200 98C168 114 150 158 146 214', // a rib of the dome
+      'M112 198C70 208 34 172 30 120C28 88 46 60 76 40C64 68 60 94 68 120C78 150 100 166 118 170', // the horn
+      'M52 152C44 130 46 106 56 84', // a line along the horn
+      'M108 240C112 292 142 332 200 364', // the cheek guard
+      'M136 268C142 300 164 328 200 346', // its inner edge
+      'M128 246L178 241L173 264L134 268Z', // the eye
+    ];
+    const whole = ['M200 80V214', 'M104 216C150 226 250 226 296 216', 'M106 238C150 248 250 248 294 238', 'M190 244L193 296L200 318L207 296L210 244'];
+    const ghost = [...half, ...half.map(flipPath), ...whole].join('');
+    // the stars of the left half; the ones on the middle line are not mirrored; a third entry names the big ones
     const N = {
-      top: [200, 56], d1: [156, 68], d2: [122, 100], bi: [114, 132], d3: [109, 152], bo: [108, 172], d4: [107, 194], cr1: [200, 106], cr2: [200, 156],
-      ho1: [72, 164], ho2: [44, 138], ho3: [34, 100], ho4: [44, 62], tip: [64, 30], hi1: [92, 132], hi2: [68, 112], hi3: [60, 84], hi4: [64, 54],
-      b1: [152, 201], b2: [200, 206], n1: [194, 240], nt: [200, 266], e1: [140, 216], e2: [180, 220], e3: [172, 236], e4: [145, 232],
-      c1: [115, 232], c2: [128, 270], c3: [156, 296], ch: [200, 310], j1: [174, 284],
+      apex: [200, 80, 9], d1: [146, 102], d2: [116, 150], brow: [107, 216, 6], rib: [150, 178], cr: [200, 150], bc: [200, 224],
+      eo: [128, 246], ei: [178, 241], el: [173, 264], ch: [124, 300], jw: [152, 336], nose: [200, 318, 9], chin: [200, 364, 9],
+      h1: [50, 172], h2: [30, 120, 6], h3: [46, 64], tip: [76, 40, 9],
     };
-    const E = [['top', 'd1'], ['top', 'cr1'], ['cr1', 'cr2'], ['cr2', 'b2'], ['d1', 'd2'], ['d2', 'bi'], ['bi', 'd3'], ['d3', 'bo'], ['bo', 'd4'],
-      ['bo', 'ho1'], ['ho1', 'ho2'], ['ho2', 'ho3'], ['ho3', 'ho4'], ['ho4', 'tip'], ['bi', 'hi1'], ['hi1', 'hi2'], ['hi2', 'hi3'], ['hi3', 'hi4'], ['hi4', 'tip'],
-      ['d4', 'b1'], ['b1', 'b2'], ['d4', 'c1'], ['c1', 'c2'], ['c2', 'c3'], ['c3', 'ch'], ['e1', 'e2'], ['e2', 'e3'], ['e3', 'e4'], ['e4', 'e1'],
-      ['b2', 'n1'], ['n1', 'nt'], ['nt', 'j1'], ['j1', 'ch']];
-    const mid = new Set(['top', 'cr1', 'cr2', 'b2', 'nt', 'ch']);
-    const at = (k, side) => (side && !mid.has(k) ? mirror(N[k]) : N[k]);
-    const lines = [0, 1].flatMap((side) => E.map(([a, b]) => `M${at(a, side).join(' ')}L${at(b, side).join(' ')}`)).join('');
-    const big = new Set(['top', 'tip', 'ch', 'nt', 'd4', 'ho3']);
-    const stars = Object.keys(N).flatMap((k) => [0, 1].map((side) => [k, side]).filter(([kk, s]) => !(s && mid.has(kk)))
-      .map(([kk, s]) => { const [x, y] = at(kk, s); return big.has(kk) ? spark(x, y, kk === 'top' || kk === 'ch' ? 8 : 6.5) : dust(x, y, 2.1); })).join('');
-    return `<path d="${lines}" stroke="currentColor" stroke-width="1.3" opacity=".85"/>${stars}`;
+    const E = [['tip', 'h3'], ['h3', 'h2'], ['h2', 'h1'], ['h1', 'brow'], ['brow', 'd2'], ['d2', 'd1'], ['d1', 'apex'], ['apex', 'cr'], ['cr', 'bc'], ['bc', 'nose'], ['nose', 'chin'],
+      ['brow', 'bc'], ['brow', 'ch'], ['ch', 'jw'], ['jw', 'chin'], ['eo', 'ei'], ['ei', 'el'], ['el', 'eo'], ['d2', 'rib'], ['rib', 'cr']];
+    const mid = new Set(['apex', 'cr', 'bc', 'nose', 'chin']);
+    const keys = Object.keys(N);
+    // the right half is a little off the mirror, as stars are
+    const at = (k, side) => { const [x, y] = N[k]; if (!side || mid.has(k)) return [x, y]; const j = ((keys.indexOf(k) * 7919) % 11) - 5; return [f1(400 - x + j * 0.5), y + (j % 3)]; };
+    const sides = (...ks) => (ks.every((k) => mid.has(k)) ? [0] : [0, 1]);
+    const lines = E.flatMap(([a, b]) => sides(a, b).map((s) => `M${at(a, s).join(' ')}L${at(b, s).join(' ')}`)).join('');
+    const list = keys.flatMap((k) => sides(k).map((s) => [k, s]));
+    const halos = list.map(([k, s]) => `<circle cx="${at(k, s)[0]}" cy="${at(k, s)[1]}" r="${N[k][2] ? 13 : 6}"/>`).join('');
+    const sparks = list.map(([k, s]) => { const [x, y] = at(k, s); return N[k][2] ? spark(x, y, N[k][2]) : dust(x, y, 2.1); }).join('');
+    // dust: small stars all around, a third of them blinking
+    const rnd = prng(11);
+    const grains = Array.from({ length: 44 }, (_, i) => { const x = f1(-24 + rnd() * 448), y = f1(10 + rnd() * 380), r = f1(0.6 + rnd() * 1.1); return `<circle ${i % 3 ? '' : 'class="twinkle" '}cx="${x}" cy="${y}" r="${r}" opacity="${f1(0.35 + rnd() * 0.55)}" style="fill:currentColor;stroke:none"/>`; }).join('');
+    return `<defs><filter id="skgl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter><filter id="skhl" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter><filter id="sknb" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="30"/></filter></defs>
+<g style="fill:var(--acc);stroke:none" filter="url(#sknb)"><ellipse cx="200" cy="210" rx="150" ry="170" opacity=".13"/><ellipse cx="96" cy="120" rx="64" ry="52" opacity=".16"/><ellipse cx="312" cy="300" rx="70" ry="56" opacity=".14"/></g>
+${grains}
+<g fill="none"><path d="${ghost}" style="stroke:var(--acc)" stroke-width="9" opacity=".24" filter="url(#skgl)"/><path d="${ghost}" style="stroke:var(--acc)" stroke-width="2.6" opacity=".55"/><path d="${ghost}" stroke="currentColor" stroke-width=".8" opacity=".6"/></g>
+<path d="${lines}" stroke="currentColor" stroke-width="1.1" opacity=".9"/>
+<g style="fill:currentColor;stroke:none" opacity=".45" filter="url(#skhl)">${halos}</g>
+${sparks}`;
   })();
   const hero = `<svg viewBox="0 0 400 450" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor">
-<g class="spin"><circle cx="200" cy="190" r="178" style="stroke:var(--acc)" stroke-width="1" stroke-dasharray="1 11" opacity=".55"/></g>
 ${helmet}
-${dust(30, 214)}${dust(372, 238)}${dust(76, 326, 1.4)}${dust(326, 332, 1.4)}${dust(200, 24, 1.4)}${dust(122, 38, 1.4)}${dust(284, 36, 1.4)}${dust(352, 120)}${dust(18, 166, 1.4)}${dust(380, 176, 1.4)}${spark(368, 300, 4)}${spark(36, 280, 3.5)}
-<path d="M70 366H330" stroke-width="1" style="stroke:var(--frame-2)"/>
-${runeRow(200, 380, 1.15, 34)}
+<path d="M70 388H330" stroke-width="1" style="stroke:var(--frame-2)"/>
+${runeRow(200, 398, 1.15, 34)}
 </svg>`;
 
   // ----- the compass star: long thin needles with a knot in the middle -----
@@ -381,21 +708,91 @@ ${stones}
 ${runeRow(320, 8, 1.1, 38)}
 </svg>`;
 
+  // ----- the compass frame: the caps and the two lines of the band are one drawing, so they always meet -----
+  // P: band height B, how far the caps stand out of the band o, line width sw, gap of the double line rg, cap width cw
+  const BAR = { B: 30, o: 3, sw: 1.3, rg: 2.6, cw: 54 };
+  const PLATE = { B: 20, o: 2, sw: 1.1, rg: 2, cw: 36 };
+  const frameSvg = (P, uid, W) => {
+    const { B, o, sw, rg, cw } = P;
+    const f = (v) => Math.round(v * 100) / 100;
+    const H = B + 2 * o, cy = H / 2, yt = o + sw / 2, yb = H - o - sw / 2;
+    // two interlaced diamonds: the small one touches both lines, the big one carries the tip and stands out of the band
+    const hh2 = (yb - yt) / 2, hw2 = cw * 0.273, c2 = cw - hw2;
+    const hh1 = cy - sw / 2, hw1 = cw * 0.36, c1 = hw1 + 1.5;
+    const dia = (cx, hw, hh, k = 1) => `M${f(cx - hw * k)} ${f(cy)}L${f(cx)} ${f(cy - hh * k)}L${f(cx + hw * k)} ${f(cy)}L${f(cx)} ${f(cy + hh * k)}Z`;
+    const inset = (hw, hh) => 1 - rg / ((hw * hh) / Math.hypot(hw, hh)); // scale of the inner line of the ribbon
+    const ribbon = (cx, hw, hh) => `${dia(cx, hw, hh)}${dia(cx, hw, hh, inset(hw, hh))}`;
+    // the upper crossing: the big diamond's upper right edge against the small one's upper left edge
+    const q = (hw2 * hh1) / hh2;
+    const t = (c2 - hw2 - c1 + q) / (hw1 + q);
+    const X = [c1 + t * hw1, cy - hh1 + t * hh1];
+    const L1 = Math.hypot(hw1, hh1), L2 = Math.hypot(hw2, hh2);
+    const cutW = f(sw + rg + 2.4), run = 4.2;
+    // a short stroke along the ribbon that passes over, wiping the ribbon that passes under
+    const cut = (px, py, ux, uy, nx, ny) => `M${f(px + nx * rg / 2 - ux * run)} ${f(py + ny * rg / 2 - uy * run)}L${f(px + nx * rg / 2 + ux * run)} ${f(py + ny * rg / 2 + uy * run)}`;
+    const over1 = cut(X[0], X[1], hw1 / L1, hh1 / L1, -hh1 / L1, hw1 / L1); // the big diamond over the small one, above
+    const over2 = cut(X[0], H - X[1], hw2 / L2, hh2 / L2, hh2 / L2, -hw2 / L2); // the small one over the big one, below
+    const mask = (id, d) => `<mask id="${uid}${id}" maskUnits="userSpaceOnUse" x="-2" y="-2" width="${cw + 4}" height="${H + 4}"><rect x="-2" y="-2" width="${cw + 4}" height="${H + 4}" fill="#fff"/><path d="${d}" stroke="#000" stroke-width="${cutW}" fill="none"/></mask>`;
+    const capG = `<g stroke-width="${sw}" stroke-linejoin="miter"><path d="${ribbon(c1, hw1, hh1)}" mask="url(#${uid}b)"/><path d="${ribbon(c2, hw2, hh2)}" mask="url(#${uid}a)"/><path d="M${f(cw)} ${f(yt)}V${f(yb)}" opacity=".7"/></g>`;
+    const fill = `${dia(c1, hw1, hh1)}${dia(c2, hw2, hh2)}M${f(c2)} ${f(yt)}H${f(W - c2)}V${f(yb)}H${f(c2)}Z${dia(W - c2, hw2, hh2)}${dia(W - c1, hw1, hh1)}`;
+    return `<defs>${mask('a', over1)}${mask('b', over2)}</defs><path class="bar-fill" d="${fill}"/><path d="M${f(c2)} ${f(yt)}H${f(W - c2)}M${f(c2)} ${f(yb)}H${f(W - c2)}" stroke-width="${sw}"/>${capG}<g transform="translate(${f(W)} 0) scale(-1 1)">${capG}</g>`;
+  };
+  // an svg frame behind an element that follows the element's width: the compass band and the plate above it
+  const frameFor = (el, P, uid, place) => {
+    const H = P.B + 2 * P.o, svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'cmp-frame');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('height', H);
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    let last = 0;
+    const render = () => {
+      const W = Math.round((el.getBoundingClientRect().width + 2 * P.cw) * 100) / 100;
+      if (!W || W === last) return;
+      last = W;
+      svg.setAttribute('width', W);
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.innerHTML = frameSvg(P, uid, W);
+    };
+    place(svg);
+    render();
+    if (window.ResizeObserver) new ResizeObserver(render).observe(el); else addEventListener('resize', render);
+  };
+
+  // ----- icons of the special stops, silhouettes on a 24 by 36 field: a dragon head for the title, a keep for a chapter, a tent for the closing -----
+  const ICONS = {
+    title: 'M12 9L9.6 8.2C6.6 7.4 3.6 5 2 1.2C1.4 6.6 3 11 7 13.2L3 15L6.4 17.6L3.4 21L7 23L8.4 30.6L10.4 33.4L12 35.4L13.6 33.4L15.6 30.6L17 23L20.6 21L17.6 17.6L21 15L17 13.2C21 11 22.6 6.6 22 1.2C20.4 5 17.4 7.4 14.4 8.2ZM7.6 15.6L10.8 17L10.6 18.8ZM16.4 15.6L13.2 17L13.4 18.8ZM10.1 31.4m-.8 0a.8.8 0 1 0 1.6 0a.8.8 0 1 0-1.6 0ZM13.9 31.4m-.8 0a.8.8 0 1 0 1.6 0a.8.8 0 1 0-1.6 0Z',
+    chapter: 'M1 2H7V5.5H9V2H15V5.5H17V2H23V12H19.5V30.5L22.5 34V36H1.5V34L4.5 30.5V12H1ZM9.4 36V27C9.4 24.5 10.6 22.6 12 21C13.4 22.6 14.6 24.5 14.6 27V36ZM11.1 15H12.9V19.5H11.1Z',
+    closing: 'M12 3.4L22.2 31H17.4L12 17.5L6.6 31H1.8ZM11.3 0.6H12.7V3.4H11.3ZM0.6 32.6H23.4V35H0.6Z',
+  };
+  const icon = (kind) => `<svg class="ico" viewBox="0 0 24 36" aria-hidden="true"><path fill-rule="evenodd" d="${ICONS[kind]}"/></svg>`;
+
   // the button hints at the bottom left, the compass letters and the compass in the map are built after boot, from the vocabulary
   const vocabulary = {
     map: 'Map', mapHint: 'Choose a place to travel to. Esc closes the map.', counter: 'Stop {n} of {N}', backupCounter: 'Side road {L}', section: 'Region:',
     now: 'Reading now', next: 'Next stop', notes: 'Marginalia', timer: 'Time on the road', presenter: 'The skald’s lectern',
     rotate: 'Turn your device sideways to read the map.',
     hint: '← → Turn · M Map · P Lectern · F Full screen · ? Keys',
-    ambient: 'Snowfall', help: 'A traveller’s keys', helpClose: 'Esc or ? closes.', jump: 'Fast travel to',
+    ambient: 'Weather', help: 'A traveller’s keys', helpClose: 'Esc or ? closes.', jump: 'Fast travel to',
     keyMove: 'Travel on, travel back', keyMap: 'Open the map', keyPresenter: 'The skald’s lectern', keyFull: 'Full screen', keyBlackout: 'Sleep (blackout)',
-    keyAmbient: 'Pause or resume the snowfall and the aurora', keyJump: 'Fast travel: G, a number, Enter', keyHelp: 'This list',
+    keyAmbient: 'Pause or resume the weather and the sky', keyJump: 'Fast travel: G, a number, Enter', keyHelp: 'This list',
     btnMove: 'Turn', btnMap: 'Map', btnHelp: 'Keys',
   };
+  // every region takes the color of its place on the road: the runtime hands out the six palette accents in turn, here the regions walk from blue to red instead
+  const roadColor = (i) => { const c = road.color[i]; return c ? str(c) : ''; };
+  const paintRoad = (track) => {
+    document.querySelectorAll('#stage > .slide').forEach((el, i) => { const c = roadColor(road.of[i]); if (c) el.style.setProperty('--acc', c); });
+    if (track) track.querySelectorAll('.seg').forEach((seg, i) => { const c = roadColor(i); if (c && i < road.color.length) seg.style.setProperty('--acc', c); });
+    const chrome = document.getElementById('chrome');
+    if (chrome) chrome.style.setProperty('--acc', roadColor(road.of[Deck.index]));
+  };
+  const paintMap = (map) => map.querySelectorAll('.map-sec').forEach((sec, i) => { const c = roadColor(i); if (c && i < road.color.length) sec.style.setProperty('--acc', c); });
   Deck.ready.then(() => {
     const V = Object.assign({}, vocabulary, Deck.config && Deck.config.vocabulary);
     const chrome = document.getElementById('chrome');
     const map = document.getElementById('map');
+    if (!road.color.length) mapRoad();
+    paintRoad(document.getElementById('track'));
     if (chrome && !document.getElementById('keys')) {
       const keys = document.createElement('div');
       keys.id = 'keys';
@@ -414,9 +811,18 @@ ${runeRow(320, 8, 1.1, 38)}
       const info = Deck.info();
       const names = new Map(info.sections.map((sec) => [sec.id, sec.label]));
       track.querySelectorAll('.seg').forEach((seg) => {
-        const first = info.slides[+seg.querySelector('.dot').dataset.i];
-        seg.dataset.l = Array.from((first.backup ? 'Backup' : names.get(first.sec)) || '')[0] || '';
+        const dots = seg.querySelectorAll('.dot');
+        dots.forEach((dot) => {
+          const kind = info.slides[+dot.dataset.i].layout;
+          if (ICONS[kind]) { dot.insertAdjacentHTML('beforeend', icon(kind)); dot.classList.add('has-ico'); }
+        });
+        // a region that begins with an icon shows no letter
+        const first = info.slides[+dots[0].dataset.i];
+        seg.dataset.l = dots[0].classList.contains('has-ico') ? '' : Array.from((first.backup ? 'Backup' : names.get(first.sec)) || '')[0] || '';
       });
+      frameFor(track, BAR, 'skb', (svg) => { svg.id = 'cmp'; track.before(svg); });
+      const hud = document.getElementById('hud');
+      if (hud) frameFor(hud, PLATE, 'skh', (svg) => hud.prepend(svg));
       const center = (index, instant) => {
         const dot = track.querySelector(`.dot[data-i="${index}"]`);
         if (!dot) return;
@@ -431,7 +837,11 @@ ${runeRow(320, 8, 1.1, 38)}
     }
     if (map) {
       // the map is rebuilt on every open: put the compass star back above its title
-      const star = () => { const head = map.querySelector('.map-head'); if (head && !head.querySelector('.compass')) head.insertAdjacentHTML('afterbegin', compassMap); };
+      const star = () => {
+        const head = map.querySelector('.map-head');
+        if (head && !head.querySelector('.compass')) head.insertAdjacentHTML('afterbegin', compassMap);
+        paintMap(map);
+      };
       new MutationObserver(star).observe(map, { childList: true });
       star();
     }
@@ -443,22 +853,19 @@ ${runeRow(320, 8, 1.1, 38)}
     vocabulary,
     art: { hero, chapter, closing, divider },
     ambient: {
-      init(api) { tint = rgb(api.accent(), tint); build(api); },
+      init(api) { mapRoad(); build(api); },
       resize(api) { if (ready) build(api); },
       frame(api, t, dt) { draw(api, t, dt, false); },
       paint(api) { draw(api, 0, 0, true); },
       change(api, info) {
-        if (!ready || info.from < 0) return;
-        const next = rgb(api.accent(), tint);
-        if (next.join(',') !== tintKey) {
-          const old = auroraA; auroraA = auroraB; auroraB = old; // the finished curtain fades out while the new one fades in
-          tint = next;
-          tintKey = next.join(',');
-          paintAurora(auroraB, tint);
-          fade = 0;
-        }
+        if (!ready) return;
+        // the first slide sets the scene at once; after that the new region's sky and land fade in
+        const reg = road.of[info.to] || 0, first = info.from < 0;
+        setTint(road.color[reg] || STOPS[0], first);
+        setScene(road.biome[reg] || 0, first, api);
+        if (first) return;
         const dir = info.dir === 'back' ? -1 : 1;
-        gust = -dir * 0.55; // a gust sweeps the snow against the direction of travel
+        gust = -dir * 0.55; // a gust sweeps the weather against the direction of travel
         boost = 1;
         // the ridges drift a little with the travel and turn round at the edge of their margin
         const lim = MARGIN * 0.9;

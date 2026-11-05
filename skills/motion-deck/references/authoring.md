@@ -24,7 +24,7 @@ The config comes first, then the `<style>` blocks, then the slides; anything els
 | `lang` | language code of the text (`en`, `it`, `fr`…); sets number formatting for counters |
 | `accent` | one `#rrggbb` color; the corporate theme uses it as its brand color, other themes may ignore it |
 | `transition` | one transition for the whole deck (`slide`, `fade`, `rise`, `zoom`, `none`, or a theme transition) |
-| `sections` | ordered list of `{ "id", "label", "accent" }`; `accent` is 1 to 6; the list order is the map order. A `data-sec` missing here is created with its id as label |
+| `sections` | ordered list of `{ "id", "label", "accent" }`; `accent` is 1 to 6 (the skyrim theme ignores it and colors the sections along its road, from blue to red); the list order is the map order. A `data-sec` missing here is created with its id as label |
 | `vocabulary` | translate or rename the HUD words (below) |
 | `timer` | presenter timer target in minutes (default 20) |
 | `duration` | planned length of the talk in minutes; the presenter window shows a progress bar and whether you are ahead or behind the plan (default: `timer`, else 20) |
