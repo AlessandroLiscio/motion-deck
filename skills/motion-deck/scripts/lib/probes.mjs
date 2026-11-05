@@ -213,7 +213,7 @@ async function morph({ main }) {
   near(b.x, 120, 40, 'morph element x before'); near(b.w, 640, 40, 'morph element width before');
   await p.evaluate('Deck.next()');
   await until(p, `document.getAnimations().some((a) => a.effect && a.effect.pseudoElement === '::view-transition-group(md-m1)')`, { what: 'an animation on ::view-transition-group(md-m1)', timeout: 1500, every: 20 });
-  await until(p, `Deck.index === ${i + 1} && !document.getAnimations().some((a) => a.effect && a.effect.pseudoElement && a.playState === 'running')`, { what: 'the morph to finish', timeout: 5000 });
+  await until(p, `Deck.index === ${i + 1} && !document.getAnimations().some((a) => a.effect && (a.effect.pseudoElement || '').startsWith('::view-transition') && a.playState === 'running')`, { what: 'the morph to finish', timeout: 5000 });
   const a = await p.evaluate(rect);
   near(a.x, 1060, 40, 'morph element x after'); near(a.w, 420, 40, 'morph element width after');
   const named = await p.evaluate(`[...document.querySelectorAll('#stage *')].filter((e) => getComputedStyle(e).viewTransitionName !== 'none').length`);

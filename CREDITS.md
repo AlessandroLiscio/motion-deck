@@ -26,13 +26,24 @@ All fonts are licensed under the [SIL Open Font License 1.1](https://openfontlic
 | Pirata One | 2012 Rodrigo Fuenzalida and Nicolas Massi, [taip.com.ar](https://www.taip.com.ar), with Reserved Font Name "Pirata" | pirates |
 | Alegreya Sans | 2013 The Alegreya Sans Project Authors, [huertatipografica/Alegreya-Sans](https://github.com/huertatipografica/Alegreya-Sans) | pirates |
 | Share Tech Mono | 2012 Carrois Type Design, Ralph du Carrois, [carrois.com](https://www.carrois.com), with Reserved Font Name "Share" | pipboy |
+| Pixelify Sans | 2021 The Pixelify Sans Project Authors, [eifetx/Pixelify-Sans](https://github.com/eifetx/Pixelify-Sans) | pixel |
+| VT323 | 2011 The VT323 Project Authors, peter.hull@oikoi.com | pixel |
+| Silkscreen | 2001 The Silkscreen Project Authors, [googlefonts/silkscreen](https://github.com/googlefonts/silkscreen) | pixel |
 
 ## Code
 
-The engine, the scripts, the themes and their line art are original work released under the MIT license in `LICENSE`. The scripts use only Node.js built-ins; nothing is downloaded at build time.
+The engine, the scripts, the themes and their line art are original work released under the MIT license in `LICENSE`, with one exception below. The scripts use only Node.js built-ins; nothing is downloaded at build time.
+
+### Third-party code in the pixel theme
+
+The background layer of the pixel theme (`skills/motion-deck/themes/pixel/theme.js`) contains parts of [pixelfx](https://github.com/patch-gg/pixelfx) 0.3.0 by Patch, a library of pixel-art effects for a canvas, licensed MIT, Copyright (c) 2026 Patch. They are trimmed: the math, color and painter cores, the lights and sparkle helpers, the shooting-stars weather effect and the collect-burst pickup effect, with their import and export lines replaced by plain scopes and nothing else changed. As the NOTICE.md of pixelfx says, its simulation helpers and the effects that say so at the top of their file adapt the open-source pixel-art effects of [Sprite Fusion](https://www.spritefusion.com/pixel-art-vfx), licensed MIT, Copyright (c) 2026 Hugo Duprez. Both notices and the full MIT license text stay in the comment at the top of `theme.js` and so in every deck built with the pixel theme.
+
+Nothing else of pixelfx is included: not its bitmap font, which it does not release under a free license, and nothing from Hollow Crown (`act.js`) or any other game or demo that uses it. The colors of the theme are the 16 of the Sweetie 16 palette by GrafxKid, published on [Lospec](https://lospec.com/palette-list/sweetie-16).
 
 ## Trademarks
 
 The pipboy theme is an homage to the look of the Pip-Boy interface in the Fallout games. Fallout and Pip-Boy are trademarks of Bethesda Softworks LLC; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, fonts or text: its line art is drawn from scratch.
 
 The skyrim theme is an unofficial homage to the cold Nordic look of the Skyrim interface. Skyrim and The Elder Scrolls are trademarks of Bethesda Softworks LLC and ZeniMax Media Inc.; motion-deck is not affiliated with or endorsed by them. The theme uses no game artwork, logos, lettering or text: its line art is drawn from scratch.
+
+The pixel theme is a generic pixel-art arcade look and imitates no game or brand. pixelfx, Sprite Fusion, Hollow Crown and Sweetie 16 are named only to credit their authors; motion-deck is not affiliated with or endorsed by them.

@@ -20,7 +20,7 @@ The config comes first, then the `<style>` blocks, then the slides; anything els
 | Key | Use |
 |---|---|
 | `title` | required; the tab title and the default title slide text |
-| `theme` | `space`, `editorial`, `neon`, `corporate`, `fantasy`, `pirates`, `pipboy` or `skyrim` |
+| `theme` | `space`, `editorial`, `neon`, `corporate`, `fantasy`, `pirates`, `pipboy`, `skyrim` or `pixel` |
 | `lang` | language code of the text (`en`, `it`, `fr`…); sets number formatting for counters |
 | `accent` | one `#rrggbb` color; the corporate theme uses it as its brand color, other themes may ignore it |
 | `transition` | one transition for the whole deck (`slide`, `fade`, `rise`, `zoom`, `none`, or a theme transition) |

@@ -1,6 +1,6 @@
 ---
 name: motion-deck
-description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in eight themes (space, editorial, neon, corporate, fantasy, pirates, pipboy, skyrim). It can also hand over an image-based .pptx of the finished deck for clients who ask for PowerPoint; it does not build editable or natively animated PowerPoint decks, which is the pptx skill's job.
+description: Use when asked for a presentation, slide deck, talk or pitch as an animated HTML page, or to edit or restyle one made with this skill. Builds one offline HTML file with entrance and build animations, animated diagrams and charts, cinematic transitions, a living background, a map and a presenter view, in nine themes (space, editorial, neon, corporate, fantasy, pirates, pipboy, skyrim, pixel). It can also hand over an image-based .pptx of the finished deck for clients who ask for PowerPoint; it does not build editable or natively animated PowerPoint decks, which is the pptx skill's job.
 ---
 
 # motion-deck
@@ -34,6 +34,7 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 | `pirates` | kids, playful workshops, team events | treasure-map parchment, sea blue, rolling waves, sailing slide |
 | `pipboy` | games, retro-futurist tech, dev tools, terminal-style talks | green phosphor terminal in capitals, bracketed panels, scanlines, top-to-bottom scan |
 | `skyrim` | fantasy, games, adventure, travel, calm and serious storytelling | cold Nordic night, thin capitals, aurora and snow, compass bar, frost |
+| `pixel` | games, retro tech, playful tech talks, dev tools, anything that should feel like an arcade | night navy, 16-color palette, pixel fonts, stepped panels, stars and bursts of light, stair-step wipe |
 
 `references/themes.md` has the details of each theme (accents, fonts, vocabulary, what it does best).
 
@@ -61,4 +62,4 @@ To edit a deck, change its `deck.src.html` and rebuild; never edit `index.html`.
 
 ## Where things are
 
-`references/authoring.md` the source format, layouts and attributes. `references/motion.md` builds, morph, counters, transitions, reduced motion and print. `references/diagrams.md` the diagram and chart language. `references/storytelling.md` structure, metaphor, pacing and notes. `references/themes.md` the eight themes. `references/contract.md` the exact specification of the engine, build, check and themes; read it only when the other guides leave a question. `examples/showcase.src.html` is a complete deck that uses every layout and feature; `examples/<kind>.src.html` are six starter decks with real content.
+`references/authoring.md` the source format, layouts and attributes. `references/motion.md` builds, morph, counters, transitions, reduced motion and print. `references/diagrams.md` the diagram and chart language. `references/storytelling.md` structure, metaphor, pacing and notes. `references/themes.md` the nine themes. `references/contract.md` the exact specification of the engine, build, check and themes; read it only when the other guides leave a question. `examples/showcase.src.html` is a complete deck that uses every layout and feature; `examples/<kind>.src.html` are six starter decks with real content.

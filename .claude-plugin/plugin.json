@@ -1,6 +1,6 @@
 {
   "name": "motion-deck",
-  "description": "Build animated, one-file HTML presentations in eight swappable themes (space, editorial, neon, corporate, fantasy, pirates, pipboy, skyrim) with step builds, animated diagrams, morph transitions and a presenter view.",
+  "description": "Build animated, one-file HTML presentations in nine swappable themes (space, editorial, neon, corporate, fantasy, pirates, pipboy, skyrim, pixel) with step builds, animated diagrams, morph transitions and a presenter view.",
   "author": { "name": "Alessandro Liscio", "url": "https://github.com/AlessandroLiscio" },
   "homepage": "https://github.com/AlessandroLiscio/motion-deck",
   "repository": "https://github.com/AlessandroLiscio/motion-deck",
