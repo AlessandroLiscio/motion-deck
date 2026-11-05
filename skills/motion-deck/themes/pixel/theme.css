@@ -1,19 +1,20 @@
-/* Pixel: dark navy, a 16-color palette (Sweetie 16 by GrafxKid, CC0), chunky stepped panels with hard offset shadows, no blur, arcade chrome, a stepped wipe between slides. Drawn parts use crisp edges. */
+/* Pixel: dark navy, a 16-color palette (Sweetie 16 by GrafxKid), chunky stepped panels with hard offset shadows, no blur, arcade chrome, a stepped wipe between slides. Drawn parts use crisp edges. */
 
 :root {
   --bg: #1a1c2c; --bg-2: #29366f; --text: #f4f4f4; --muted: #94b0c2; --line: #566c86; --panel: #333c57;
   --a1: #41a6f6; --a2: #ffcd75; --a3: #a7f070; --a4: #ef7d57; --a5: #73eff7; --a6: #38b764;
   --on-acc: #1a1c2c; --c-key: #ef7d57; --c-str: #a7f070; --c-com: #94b0c2; --c-num: #ffcd75; --c-fn: #41a6f6; --glow: #41a6f6;
-  --f-display: "Chakra Petch", "Arial Black", Impact, sans-serif;
-  --f-body: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
-  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --f-display: "Silkscreen", "Arial Black", Impact, sans-serif;
+  --f-body: "Pixelify Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "VT323", ui-monospace, Consolas, monospace;
   --t-hero: 112px; --t-h1: 88px; --t-h2: 58px; --t-h3: 36px; --t-lead: 38px; --t-body: 32px; --t-small: 26px; --t-label: 20px;
   --lh-head: 1.1; --lh-body: 1.4; --ls-label: .14em; --case-display: uppercase; --ls-display: .02em;
-  --w-display: 600; --w-body: 400; --w-bold: 600;
+  --w-display: 400; --w-body: 400; --w-bold: 700;
   --pad-x: 120px; --pad-y: 84px; --pad-b: 96px; --gap: 32px; --radius: 0px; --stroke: 4px;
   --ease: steps(10, end); --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
   --a-dur: .55s; --a-stagger: 60ms; --a-base: 60ms; --tr-dur: 720ms;
   --bullet-radius: 0;
+  font-synthesis: none; /* VT323 and Silkscreen have fixed weights: a faked bold would smear the pixel grid */
 }
 
 /* --shade is the hard offset shadow: the section color sunk into the background */
@@ -22,6 +23,9 @@
 /* entrance: blocks pop in a few frames, no blur */
 .slide { --ay: 12px; --ab: 0px; }
 
+/* the pixel faces draw their ligatures badly (a fi reads as a different letter), so every glyph stays on its own */
+.slide, #chrome { font-variant-ligatures: none; }
+
 /* ---------- text ---------- */
 
 .slide h1, .slide h2, .slide .big { text-shadow: 4px 4px 0 var(--shade); }
@@ -29,7 +33,6 @@
 .slide[data-layout="chapter"] h2, .slide[data-layout="closing"] h1, .slide[data-layout="closing"] h2 { font-size: calc(var(--t-h1) * 1.04); line-height: 1.04; text-shadow: 6px 6px 0 var(--shade); }
 .slide .big { font-size: calc(var(--t-h2) * .96); }
 .slide h3 { letter-spacing: .03em; }
-.slide .lead { font-weight: 400; }
 .slide p, .slide li, .slide .label, .slide figcaption { text-shadow: 2px 2px 0 var(--bg); }
 
 .slide .kicker { text-shadow: 2px 2px 0 var(--shade); }
@@ -90,7 +93,7 @@ svg[data-diagram] .md-shape { filter: drop-shadow(4px 4px 0 var(--shade)); }
 /* ---------- chrome: an arcade status line, a segmented progress bar, stage select ---------- */
 
 #chrome { font-family: var(--f-mono); }
-#hud { font-size: 16px; letter-spacing: .12em; padding: 14px max(28px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--bg) 88%, transparent); box-shadow: 0 -4px 0 0 var(--line); }
+#hud { font-size: 20px; letter-spacing: .12em; padding: 14px max(28px, env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--bg) 88%, transparent); box-shadow: 0 -4px 0 0 var(--line); }
 .hud-sec, .hud-count { position: relative; text-shadow: 2px 2px 0 var(--shade); }
 .hud-sec { padding-left: 34px; }
 .hud-count { padding-left: 30px; color: var(--text); }
@@ -115,9 +118,9 @@ svg[data-diagram] .md-shape { filter: drop-shadow(4px 4px 0 var(--shade)); }
 .map-sec h3 { font-size: 16px; font-weight: 600; text-shadow: 2px 2px 0 var(--shade); }
 .map-sec h3::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 12px; background: var(--acc); }
 .map-item { border: 0; border-radius: 0; margin: 3px; padding: 12px 16px; font-size: 18px; background: var(--panel); box-shadow: 0 -3px 0 0 var(--line), 0 3px 0 0 var(--line), -3px 0 0 0 var(--line), 3px 0 0 0 var(--line), 6px 6px 0 0 var(--shade); }
-.map-item:hover, .map-item:focus-visible { background: var(--acc); color: var(--on-acc); outline: none; box-shadow: 0 -3px 0 0 var(--acc), 0 3px 0 0 var(--acc), -3px 0 0 0 var(--acc), 3px 0 0 0 var(--acc), 6px 6px 0 0 var(--shade); }
-.map-item.cur { background: color-mix(in srgb, var(--acc) 24%, var(--panel)); box-shadow: 0 -3px 0 0 var(--acc), 0 3px 0 0 var(--acc), -3px 0 0 0 var(--acc), 3px 0 0 0 var(--acc), 6px 6px 0 0 var(--shade); }
-.map-item.cur { color: var(--text); }
+.map-item:focus-visible { outline: 3px solid var(--text); outline-offset: 5px; }
+.map-item:hover, .map-item:focus-visible { background: var(--acc); color: var(--on-acc); box-shadow: 0 -3px 0 0 var(--acc), 0 3px 0 0 var(--acc), -3px 0 0 0 var(--acc), 3px 0 0 0 var(--acc), 6px 6px 0 0 var(--shade); }
+.map-item.cur { color: var(--text); background: color-mix(in srgb, var(--acc) 24%, var(--panel)); box-shadow: 0 -3px 0 0 var(--acc), 0 3px 0 0 var(--acc), -3px 0 0 0 var(--acc), 3px 0 0 0 var(--acc), 6px 6px 0 0 var(--shade); }
 .map-item.cur:hover, .map-item.cur:focus-visible { background: var(--acc); color: var(--on-acc); }
 .map-item:hover .map-n, .map-item:focus-visible .map-n { color: inherit; }
 

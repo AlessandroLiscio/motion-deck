@@ -4,8 +4,9 @@
   "mode": "dark",
   "description": "Pixel art on dark navy: chunky stepped panels with hard shadows, a night sky and hills drawn with pixelfx effects, arcade chrome, and a stepped wipe between slides.",
   "fonts": [
-    { "id": "chakra-petch", "role": ["display", "body"] },
-    { "id": "jetbrains-mono", "role": "mono" }
+    { "id": "silkscreen", "role": "display" },
+    { "id": "pixelify-sans", "role": "body" },
+    { "id": "vt323", "role": "mono" }
   ],
   "defaultTransition": "pixelwipe",
   "transitions": ["pixelwipe"],

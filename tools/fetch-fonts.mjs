@@ -25,6 +25,9 @@ const FAMILIES = [
   { id: 'pirata-one', family: 'Pirata One', query: 'Pirata+One', dir: 'pirataone' },
   { id: 'alegreya-sans', family: 'Alegreya Sans', query: 'Alegreya+Sans:wght@400;700', dir: 'alegreyasans' },
   { id: 'share-tech-mono', family: 'Share Tech Mono', query: 'Share+Tech+Mono', dir: 'sharetechmono' },
+  { id: 'pixelify-sans', family: 'Pixelify Sans', query: 'Pixelify+Sans:wght@400..700', dir: 'pixelifysans' },
+  { id: 'vt323', family: 'VT323', query: 'VT323', dir: 'vt323' },
+  { id: 'silkscreen', family: 'Silkscreen', query: 'Silkscreen:wght@400;700', dir: 'silkscreen' },
 ];
 
 const flag = process.argv.indexOf('--only');

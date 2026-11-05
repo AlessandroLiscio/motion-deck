@@ -1,4 +1,4 @@
-# The eight themes
+# The nine themes
 
 Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`), or build the same deck in another theme with `build.mjs --theme <name>`. After any change of theme rebuild and run the check again: other fonts move line breaks, and the text length that fits a Big Shoulders title does not always fit Unbounded. Every theme supports the same layouts, steps, diagrams, charts, morph, map, presenter view, reduced motion and print.
 
@@ -14,6 +14,7 @@ Set the theme with `"theme": "<name>"` in the deck config (or `new.mjs --theme`)
 | `pirates` | light | kids, playful workshops, team events, onboarding with a treasure-hunt feel | anything that must look serious |
 | `pipboy` | dark | games, retro-futurist tech, developer tools, terminal-style talks, anything that should feel like a console | long prose, formal reports, wide tables |
 | `skyrim` | dark | fantasy and games, adventure and travel stories, calm and serious storytelling, long-form talks with an atmosphere | dense dashboards, bright rooms, party-style events |
+| `pixel` | dark | games and retro tech, developer tools, playful talks, workshops for makers, anything that should feel like an arcade | long prose, formal reports, dense tables |
 
 Light themes project well in a bright room and print well; dark themes suit a dim room and a big screen. When the user gives no theme, pick from this table by audience and tone, say which and why in one line, and say that changing it is one word.
 
@@ -31,6 +32,7 @@ Each theme words the chrome in its own world through `vocabulary`; a deck in ano
 | `pirates` | The treasure map | `Port 3 of 18` | Captain's quarters |
 | `pipboy` | Data | `LVL 3/18` | Overseer's terminal |
 | `skyrim` | The journal | `Entry 3 of 18` | The skald’s lectern |
+| `pixel` | Stage select | `STAGE 3/18` | Game master |
 
 For a deck that tells its own story (a journey, a lab, a kitchen), name the sections in the same world and override `map` and `counter` to match: one metaphor from the title to the map.
 
@@ -52,9 +54,11 @@ For a deck that tells its own story (a journey, a lab, a kitchen), name the sect
 
 **skyrim.** A cold Nordic night in the spirit of a northern fantasy game. Thin condensed capitals with wide tracking (Big Shoulders Display at a light weight) over Atkinson Hyperlegible Next text and Atkinson Hyperlegible Mono labels. Under each heading a hairline rule carries a gold diamond; panels are dark glass with a hairline border and corner ticks, quotes are framed book pages, timeline stops are diamond quest markers and stat numbers are large and light. Soft aurora bands at the top take the section accent, snow falls in three depths and a gust sweeps it on every slide change, and two mountain ridges at the bottom shift a little with each slide. The HUD and progress track become a compass bar across the top (letters mark sections, ticks mark slides, the current slide is a gold diamond) and the map reads as a journal. The accents are ice blue, firelight gold, aurora green, blood red, frost violet and steel grey; green is the `ok` tone and red the `danger` tone. Slides change with a frost: the leaving slide is blown away in a gust while it blurs and whitens, and the new one clears out of the frost (the other way when going back). Headings are set in capitals, so keep them short. Art: snowy peaks under a moon (hero), an interlace knot ring (chapter), a standing-stone circle under an aurora (closing), a knot rule (divider). An homage drawn from scratch; `CREDITS.md` carries the affiliation note.
 
+**pixel.** Pixel art on night navy, in the colors of the 16-color Sweetie 16 palette. Silkscreen draws the capitals of headings, Pixelify Sans the text and VT323 the labels, the status line and code, so every letter sits on a pixel grid. Panels, cards and buttons have stepped borders and hard offset shadows in a dark tint of the section color, with no blur anywhere; the status line shows a heart and a coin drawn with pixels, the progress bar is a row of segments, and the label above a title blinks (it stops with the background). Stars twinkle over stepped hills, a shooting star crosses the sky now and then and a burst of light plays on every slide change, all drawn on the background canvas with effects adapted from pixelfx. The four drawings (a castle under a moon for the title, a key for chapters, a trophy for the closing slide and a row of bricks with a shining coin as divider) are original. Slides change with a stair-step wipe that runs in both directions. Silkscreen is wide, so keep headings short.
+
 ## Art roles
 
-`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the eight does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
+`data-art="hero"` (title slide), `chapter` (chapter slides), `closing` (closing slide) and `divider` (a thin ornament between blocks) exist in every theme. A theme may add `mascot`; none of the nine does. Use the roles instead of images; each theme draws its own art with its colors and line style, so a deck re-skins completely with the theme.
 
 ## Limits
 

@@ -1071,7 +1071,7 @@ const painter = new Painter(frame);
 const off = document.createElement('canvas');
 off.width = FW;
 off.height = FH;
-const octx = off.getContext('2d', { willReadFrequently: true });
+const octx = off.getContext('2d');
 const img = octx.createImageData(FW, FH);
 
 const px = document.createElement('canvas');
@@ -1175,7 +1175,7 @@ const step = (dt) => {
     b.age += dt / 1000;
     for (let i = 0; i < n; i++) b.fx.update(dt / 1000 / n);
   }
-  bursts = bursts.filter((b) => b.age < 1.4);
+  if (bursts.length) bursts = bursts.filter((b) => b.age < 1.4);
   slide += (slideTo - slide) * Math.min(1, dt / 260);
 };
 
